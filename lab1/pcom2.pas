@@ -1412,8 +1412,8 @@ var
                   begin
                     ival := 0;
                     reachlim := false;
-                    k := 0;
-                    while (k < i) and not reachlim do begin
+                    k := 1;
+                    while (k <= i) and not reachlim do begin
                       if ival <= mxint10 then
                         ival := ival*10+ordint[digit[k]]
                       else begin
