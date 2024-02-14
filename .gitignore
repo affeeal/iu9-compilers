@@ -1,2 +1,5 @@
 prd
 prr
+*.aux
+*.log
+*.toc
