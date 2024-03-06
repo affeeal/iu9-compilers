@@ -29,4 +29,14 @@ func main() {
 	}
 
 	foo()
+
+  counter := 5
+  for {
+    fmt.Printf("A loop with no init, cond and post statements: %d\n", counter)
+
+    counter--
+    if counter < 0 {
+      break
+    }
+  }
 }

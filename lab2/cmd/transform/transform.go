@@ -8,7 +8,13 @@ import (
 	"go/format"
 	"go/parser"
 	"go/token"
+
+  "github.com/rs/xid"
 )
+
+func getUniqueVarName() string {
+	return "counter_" + xid.New().String()
+}
 
 func insertIntVar(file *ast.File, name string, value int) {
 	var before, after []ast.Decl
@@ -46,10 +52,6 @@ func insertIntVar(file *ast.File, name string, value int) {
 	file.Decls = append(file.Decls, after...)
 }
 
-func getUniqueVarName() string {
-	return "loopIterations" // TODO
-}
-
 func findFuncDeclByName(file *ast.File, name string) *ast.FuncDecl {
 	for _, decl := range file.Decls {
 		if funcDecl, ok := decl.(*ast.FuncDecl); ok {
@@ -65,7 +67,7 @@ func findFuncDeclByName(file *ast.File, name string) *ast.FuncDecl {
 func insertCounterPrinting(file *ast.File, name string) {
 	mainFuncDecl := findFuncDeclByName(file, "main")
 	if mainFuncDecl == nil {
-		// TODO
+    panic("Expected main function in the transformed file")
 	}
 
 	mainFuncDecl.Body.List = append(
@@ -111,6 +113,7 @@ func addLoopIterationCount(file *ast.File) {
 		case *ast.RangeStmt:
 			x.Body.List = append(x.Body.List, getVarIncStmt(counterName))
 		}
+
 		return true
 	})
 }

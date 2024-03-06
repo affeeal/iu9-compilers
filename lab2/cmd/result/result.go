@@ -2,13 +2,13 @@ package main
 
 import "fmt"
 
-var loopIterations int = 0
+var counter_cnk56nse8dehqpc44r5g int = 0
 
 func foo() {
 	strs := []string{"foo", "bar", "baz"}
 	for k, str := range strs {
 		fmt.Printf("Range-loop in another function: %d, %s\n", k, str)
-		loopIterations++
+		counter_cnk56nse8dehqpc44r5g++
 	}
 }
 
@@ -22,18 +22,29 @@ func main() {
 	func() {
 		for i := 0; i < 10; i++ {
 			fmt.Printf("A loop in an anonymous function with pre-known iterations: %d\n", i)
-			loopIterations++
+			counter_cnk56nse8dehqpc44r5g++
 		}
 	}()
 
 	for i := 0; i < n; i++ {
 		for j := 0; j < n; j++ {
 			fmt.Printf("Nested loop with user defined iterations: %d, %d\n", i, j)
-			loopIterations++
+			counter_cnk56nse8dehqpc44r5g++
 		}
-		loopIterations++
+		counter_cnk56nse8dehqpc44r5g++
 	}
 
 	foo()
-	fmt.Printf("Total loop iterations count: %d\n", loopIterations)
+
+	counter := 5
+	for {
+		fmt.Printf("A loop with no init, cond and post statements: %d\n", counter)
+
+		counter--
+		if counter < 0 {
+			break
+		}
+		counter_cnk56nse8dehqpc44r5g++
+	}
+	fmt.Printf("Total loop iterations count: %d\n", counter_cnk56nse8dehqpc44r5g)
 }
