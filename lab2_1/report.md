@@ -34,7 +34,7 @@ func main() {
 
 	func() {
 		for i := 0; i < 10; i++ {
-			fmt.Printf("A loop in an anonymous function with pre-known iterations: %d\n", i)
+			fmt.Printf("Anonymous function loop with pre-known iterations: %d\n", i)
 		}
 	}()
 
@@ -188,7 +188,8 @@ func main() {
 	}
 
 	fset := token.NewFileSet()
-	if file, err := parser.ParseFile(fset, os.Args[1], nil, parser.ParseComments); err == nil {
+	if file, err := parser.ParseFile(fset, os.Args[1], nil, parser.ParseComments);
+            err == nil {
 		addLoopIterationCount(file)
 
 		if format.Node(os.Stdout, fset, file) != nil {
@@ -228,7 +229,7 @@ func main() {
 
 	func() {
 		for i := 0; i < 10; i++ {
-			fmt.Printf("A loop in an anonymous function with pre-known iterations: %d\n", i)
+			fmt.Printf("Anonymous function loop with pre-known iterations: %d\n", i)
 			counter_cnk56nse8dehqpc44r5g++
 		}
 	}()
@@ -301,4 +302,5 @@ Total loop iterations count: 38
 # Вывод
 В результате выполнения лабораторной работы я изучил представление
 синтаксического дерева программы на языке Go и получил навыки преобразования
-этого дерева с использованием пакетов `go/ast`, `go/parser`.
+этого дерева с использованием пакетов `go/ast`, `go/parser`, выполнив подсчёт
+общего числа итераций всех `for`- и `range`-циклов во время выполнения программы.
