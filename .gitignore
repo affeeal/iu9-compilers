@@ -1,6 +1,7 @@
 build
 prd
 prr
+.cache
 *.aux
 *.log
 *.toc
