@@ -9,6 +9,7 @@
 namespace lexer {
 
 class Compiler;
+class Token;
 
 class Scanner final {
  public:
@@ -18,7 +19,7 @@ class Scanner final {
         compiler_(std::move(compiler)),
         cur_(program_) {}
 
-  Token NextToken();
+  std::unique_ptr<Token> NextToken();
 
  private:
   std::shared_ptr<const std::string> program_;

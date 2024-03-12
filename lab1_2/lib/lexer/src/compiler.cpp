@@ -6,12 +6,6 @@
 
 namespace lexer {
 
-std::unique_ptr<Scanner> Compiler::GetScanner(
-    const std::shared_ptr<Compiler>& compiler,
-    const std::shared_ptr<const std::string>& program) noexcept {
-  return std::make_unique<Scanner>(program, compiler);
-}
-
 std::size_t Compiler::AddName(const std::string& name) {
   if (const auto it = name_codes_.find(name); it != name_codes_.cend()) {
     return it->second;
@@ -34,9 +28,14 @@ void Compiler::AddMessage(const MessageType type, const Position& p,
 
 void Compiler::OutputMessages() const {
   for (const auto& [p, m] : messages_) {
-    std::cerr << (m.type == MessageType::kError ? "Error" : "Warning") << " "
-              << p << ": " << m.text << "\n";
+    std::cerr << ToString(m.type) << " " << p << ": " << m.text << "\n";
   }
+}
+
+std::unique_ptr<Scanner> GetScanner(
+    const std::shared_ptr<Compiler>& compiler,
+    const std::shared_ptr<const std::string>& program) noexcept {
+  return std::make_unique<Scanner>(program, compiler);
 }
 
 }  // namespace lexer

@@ -1,60 +1,25 @@
-#include <boost/regex.hpp>
+#include <algorithm>
 #include <iostream>
-#include <ostream>
-#include <stdexcept>
 
-#include "position.hpp"
+#include "compiler.hpp"
+#include "token.hpp"
 
-namespace {
+int main() {
+  auto compiler = std::make_shared<lexer::Compiler>();
+  const auto program =
+      std::make_shared<const std::string>(" \r\nc*1`a``\n``_0`101b123\t");
 
-void Test(const std::string& text) {
-  static const std::string kBinaryGroup = "BINARY";
-  static const std::string kDecimalGroup = "DECIMAL";
-  static const std::string kIdentifierGroup = "IDENTIFIER";
-  static const std::string kStringGroup = "STRING";
+  std::vector<std::unique_ptr<lexer::Token>> tokens;
+  auto scanner = lexer::GetScanner(compiler, program);
 
-  // clang-format off
-  static const boost::regex regex(
-      "(?<" + kBinaryGroup + ">[01]+b)|"
-      "(?<" + kDecimalGroup + ">\\d+)|"
-      "(?<" + kIdentifierGroup + ">[\\?\\*\\|]([\\?\\*\\|]|\\d)*)|"
-      "(?<" + kStringGroup + ">`([\\x00-\\x5F\\x61-\\x7F]|``)*`)");
-  // clang-format on
+  do {
+    tokens.push_back(scanner->NextToken());
+  } while (tokens.back()->tag != lexer::DomainTag::kEndOfProgram);
 
-  lexer::Position p(text.cbegin(), text.cend());
-  boost::smatch matches;
-
-  while (true) {
-    while (!p.IsEnd() && p.IsWhitespace()) {
-      p.Next();
-    }
-
-    if (p.IsEnd()) {
-      break;
-    }
-
-    if (!boost::regex_search(p.get_it(), p.get_end(), matches, regex)) {
-      // TODO: handle syntax error
-    }
-
-    const auto& match = matches[0];
-
-    if (matches[kDecimalGroup].matched) {
-      // ...
-    } else if (matches[kBinaryGroup].matched) {
-      // ...
-    } else if (matches[kIdentifierGroup].matched) {
-      // ...
-    } else if (matches[kStringGroup].matched) {
-      // ...
-    } else {
-      throw std::runtime_error("lexer.hpp: undefined named subexpression");
-    }
-
-    p.set_it(match.second);
+  for (const auto& token : tokens) {
+    lexer::Print(std::cout, *token, *compiler);
+    std::cout << '\n';
   }
+
+  compiler->OutputMessages();
 }
-
-}  // namespace
-
-int main() {}
