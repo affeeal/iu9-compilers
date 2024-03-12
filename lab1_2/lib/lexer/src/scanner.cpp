@@ -31,12 +31,14 @@ std::unique_ptr<Token> GetToken(Compiler& compiler, const Position& cur,
     return std::make_unique<IdentToken>(cur, code);
 
   } else if (matches[kString].matched) {
-    static const boost::regex old_text("``");
-    static constexpr std::string_view new_text("`");
-    // TODO? match_all
-    const auto new_str = boost::regex_replace(str, old_text, new_text);
-    // TODO: trim str
-    return std::make_unique<StringToken>(cur, new_str);
+    static const boost::regex double_back_quote("``");
+    static constexpr std::string_view back_quote("`");
+
+    std::ostringstream t;
+    std::ostream_iterator<char> oi(t);
+    boost::regex_replace(oi, str.begin() + 1, str.end() - 1, double_back_quote,
+                         back_quote);
+    return std::make_unique<StringToken>(cur, t.str());
 
   } else {
     throw std::runtime_error("scanner.cpp: undefined named subexpression");

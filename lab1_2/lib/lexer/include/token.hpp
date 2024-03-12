@@ -51,7 +51,6 @@ struct SpecToken final : public Token {
   using Token::Token;
 };
 
-void Print(std::ostream& os, const Token& token,
-           const Compiler& compiler);
+void Print(std::ostream& os, const Token& token, const Compiler& compiler);
 
 }  // namespace lexer

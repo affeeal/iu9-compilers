@@ -8,8 +8,8 @@ const std::string kSyntaxError = "syntax error";
 
 enum class MessageType {
   kError,
-  kWarning,
   kOther,
+  kWarning,
 };
 
 std::string_view ToString(const MessageType type) noexcept;

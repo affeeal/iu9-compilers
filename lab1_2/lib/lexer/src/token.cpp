@@ -5,7 +5,7 @@ namespace lexer {
 std::string_view ToString(const DomainTag tag) noexcept {
   switch (tag) {
     using enum DomainTag;
-    
+
     case kEndOfProgram:
       return "END_OF_PROGRAM";
 
@@ -20,8 +20,7 @@ std::string_view ToString(const DomainTag tag) noexcept {
   }
 }
 
-void Print(std::ostream& os, const Token& token,
-           const Compiler& compiler) {
+void Print(std::ostream& os, const Token& token, const Compiler& compiler) {
   os << ToString(token.tag) << " " << token.starting << ": ";
 
   switch (token.tag) {
@@ -29,7 +28,7 @@ void Print(std::ostream& os, const Token& token,
 
     case kIdent: {
       const auto ident = static_cast<const IdentToken* const>(&token);
-      const auto& name = compiler.GetName(ident->code);  // TODO: check
+      const auto& name = compiler.GetName(ident->code);
       os << name;
       break;
     }

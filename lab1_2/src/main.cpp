@@ -1,16 +1,28 @@
 #include <algorithm>
+#include <fstream>
 #include <iostream>
 
 #include "compiler.hpp"
-#include "token.hpp"
 
-int main() {
+int main(int argc, char* argv[]) {
+  if (argc != 2) {
+    std::cerr << "Usage: lab1_2 <filename>\n";
+    return 1;
+  }
+
+  std::ifstream file(argv[1]);
+  if (!file.is_open()) {
+    std::cerr << "Cannot open file " << argv[1] << "\n";
+    return 1;
+  }
+
+  const auto program = std::make_shared<const std::string>(
+      std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
+
   auto compiler = std::make_shared<lexer::Compiler>();
-  const auto program =
-      std::make_shared<const std::string>(" \r\nc*1`a``\n``_0`101b123\t");
+  auto scanner = lexer::GetScanner(compiler, program);
 
   std::vector<std::unique_ptr<lexer::Token>> tokens;
-  auto scanner = lexer::GetScanner(compiler, program);
 
   do {
     tokens.push_back(scanner->NextToken());
@@ -21,5 +33,5 @@ int main() {
     std::cout << '\n';
   }
 
-  compiler->OutputMessages();
+  compiler->OutputMessages(std::cerr);
 }

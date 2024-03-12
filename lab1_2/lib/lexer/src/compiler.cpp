@@ -1,7 +1,5 @@
 #include "compiler.hpp"
 
-#include <iostream>
-
 #include "message.hpp"
 
 namespace lexer {
@@ -26,9 +24,9 @@ void Compiler::AddMessage(const MessageType type, const Position& p,
   messages_[p] = Message(type, text);
 }
 
-void Compiler::OutputMessages() const {
+void Compiler::OutputMessages(std::ostream& os) const {
   for (const auto& [p, m] : messages_) {
-    std::cerr << ToString(m.type) << " " << p << ": " << m.text << "\n";
+    os << ToString(m.type) << " " << p << ": " << m.text << "\n";
   }
 }
 
