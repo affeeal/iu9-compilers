@@ -30,9 +30,7 @@ int main(int argc, char* argv[]) {
 
   std::cout << "TOKENS:\n";
   for (const auto& token : tokens) {
-    std::cout << '\t';
-    lexer::Print(std::cout, *token, *compiler);
-    std::cout << '\n';
+    std::cout << '\t' << token << '\n';
   }
 
   std::cerr << "MESSAGES:\n";

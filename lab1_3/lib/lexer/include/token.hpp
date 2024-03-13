@@ -70,6 +70,6 @@ class SpecToken final : public Token {
       : Token(tag, starting, starting) {}
 };
 
-void Print(std::ostream& os, const Token& token, const Compiler& compiler);
+std::ostream& operator<<(std::ostream& os, const Token* const token);
 
 }  // namespace lexer
