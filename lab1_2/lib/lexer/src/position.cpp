@@ -18,16 +18,16 @@ bool Position::IsNewLine() const noexcept {
 void Position::Next() noexcept {
   if (IsNewLine()) {
     if (*it_ == '\r') {
-      it_++;
+      ++it_;
     }
 
-    line_++;
+    ++line_;
     pos_ = 1;
   } else {
-    pos_++;
+    ++pos_;
   }
 
-  it_++;
+  ++it_;
 }
 
 void Position::Dump(std::ostream& os) const {

@@ -9,10 +9,12 @@
 
 namespace lexer {
 
-static const std::string kBinary = "BINARY";
-static const std::string kDecimal = "DECIMAL";
-static const std::string kIdent = "IDENT";
-static const std::string kString = "STRING";
+namespace {
+
+const std::string kBinary = "BINARY";
+const std::string kDecimal = "DECIMAL";
+const std::string kIdent = "IDENT";
+const std::string kString = "STRING";
 
 std::unique_ptr<Token> GetToken(Compiler& compiler, const Position& cur,
                                 const boost::smatch& matches) {
@@ -44,6 +46,8 @@ std::unique_ptr<Token> GetToken(Compiler& compiler, const Position& cur,
     throw std::runtime_error("scanner.cpp: undefined named subexpression");
   }
 }
+
+}  // namespace
 
 std::unique_ptr<Token> Scanner::NextToken() {
   // clang-format off
