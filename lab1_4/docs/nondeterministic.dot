@@ -1,0 +1,35 @@
+digraph nondeterministic {
+  rankdir="LR";
+
+  node [shape=circle]
+  s [style=bold]
+  wf, if, nf, kf, of, cf [shape=doublecircle]
+  wf [xlabel="WHITESPACE"]
+  if [xlabel="IDENTIFIER"]
+  nf [xlabel="NUMBER"]
+  kf [xlabel="KEYWORD"]
+  of [xlabel="OPERATION"]
+  cf [xlabel="COMMENT"]
+
+  s -> {ws, is, ns, ks, os, cs} [label="λ"]
+  ws -> wf [label="[ \\t\\r\\n]"] 
+  is -> if [label="[a-zA-Z]"]
+  if -> if [label="[a-zA-Z0-9]"]
+  ns -> nf [label="[0-9]"]
+  nf -> nf [label="[0-9]"]
+  ks -> {k0s, k1s} [label="λ"] 
+  k0s -> k01 [label="e"]
+  k01 -> k02 [label="x"]
+  k02 -> k03 [label="i"]
+  k03 -> k04 [label="t"]
+  k1s -> k11 [label="e"]
+  k11 -> k12 [label="x"]
+  k12 -> k13 [label="i"]
+  k13 -> k14 [label="s"]
+  k14 -> k15 [label="t"]
+  {k04, k15} -> kf [label="λ"]
+  os -> of [label="!"] // incomplete
+  cs -> c1 [label="~"]
+  c1 -> c1 [label="[^\\n]"]
+  c1 -> cf [label="\\n"]
+}
