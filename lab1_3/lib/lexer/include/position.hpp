@@ -16,6 +16,7 @@ class Position final {
   std::size_t get_index() const noexcept { return index_; }
 
   char Cp() const noexcept;
+  bool IsEnd() const noexcept;
   bool IsWhitespace() const noexcept;
   bool IsNewLine() const noexcept;
   void Next() noexcept;

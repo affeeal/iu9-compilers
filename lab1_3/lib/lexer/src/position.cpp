@@ -6,13 +6,15 @@ char Position::Cp() const noexcept {
   return (index_ == text_->size() ? kEnd : text_->at(index_));
 }
 
+bool Position::IsEnd() const noexcept { return index_ == text_->size(); }
+
 bool Position::IsWhitespace() const noexcept {
   return (index_ != text_->size() && std::isspace(text_->at(index_)));
 }
 
 bool Position::IsNewLine() const noexcept {
   if (index_ == text_->size()) {
-    return true;
+    return false;
   }
 
   if (text_->at(index_) == '\r' && index_ + 1 < text_->size()) {
