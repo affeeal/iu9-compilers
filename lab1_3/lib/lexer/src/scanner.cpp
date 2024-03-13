@@ -11,6 +11,16 @@
 
 namespace lexer {
 
+namespace {
+
+// error messages:
+const std::string kOverflow = "integral constant is too large";
+const std::string kNoOpeningQuote = "missing string opening double quote";
+const std::string kNoClosingQuote = "missing string closing double quote";
+const std::string kUnexpectedChar = "unexpected character";
+
+}  // namespace
+
 std::unique_ptr<Token> Scanner::NextToken() {
   while (cur_.Cp() != kEnd) {
     while (cur_.IsWhitespace()) {
@@ -29,8 +39,7 @@ std::unique_ptr<Token> Scanner::NextToken() {
 
         do {
           if (val > overflow_border) {
-            compiler_->AddMessage(MessageType::kError, start,
-                                  "integral constant is too large");
+            compiler_->AddMessage(MessageType::kError, start, kOverflow);
             do {
               cur_.Next();
             } while (cur_.Cp() == '1');
@@ -44,16 +53,14 @@ std::unique_ptr<Token> Scanner::NextToken() {
         return std::make_unique<NumberToken>(val, start, cur_);
       }
 
-        // case '\"': {
-        //   // TODO
-        // }
+      case '\"': {
+      }
 
       case '@': {
         cur_.Next();
 
         if (cur_.Cp() != '\"') {
-          compiler_->AddMessage(MessageType::kError, start,
-                                "missing literal string opening double quote");
+          compiler_->AddMessage(MessageType::kError, start, kNoOpeningQuote);
           break;
         }
 
@@ -63,11 +70,8 @@ std::unique_ptr<Token> Scanner::NextToken() {
           } while (cur_.Cp() != '\"' && cur_.Cp() != kEnd);
 
           if (cur_.Cp() == kEnd) {
-            compiler_->AddMessage(
-                MessageType::kError, start,
-                "missing literal string closing double quote");
-            return std::make_unique<SpecToken>(DomainTag::kEndOfProgram, cur_,
-                                               cur_);
+            compiler_->AddMessage(MessageType::kError, start, kNoClosingQuote);
+            return std::make_unique<SpecToken>(DomainTag::kEndOfProgram, cur_);
           }
 
           if ((cur_ + 1).Cp() != '\"') {
@@ -90,12 +94,10 @@ std::unique_ptr<Token> Scanner::NextToken() {
       }
 
       case kEnd:
-        return std::make_unique<SpecToken>(DomainTag::kEndOfProgram, cur_,
-                                           cur_);
+        return std::make_unique<SpecToken>(DomainTag::kEndOfProgram, cur_);
 
       default: {
-        compiler_->AddMessage(MessageType::kError, cur_++,
-                              "unexpected character");
+        compiler_->AddMessage(MessageType::kError, cur_++, kUnexpectedChar);
         break;
       }
     }

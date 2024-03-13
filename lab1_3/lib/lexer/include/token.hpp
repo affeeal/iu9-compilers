@@ -65,6 +65,9 @@ class SpecToken final : public Token {
   SpecToken(const DomainTag tag, const Position& starting,
             const Position& following) noexcept
       : Token(tag, starting, following) {}
+
+  SpecToken(const DomainTag tag, const Position& starting) noexcept
+      : Token(tag, starting, starting) {}
 };
 
 void Print(std::ostream& os, const Token& token, const Compiler& compiler);
