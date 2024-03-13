@@ -23,7 +23,6 @@ class Position final {
 
   Position operator++(int) noexcept;
   Position operator++() noexcept;
-  Position operator+(const std::size_t n) noexcept;
 
   void Dump(std::ostream& os) const;
 
