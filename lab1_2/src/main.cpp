@@ -6,7 +6,7 @@
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
-    std::cerr << "Usage: lab1_2 <filename>\n";
+    std::cerr << "Usage: lab1_3 <filename>\n";
     return 1;
   }
 
@@ -26,12 +26,19 @@ int main(int argc, char* argv[]) {
 
   do {
     tokens.push_back(scanner->NextToken());
-  } while (tokens.back()->tag != lexer::DomainTag::kEndOfProgram);
+  } while (tokens.back()->get_tag() != lexer::DomainTag::kEndOfProgram);
 
+  std::cout << "TOKENS:\n";
   for (const auto& token : tokens) {
+    std::cout << '\t';
     lexer::Print(std::cout, *token, *compiler);
     std::cout << '\n';
   }
 
-  compiler->OutputMessages(std::cerr);
+  std::cerr << "MESSAGES:\n";
+  for (const auto& [position, message] : compiler->get_messages()) {
+    std::cout << '\t';
+    lexer::Print(std::cout, message, position);
+    std::cout << '\n';
+  }
 }

@@ -15,12 +15,15 @@ class Scanner;
 
 class Compiler final {
  public:
+  const std::map<Position, Message>& get_messages() const& noexcept {
+    return messages_;
+  }
+
   std::size_t AddName(const std::string& name);
   const std::string& GetName(const std::size_t code) const&;
 
   void AddMessage(const MessageType type, const Position& p,
                   const std::string& text);
-  void OutputMessages(std::ostream& os) const;
 
  private:
   std::map<Position, Message> messages_;

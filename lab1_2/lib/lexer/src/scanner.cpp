@@ -20,15 +20,15 @@ std::unique_ptr<Token> GetToken(Compiler& compiler, const Position& cur,
 
   if (matches[kDecimal].matched) {
     const auto value = std::stoi(str);
-    return std::make_unique<NumberToken>(cur, value);
+    return std::make_unique<NumberToken>(value, cur);
 
   } else if (matches[kBinary].matched) {
     const auto value = std::stoi(str, nullptr, 2);
-    return std::make_unique<NumberToken>(cur, value);
+    return std::make_unique<NumberToken>(value, cur);
 
   } else if (matches[kIdent].matched) {
     const auto code = compiler.AddName(str);
-    return std::make_unique<IdentToken>(cur, code);
+    return std::make_unique<IdentToken>(code, cur);
 
   } else if (matches[kString].matched) {
     static const boost::regex double_back_quote("``");
@@ -38,7 +38,7 @@ std::unique_ptr<Token> GetToken(Compiler& compiler, const Position& cur,
     std::ostream_iterator<char> oi(t);
     boost::regex_replace(oi, str.begin() + 1, str.end() - 1, double_back_quote,
                          back_quote);
-    return std::make_unique<StringToken>(cur, t.str());
+    return std::make_unique<StringToken>(t.str(), cur);
 
   } else {
     throw std::runtime_error("scanner.cpp: undefined named subexpression");

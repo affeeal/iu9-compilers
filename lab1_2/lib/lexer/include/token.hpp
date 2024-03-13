@@ -16,39 +16,61 @@ enum class DomainTag {
 
 std::string_view ToString(const DomainTag tag) noexcept;
 
-struct Token {
-  DomainTag tag;
-  Position starting;
-
-  Token(const DomainTag tag, const Position& starting)
-      : tag(tag), starting(starting) {}
+class Token {
+ public:
+  DomainTag get_tag() const noexcept { return tag_; }
+  const Position& get_starting() const& noexcept { return starting_; }
 
   virtual ~Token() {}
+
+ protected:
+  Token(const DomainTag tag, const Position& starting) noexcept
+      : tag_(tag), starting_(starting) {}
+
+  DomainTag tag_;
+  Position starting_;
 };
 
-struct IdentToken final : public Token {
-  std::size_t code;
+class IdentToken final : public Token {
+ public:
+  IdentToken(const std::size_t code, const Position& starting) noexcept
+      : Token(DomainTag::kIdent, starting), code_(code) {}
 
-  IdentToken(const Position& starting, const std::size_t code)
-      : Token(DomainTag::kIdent, starting), code(code) {}
+  std::size_t get_code() const noexcept { return code_; }
+
+ private:
+  std::size_t code_;
 };
 
-struct NumberToken final : public Token {
-  int value;
+class NumberToken final : public Token {
+ public:
+  NumberToken(const std::int64_t value, const Position& starting) noexcept
+      : Token(DomainTag::kNumber, starting), value_(value) {}
 
-  NumberToken(const Position& starting, const int value)
-      : Token(DomainTag::kNumber, starting), value(value) {}
+  std::int64_t get_value() const noexcept { return value_; }
+
+ private:
+  std::int64_t value_;
 };
 
-struct StringToken final : public Token {
-  std::string str;
+class StringToken final : public Token {
+ public:
+  StringToken(const std::string& str, const Position& starting) noexcept
+      : Token(DomainTag::kString, starting), str_(str) {}
 
-  StringToken(const Position& starting, const std::string& str)
-      : Token(DomainTag::kString, starting), str(str) {}
+  StringToken(std::string&& str, const Position& starting) noexcept
+      : Token(DomainTag::kString, starting), str_(std::move(str)) {}
+
+  const std::string& get_str() const& noexcept { return str_; }
+
+ private:
+  std::string str_;
 };
 
-struct SpecToken final : public Token {
-  using Token::Token;
+class SpecToken final : public Token {
+ public:
+  SpecToken(const DomainTag tag, const Position& starting) noexcept
+      : Token(tag, starting) {}
 };
 
 void Print(std::ostream& os, const Token& token, const Compiler& compiler);

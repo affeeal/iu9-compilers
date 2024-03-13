@@ -17,4 +17,9 @@ std::string_view ToString(const MessageType type) noexcept {
   }
 }
 
+void Print(std::ostream& os, const Message& message, const Position& position) {
+  os << ToString(message.get_type()) << " " << position << ": "
+     << message.get_text();
+}
+
 }  // namespace lexer

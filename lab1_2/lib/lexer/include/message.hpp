@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "position.hpp"
+
 namespace lexer {
 
 const std::string kSyntaxError = "syntax error";
@@ -14,13 +16,20 @@ enum class MessageType {
 
 std::string_view ToString(const MessageType type) noexcept;
 
-struct Message final {
-  MessageType type;
-  std::string text;
-
-  Message() noexcept : type(MessageType::kOther) {}
+class Message final {
+ public:
+  Message() noexcept : type_(MessageType::kOther) {}
   Message(const MessageType type, const std::string& text) noexcept
-      : type(type), text(text) {}
+      : type_(type), text_(text) {}
+
+  MessageType get_type() const noexcept { return type_; }
+  const std::string& get_text() const& noexcept { return text_; }
+
+ private:
+  MessageType type_;
+  std::string text_;
 };
+
+void Print(std::ostream& os, const Message& message, const Position& position);
 
 }  // namespace lexer

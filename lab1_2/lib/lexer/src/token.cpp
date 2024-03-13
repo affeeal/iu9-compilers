@@ -21,27 +21,27 @@ std::string_view ToString(const DomainTag tag) noexcept {
 }
 
 void Print(std::ostream& os, const Token& token, const Compiler& compiler) {
-  os << ToString(token.tag) << " " << token.starting << ": ";
+  os << token.get_starting() << " " << ToString(token.get_tag()) << " ";
 
-  switch (token.tag) {
+  switch (token.get_tag()) {
     using enum DomainTag;
 
     case kIdent: {
       const auto ident = static_cast<const IdentToken* const>(&token);
-      const auto& name = compiler.GetName(ident->code);
+      const auto& name = compiler.GetName(ident->get_code());
       os << name;
       break;
     }
 
     case kNumber: {
       const auto number = static_cast<const NumberToken* const>(&token);
-      os << number->value;
+      os << number->get_value();
       break;
     }
 
     case kString: {
       const auto str = static_cast<const StringToken* const>(&token);
-      os << str->str;
+      os << str->get_str();
       break;
     }
   }
