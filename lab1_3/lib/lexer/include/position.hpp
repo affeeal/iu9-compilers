@@ -19,7 +19,10 @@ class Position final {
   bool IsWhitespace() const noexcept;
   bool IsNewLine() const noexcept;
   void Next() noexcept;
+
   Position operator++(int) noexcept;
+  Position operator++() noexcept;
+  Position operator+(const std::size_t n) noexcept;
 
   void Dump(std::ostream& os) const;
 

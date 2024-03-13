@@ -47,6 +47,21 @@ Position Position::operator++(int) noexcept {
   return old;
 }
 
+Position Position::operator++() noexcept {
+  Next();
+  return *this;
+}
+
+Position Position::operator+(const std::size_t n) noexcept {
+  auto cpy = *this;
+
+  for (std::size_t i = 0; i < n; ++i) {
+    cpy.Next();
+  }
+
+  return cpy;
+}
+
 void Position::Dump(std::ostream& os) const {
   os << "(" << line_ << ", " << pos_ << ")";
 }

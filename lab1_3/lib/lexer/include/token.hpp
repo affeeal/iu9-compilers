@@ -50,6 +50,10 @@ class StringToken final : public Token {
               const Position& following) noexcept
       : Token(DomainTag::kString, starting, following), str_(str) {}
 
+  StringToken(std::string&& str, const Position& starting,
+              const Position& following) noexcept
+      : Token(DomainTag::kString, starting, following), str_(std::move(str)) {}
+
   const std::string& get_str() const& noexcept { return str_; }
 
  private:
