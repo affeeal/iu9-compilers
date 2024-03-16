@@ -19,7 +19,7 @@ class Scanner final {
         compiler_(std::move(compiler)),
         cur_(program_) {}
 
-  void OutputComments(std::ostream& os) const;
+  const std::list<Fragment>& get_comments() const & noexcept { return comments_; }
 
   std::unique_ptr<Token> NextToken();
 

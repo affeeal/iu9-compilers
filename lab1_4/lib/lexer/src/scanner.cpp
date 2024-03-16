@@ -8,23 +8,6 @@ namespace lexer {
 
 static constexpr Automata automata{};
 
-void Scanner::OutputComments(std::ostream& os) const {
-  os << "COMMENTS:\n";
-
-  for (const auto& coords : comments_) {
-    const auto begin_idx = coords.get_starting().get_index();
-    const auto end_idx = coords.get_following().get_index();
-
-    os << '\t';
-    for (auto it = program_->cbegin() + begin_idx + 1,
-              end = program_->cbegin() + end_idx - 1;
-         it != end; ++it) {
-      os << *it;
-    }
-    os << '\n';
-  }
-}
-
 std::unique_ptr<Token> Scanner::NextToken() {
   std::ostringstream image;
   Position start;

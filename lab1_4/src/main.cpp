@@ -35,6 +35,10 @@ int main(int argc, char* argv[]) {
     std::cout << '\n';
   }
 
-  scanner->OutputComments(std::cout);
+  std::cout << "COMMENTS:\n";
+  for (const auto& coords : scanner->get_comments()) {
+    std::cout << '\t' << coords << '\n';
+  }
+
   compiler->OutputMessages(std::cout);
 }
