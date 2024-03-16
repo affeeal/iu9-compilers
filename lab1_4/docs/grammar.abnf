@@ -1,0 +1,8 @@
+WHITESPACE:        [ \t\r\n]
+IDENTIFIER:        [a-zA-Z][a-zA-Z0-9]*
+NUMBER:            [0-9]+
+EXIT:              exit
+EXIST:             exist
+EXCLAMATORY:       !
+EXCLAMATORY_TILDA: !~
+COMMENT:           ~[^\n]
