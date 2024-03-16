@@ -21,7 +21,7 @@ enum class DomainTag {
   kWhitespace,
 };
 
-std::string_view ToString(const DomainTag tag) noexcept;
+std::ostream& operator<<(std::ostream& os, const DomainTag tag);
 
 class Token {
  public:
@@ -37,6 +37,18 @@ class Token {
 
   DomainTag tag_;
   Fragment coords_;
+};
+
+class IdentToken final : public Token {
+ public:
+  IdentToken(const std::size_t code, const Position& starting,
+             const Position& following) noexcept
+      : Token(DomainTag::kIdentifier, starting, following), code_(code) {}
+
+  std::size_t get_code() const noexcept { return code_; }
+
+ private:
+  std::size_t code_;
 };
 
 class NumberToken final : public Token {
@@ -61,6 +73,7 @@ class SpecToken final : public Token {
       : Token(tag, starting, starting) {}
 };
 
-std::ostream& operator<<(std::ostream& os, const Token* const token);
+void OutputToken(std::ostream& os, const Token* const token,
+                 const Compiler& compiler);
 
 }  // namespace lexer

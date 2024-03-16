@@ -1,0 +1,3 @@
+12345e ex exi exit exis
+  exist existential_crisis !~ a0 a0! ~A comment till the end of line...
+ !~Not a comment, but an operation~A new comment!

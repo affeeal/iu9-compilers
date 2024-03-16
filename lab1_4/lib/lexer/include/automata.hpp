@@ -1,26 +1,18 @@
 #pragma once
 
 #include <array>
-#include <type_traits>
 
+#include "position.hpp"
 #include "token.hpp"
 
 namespace lexer {
 
 class Automata final {
  public:
-  constexpr Automata() = default;
-
-  void Dump(std::ostream& os) const;
-
- private:
-  static constexpr std::size_t kStates = 15;
-  static constexpr std::size_t kCharacters = 128;
-  static constexpr std::size_t kFactors = 12;
-
   enum State {
     kComment1,
     kComment2,
+    kEndOfProgram,
     kIdentifier,
     kKeyword1,
     kKeyword2,
@@ -36,8 +28,22 @@ class Automata final {
     kWhitespace,
   };
 
+  constexpr Automata() = default;
+
+  State At(const State state, const unsigned char ch) const;
+
+  bool IsFinal(const State state) const;
+
+  DomainTag GetTag(const State state) const;
+
+ private:
+  static constexpr std::size_t kStates = 16;
+  static constexpr std::size_t kCharacters = 129;
+  static constexpr std::size_t kFactors = 13;
+
   enum Factor {
     kDigit,
+    kEndCharacter,
     kExclamatory,
     kLetterE,
     kLetterI,
@@ -51,21 +57,11 @@ class Automata final {
     kTilda,
   };
 
-  static constexpr std::array<bool, kStates> GetFiniteStates() noexcept {
-    std::array<bool, kStates> finite_states;
-    finite_states.fill(true);
-
-    for (const auto state : {State::kComment1, State::kStart, State::kTrap}) {
-      finite_states[state] = false;
-    }
-
-    return finite_states;
-  }
-
   static constexpr std::array<DomainTag, kStates> GetDomainTags() noexcept {
     return {
         DomainTag::kNotFinal,          // State::kComment1
         DomainTag::kComment,           // State::kComment2
+        DomainTag::kEndOfProgram,      // State::kEndOfProgram
         DomainTag::kIdentifier,        // State::kIdentifier
         DomainTag::kIdentifier,        // State::kKeyword1
         DomainTag::kIdentifier,        // State::kKeyword2
@@ -82,8 +78,8 @@ class Automata final {
     };
   }
 
-  static constexpr std::array<std::size_t, kCharacters> GetFactors() noexcept {
-    std::array<std::size_t, kCharacters> factors;
+  static constexpr std::array<Factor, kCharacters> GetFactors() noexcept {
+    std::array<Factor, kCharacters> factors;
     factors.fill(Factor::kOtherCharacter);
 
     for (std::size_t ch = 'a'; ch <= 'z'; ++ch) {
@@ -112,26 +108,29 @@ class Automata final {
       factors[ch] = Factor::kOtherWhitespace;
     }
 
+    factors[Position::kEndCharacter] = Factor::kEndCharacter;
+
     return factors;
   }
 
-  static constexpr std::array<std::array<std::size_t, kFactors>, kStates>
+  static constexpr std::array<std::array<State, kFactors>, kStates>
   GetTransitions() noexcept {
-    std::array<std::array<std::size_t, kFactors>, kStates> table;
+    std::array<std::array<State, kFactors>, kStates> table{};
 
     table[State::kStart] = {
-        State::kNumber,      // Factor::kDigit
-        State::kOperation1,  // Factor::kExclamatory
-        State::kKeyword1,    // Factor::kLetterE
-        State::kIdentifier,  // Factor::kLetterI
-        State::kIdentifier,  // Factor::kLetterS
-        State::kIdentifier,  // Factor::kLetterT
-        State::kIdentifier,  // Factor::kLetterX
-        State::kWhitespace,  // Factor::kLineFeed
-        State::kTrap,        // Factor::kOtherCharacter
-        State::kIdentifier,  // Factor::kOtherLetter
-        State::kWhitespace,  // Factor::kOtherWhitespace
-        State::kComment1,    // Factor::kTilda
+        State::kNumber,        // Factor::kDigit
+        State::kEndOfProgram,  // Factor::kEndCharacter
+        State::kOperation1,    // Factor::kExclamatory
+        State::kKeyword1,      // Factor::kLetterE
+        State::kIdentifier,    // Factor::kLetterI
+        State::kIdentifier,    // Factor::kLetterS
+        State::kIdentifier,    // Factor::kLetterT
+        State::kIdentifier,    // Factor::kLetterX
+        State::kWhitespace,    // Factor::kLineFeed
+        State::kTrap,          // Factor::kOtherCharacter
+        State::kIdentifier,    // Factor::kOtherLetter
+        State::kWhitespace,    // Factor::kOtherWhitespace
+        State::kComment1,      // Factor::kTilda
     };
 
     table[State::kTrap].fill(State::kTrap);
@@ -141,7 +140,7 @@ class Automata final {
     table[State::kWhitespace][Factor::kOtherWhitespace] = State::kWhitespace;
 
     table[State::kIdentifier] = GetIdentifierTransitions();
-    
+
     table[State::kNumber].fill(State::kTrap);
     table[State::kNumber][Factor::kDigit] = State::kNumber;
 
@@ -175,10 +174,11 @@ class Automata final {
     return table;
   }
 
-  static constexpr std::array<std::size_t, kFactors>
+  static constexpr std::array<State, kFactors>
   GetIdentifierTransitions() noexcept {
     return {
         State::kIdentifier,  // Factor::kDigit
+        State::kTrap,        // Factor::kEndCharacter
         State::kTrap,        // Factor::kExclamatory
         State::kIdentifier,  // Factor::kLetterE
         State::kIdentifier,  // Factor::kLetterI
@@ -193,10 +193,9 @@ class Automata final {
     };
   }
 
-  std::array<bool, kStates> final_states_ = GetFiniteStates();
   std::array<DomainTag, kStates> domain_tags_ = GetDomainTags();
-  std::array<std::size_t, kCharacters> factors_ = GetFactors();
-  std::array<std::array<std::size_t, kFactors>, kStates> transitions_ =
+  std::array<Factor, kCharacters> factors_ = GetFactors();
+  std::array<std::array<State, kFactors>, kStates> transitions_ =
       GetTransitions();
 };
 

@@ -2,64 +2,79 @@
 
 namespace lexer {
 
-std::string_view ToString(const DomainTag tag) noexcept {
+std::ostream& operator<<(std::ostream& os, const DomainTag tag) {
   switch (tag) {
     case DomainTag::kComment: {
-      return "COMMENT";
+      os << "COMMENT";
+      break;
     }
-                              
+
     case DomainTag::kEndOfProgram: {
-      return "END_OF_PROGRAM";
+      os << "END_OF_PROGRAM";
+      break;
     }
 
     case DomainTag::kExclamatory: {
-      return "EXLAMATORY";
+      os << "EXLAMATORY";
+      break;
     }
 
     case DomainTag::kExclamatoryTilda: {
-      return "EXLAMATORY_TILDA";
+      os << "EXLAMATORY_TILDA";
+      break;
     }
 
     case DomainTag::kExist: {
-      return "EXIST";
+      os << "EXIST";
+      break;
     }
 
     case DomainTag::kExit: {
-      return "EXIT";
+      os << "EXIT";
+      break;
     }
 
     case DomainTag::kIdentifier: {
-      return "IDENTIFIER";
+      os << "IDENTIFIER";
+      break;
     }
 
     case DomainTag::kNotFinal: {
-      return "NOT_FINAL";
+      os << "NOT_FINAL";
+      break;
     }
 
     case DomainTag::kNumber: {
-      return "NUMBER";
+      os << "NUMBER";
+      break;
     }
 
     case DomainTag::kWhitespace: {
-      return "WHITESPACE";
-    }
-  }
-}
-
-std::ostream& operator<<(std::ostream& os, const Token* const token) {
-  os << token->get_coords() << " " << ToString(token->get_tag()) << " ";
-
-  switch (token->get_tag()) {
-    using enum DomainTag;
-
-    case kNumber: {
-      const auto number = static_cast<const NumberToken* const>(token);
-      os << number->get_value();
+      os << "WHITESPACE";
       break;
     }
   }
 
   return os;
+}
+
+void OutputToken(std::ostream& os, const Token* const token,
+                 const Compiler& compiler) {
+  os << token->get_coords() << " " << token->get_tag() << " ";
+
+  switch (token->get_tag()) {
+    case DomainTag::kNumber: {
+      const auto number = static_cast<const NumberToken* const>(token);
+      os << number->get_value();
+      break;
+    }
+
+    case DomainTag::kIdentifier: {
+      const auto ident = static_cast<const IdentToken* const>(token);
+      os << compiler.GetName(ident->get_code());
+      break;
+    }
+  }
 }
 
 }  // namespace lexer

@@ -23,6 +23,7 @@ class Compiler final {
 
   void AddMessage(const MessageType type, const Position& p,
                   const std::string& text);
+  void OutputMessages(std::ostream& os) const;
 
  private:
   std::map<Position, Message> messages_;

@@ -1,21 +1,24 @@
 #include "automata.hpp"
 
+#include <cassert>
+#include <iostream>
+
 namespace lexer {
 
-void Automata::Dump(std::ostream& os) const {
-  os << "FINAL STATES:\n";
+Automata::State Automata::At(const Automata::State state,
+                             const unsigned char ch) const {
+  assert(0 <= ch && ch < Automata::kCharacters);
 
-  for (std::size_t i = 0; const auto is_final : final_states_) {
-    os << '\t' << i++ << ": " << std::boolalpha << is_final << '\n';
-  }
+  const auto factor = factors_[ch];
+  return transitions_[state][factor];
+}
 
-  os << "DOMAIN TAGS:\n";
+bool Automata::IsFinal(const State state) const {
+  return (domain_tags_[state] != DomainTag::kNotFinal);
+}
 
-  for (std::size_t i = 0; const auto tag : domain_tags_) {
-    os << '\t' << i++ << ": " << std::boolalpha << ToString(tag) << '\n';
-  }
-
-  // ...
+DomainTag Automata::GetTag(const State state) const {
+  return domain_tags_[state];
 }
 
 }  // namespace lexer

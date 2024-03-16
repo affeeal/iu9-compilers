@@ -3,7 +3,7 @@
 namespace lexer {
 
 char Position::Cp() const noexcept {
-  return (index_ == text_->size() ? kEnd : text_->at(index_));
+  return (index_ == text_->size() ? kEndCharacter : text_->at(index_));
 }
 
 bool Position::IsEnd() const noexcept { return index_ == text_->size(); }

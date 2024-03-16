@@ -24,6 +24,15 @@ void Compiler::AddMessage(const MessageType type, const Position& p,
   messages_[p] = Message(type, text);
 }
 
+void Compiler::OutputMessages(std::ostream& os) const {
+  os << "MESSAGES:\n";
+
+  for (const auto& [position, message] : messages_) {
+    os << '\t' << message.get_type() << " " << position << ": "
+       << message.get_text() << '\n';
+  }
+}
+
 std::unique_ptr<Scanner> GetScanner(
     const std::shared_ptr<Compiler>& compiler,
     const std::shared_ptr<const std::string>& program) noexcept {

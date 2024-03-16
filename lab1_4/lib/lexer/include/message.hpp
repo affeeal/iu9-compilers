@@ -6,17 +6,18 @@
 
 namespace lexer {
 
+const std::string kSyntaxError = "syntax error";
+
 enum class MessageType {
   kError,
-  kOther,
   kWarning,
 };
 
-std::string_view ToString(const MessageType type) noexcept;
+std::ostream& operator<<(std::ostream& os, const MessageType type);
 
 class Message final {
  public:
-  Message() noexcept : type_(MessageType::kOther) {}
+  Message() noexcept : type_(MessageType::kError) {}
   Message(const MessageType type, const std::string& text) noexcept
       : type_(type), text_(text) {}
 
@@ -27,7 +28,5 @@ class Message final {
   MessageType type_;
   std::string text_;
 };
-
-void Print(std::ostream& os, const Message& message, const Position& position);
 
 }  // namespace lexer

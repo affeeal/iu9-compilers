@@ -3,7 +3,7 @@ digraph deterministic {
 
   node [shape=circle]
   S [style=bold]
-  W, I, N, K1, K2, K3, K4, K5, K6, C2, O1, O2 [shape=doublecircle]
+  W, I, N, K1, K2, K3, K4, K5, K6, C2, O1, O2, E [shape=doublecircle]
   W  [xlabel="WHITESPACE"]
   I, K1, K2, K3, K5 [xlabel="IDENTIFIER"]
   N  [xlabel="NUMBER"]
@@ -12,6 +12,7 @@ digraph deterministic {
   C2 [xlabel="COMMENT"]
   O1 [xlabel="EXLAM"]
   O2 [xlabel="EXLAM_TILDA"]
+  E  [xlabel="END_OF_PROGRAM"]
   
   S  -> W  [label="[ \\t\\r\\n]"]
   W  -> W  [label="[ \\t\\r\\n]"]
@@ -49,5 +50,7 @@ digraph deterministic {
   O1 -> O2 [label="~"]
   O1 -> T  [label="[^~]"]
   O2 -> T  [label="."]
-  S  -> T  [label="[^a-zA-Z0-9!~]"]
+  S  -> E  [label="\\x-1"]
+  E  -> T  [label="."]
+  S  -> T  [label="[^a-zA-Z0-9!~\\x-1]"]
 }

@@ -2,24 +2,20 @@
 
 namespace lexer {
 
-std::string_view ToString(const MessageType type) noexcept {
+std::ostream& operator<<(std::ostream& os, const MessageType type) {
   switch (type) {
-    using enum MessageType;
+    case MessageType::kError: {
+      os << "ERROR";
+      break;
+    }
 
-    case kError:
-      return "Error";
-
-    case kOther:
-      return "Other";
-
-    case kWarning:
-      return "Warning";
+    case MessageType::kWarning: {
+      os << "WARNING";
+      break;
+    }
   }
-}
 
-void Print(std::ostream& os, const Message& message, const Position& position) {
-  os << ToString(message.get_type()) << " " << position << ": "
-     << message.get_text();
+  return os;
 }
 
 }  // namespace lexer

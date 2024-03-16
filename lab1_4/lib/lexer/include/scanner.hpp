@@ -1,10 +1,10 @@
 #pragma once
 
+#include <list>
 #include <memory>
 
 #include "compiler.hpp"
-#include "position.hpp"
-#include "token.hpp"
+#include "fragment.hpp"
 
 namespace lexer {
 
@@ -19,11 +19,14 @@ class Scanner final {
         compiler_(std::move(compiler)),
         cur_(program_) {}
 
+  void OutputComments(std::ostream& os) const;
+
   std::unique_ptr<Token> NextToken();
 
  private:
   std::shared_ptr<const std::string> program_;
   std::shared_ptr<Compiler> compiler_;
+  std::list<Fragment> comments_;
   Position cur_;
 };
 

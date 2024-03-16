@@ -30,13 +30,11 @@ int main(int argc, char* argv[]) {
 
   std::cout << "TOKENS:\n";
   for (const auto& token : tokens) {
-    std::cout << '\t' << token << '\n';
-  }
-
-  std::cerr << "MESSAGES:\n";
-  for (const auto& [position, message] : compiler->get_messages()) {
     std::cout << '\t';
-    lexer::Print(std::cout, message, position);
+    OutputToken(std::cout, token.get(), *compiler);
     std::cout << '\n';
   }
+
+  scanner->OutputComments(std::cout);
+  compiler->OutputMessages(std::cout);
 }
