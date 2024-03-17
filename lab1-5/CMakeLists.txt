@@ -5,11 +5,11 @@ find_package(FLEX REQUIRED)
 
 flex_target(scanner
   scanner.l
-  ${CMAKE_CURRENT_BINARY_DIR}/lexer.cc
+  ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp
 )
 
 add_executable(${PROJECT_NAME}
-  lab1-5.cc
+  main.cpp
   ${FLEX_scanner_OUTPUTS}
 )
 

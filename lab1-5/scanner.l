@@ -1,26 +1,58 @@
+%{
+
+#include "scanner.hpp"
+
+#define yyterminate() return lexer::DomainTag::kEndOfProgram
+
+// ...
+
+using lexer::DomainTag;
+
+%}
+
 %option c++
+%option debug
+%option noyywrap
 
-WHITESPACE     [ \t\r\n]
-LETTER         [a-zA-Z]
-CAPITAL_LETTER [A-Z]
-DIGIT          [0-9]
-SUBSTANCE      {CAPITAL_LETTER}{LETTER}*({CAPITAL_LETTER}{LETTER}*|{DIGIT}+)*
-COEFFICIENT    {DIGIT}+
-PLUS           \+
-ARROW          \-\>
+WHITESPACE      [ \t\r\n]
+LETTER          [a-zA-Z]
+CAPITAL_LETTER  [A-Z]
+DIGIT           [0-9]
+SUBSTANCE       {CAPITAL_LETTER}{LETTER}*({CAPITAL_LETTER}{LETTER}*|{DIGIT}+)*
+COEFFICIENT     {DIGIT}+
+PLUS            \+
+ARROW           \-\>
+
+%%
+
+{WHITESPACE}+  /* pass */
+
+{SUBSTANCE}    return DomainTag::kSubstance;
+
+{COEFFICIENT}  return DomainTag::kCoefficient;
+
+{PLUS}         return DomainTag::kPlus;
+
+{ARROW}        return DomainTag::kArrow;
+
+.              /* pass */
 
 %%
 
-{WHITESPACE}+
+namespace lexer {
 
-{SUBSTANCE}   { std::cout << "SUBSTANCE: " << yytext << '\n'; return 1; }
+std::unique_ptr<Scanner> GetScanner(
+    const std::shared_ptr<const std::string>& program,
+    const std::shared_ptr<Compiler>& compiler) noexcept {
+  return std::make_unique<Scanner>(program, compiler);
+}
 
-{COEFFICIENT} { std::cout << "COEFFICIENT: " << yytext << '\n'; return 1; }
+}  // namespace lexer
 
-{PLUS}        { std::cout << "PLUS\n"; return 1; }
+#ifdef yylex
+#undef yylex
+#endif
 
-{ARROW}       { std::cout << "ARROW\n"; return 1; }
-
-.             { std::cerr << "UNKNOWN: " << yytext[0] << '\n'; return 1; }
-
-%%
+int yyFlexLexer::yylex() {
+  return 0;
+}
