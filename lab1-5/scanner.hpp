@@ -1,9 +1,13 @@
 #pragma once
 
+#include <variant>
+
+#include "message.hpp"
+
 #ifndef YY_DECL
-#define YY_DECL                                                    \
-  lexer::DomainTag lexer::Scanner::lex(lexer::Token* const yylval, \
-                                       lexer::Fragment* const yylloc)
+#define YY_DECL                                                  \
+  lexer::DomainTag lexer::Scanner::lex(lexer::Attribute& yylval, \
+                                       lexer::Fragment& yylloc)
 #endif
 
 #ifndef yyFlexLexer
@@ -11,21 +15,25 @@
 #endif
 
 #include "compiler.hpp"
-#include "fragment.hpp"
-#include "position.hpp"
 #include "token.hpp"
 
 namespace lexer {
 
+using Attribute = std::variant<std::uint64_t, std::unique_ptr<std::string>>;
+
 class Scanner : public yyFlexLexer {
  public:
   Scanner(std::shared_ptr<Compiler> compiler, std::istream& is = std::cin,
-          std::ostream& os = std::cout) noexcept
-      : yyFlexLexer(is, os), compiler_(std::move(compiler)) {}
+          std::ostream& os = std::cout);
 
-  DomainTag lex(Token* const yylval, Fragment* const yylloc);
+  DomainTag lex(Attribute& yylval, Fragment& yylloc);
 
  private:
+  void AdjustCoords(Fragment& yylloc) noexcept;
+
+  DomainTag HandleSubstance(Attribute& yylval) const;
+  DomainTag HandleCoefficient(Attribute& yylval) const;
+
   std::shared_ptr<Compiler> compiler_;
   Position cur_;
 };

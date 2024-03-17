@@ -22,9 +22,8 @@ class Token {
   virtual ~Token() {}
 
  protected:
-  Token(const DomainTag tag, const Position& starting,
-        const Position& following) noexcept
-      : tag_(tag), coords_(starting, following) {}
+  Token(const DomainTag tag, const Fragment& coords) noexcept
+      : tag_(tag), coords_(coords) {}
 
   DomainTag tag_;
   Fragment coords_;
@@ -32,9 +31,11 @@ class Token {
 
 class SubstanceToken final : public Token {
  public:
-  SubstanceToken(const std::string& str, const Position& starting,
-                 const Position& following) noexcept
-      : Token(DomainTag::kSubstance, starting, following), str_(str) {}
+  SubstanceToken(const std::string& str, const Fragment& coords) noexcept
+      : Token(DomainTag::kSubstance, coords), str_(str) {}
+
+  SubstanceToken(std::string&& str, const Fragment& coords) noexcept
+      : Token(DomainTag::kSubstance, coords), str_(std::move(str)) {}
 
   const std::string& get_str() const& noexcept { return str_; }
 
@@ -44,9 +45,8 @@ class SubstanceToken final : public Token {
 
 class CoefficientToken final : public Token {
  public:
-  CoefficientToken(const std::int64_t value, const Position& starting,
-                   const Position& following) noexcept
-      : Token(DomainTag::kCoefficient, starting, following), value_(value) {}
+  CoefficientToken(const std::int64_t value, const Fragment& coords) noexcept
+      : Token(DomainTag::kCoefficient, coords), value_(value) {}
 
   std::int64_t get_value() const noexcept { return value_; }
 
@@ -56,9 +56,8 @@ class CoefficientToken final : public Token {
 
 class SpecToken final : public Token {
  public:
-  SpecToken(const DomainTag tag, const Position& starting,
-            const Position& following) noexcept
-      : Token(tag, starting, following) {}
+  SpecToken(const DomainTag tag, const Fragment& coords) noexcept
+      : Token(tag, coords) {}
 };
 
 std::ostream& operator<<(std::ostream& os, const Token& token);

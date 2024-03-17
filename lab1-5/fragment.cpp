@@ -5,7 +5,7 @@
 namespace lexer {
 
 void Fragment::Dump(std::ostream& os) const {
-  os << starting_ << "-" << following_;
+  os << starting << "-" << following;
 }
 
 std::ostream& operator<<(std::ostream& os, const Fragment& fragment) {

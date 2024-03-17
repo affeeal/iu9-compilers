@@ -8,8 +8,10 @@ flex_target(scanner
   ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp
 )
 
+file (GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+
 add_executable(${PROJECT_NAME}
-  main.cpp
+  ${SOURCES}
   ${FLEX_scanner_OUTPUTS}
 )
 
