@@ -6,7 +6,7 @@
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
-    std::cerr << "Usage: lab1_3 <filename>\n";
+    std::cerr << "Usage: lab1-3 <filename>\n";
     return 1;
   }
 
@@ -30,9 +30,7 @@ int main(int argc, char* argv[]) {
 
   std::cout << "TOKENS:\n";
   for (const auto& token : tokens) {
-    std::cout << '\t';
-    lexer::Print(std::cout, *token, *compiler);
-    std::cout << '\n';
+    std::cout << '\t' << token << '\n';
   }
 
   std::cerr << "MESSAGES:\n";

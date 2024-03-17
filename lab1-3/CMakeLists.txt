@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(lab1_3)
+project(lab1-3)
 
 add_subdirectory(lib)
 

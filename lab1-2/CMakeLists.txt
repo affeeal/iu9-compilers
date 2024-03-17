@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(lab1_2)
+project(lab1-2)
 
 find_package(Boost REQUIRED COMPONENTS regex)
 
