@@ -41,11 +41,7 @@ ARROW           \-\>
 
 namespace lexer {
 
-std::unique_ptr<Scanner> GetScanner(
-    const std::shared_ptr<const std::string>& program,
-    const std::shared_ptr<Compiler>& compiler) noexcept {
-  return std::make_unique<Scanner>(program, compiler);
-}
+// ...
 
 }  // namespace lexer
 

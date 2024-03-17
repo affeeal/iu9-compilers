@@ -5,8 +5,8 @@
 #include <memory>
 #include <vector>
 
-#include "scanner.hpp"
 #include "compiler.hpp"
+#include "scanner.hpp"
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
@@ -20,11 +20,9 @@ int main(int argc, char* argv[]) {
     return 1;
   }
 
-  const auto program = std::make_shared<const std::string>(
-      std::istreambuf_iterator<char>(file), std::istreambuf_iterator<char>());
-
   auto compiler = std::make_shared<lexer::Compiler>();
-  auto scanner = lexer::GetScanner(program, compiler);
+  auto scanner = std::make_unique<lexer::Scanner>(compiler, file);
+  scanner->set_debug(true);
 
   std::vector<std::unique_ptr<lexer::Token>> tokens;
 
