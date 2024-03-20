@@ -52,5 +52,5 @@ digraph deterministic {
   O2 -> T  [label="."]
   S  -> E  [label="\\x128"]
   E  -> T  [label="."]
-  S  -> T  [label="[^a-zA-Z0-9!~\\x-1]"]
+  S  -> T  [label="[^a-zA-Z0-9!~\\x128]"]
 }
