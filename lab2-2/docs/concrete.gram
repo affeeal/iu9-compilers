@@ -1,0 +1,50 @@
+// Может ли Tuple быть пустым? (Сейчас не может).
+// Могут ли в Pattern фигурировать целочиселнные контанты? (Сейчас могут).
+// Что может содержать PatternList?
+// Стоит ли объединить ListItems и TupleItems?
+
+Program → Funcs
+Funcs → ε | Funcs Func
+Func → FUNC_NAME FuncType IS FuncBody END
+
+FuncType → Type :: Type
+Type → INT | TypeList | TypeTuple
+TypeList → * Type
+TypeTuple → ( TypeTupleItems )
+TypeTupleItems → Type | TypeTupleItems , Type
+
+FuncBody → Statements
+Statements → Statement | Statements ; Statement
+Statement → Pattern = Expr
+
+Pattern → PatternJoinable | PatternJoinable : Pattern
+PatternJoinable → VAR_NAME | INT_CONST | PatternList | PatternTuple
+
+PatternList → { PatternListContent }
+PatternListContent → ε | PatternListItems
+PatternListItems = PatternListItem | PatternListItems , PatternListItem
+PatternListItem = ???
+
+PatternTuple → ( PatternTupleItems )
+PatternTupleItems → PatternTupleItem | PatternTupleItems , PatternTupleItem
+PatternTupleItem → Pattern
+
+Expr → Joinable | Joinable : Expr
+Joinable → ArithmExpr | List | Tuple
+
+ArithmExpr → Term | ArithmExpr AddOp Term
+AddOp → + | -
+Term → Factor | Term MulOp Factor
+MulOp → * | /
+Factor → VAR_NAME | INT_CONST | [ ArithmExpr ] | FuncCall 
+FuncCall → FUNC_NAME FuncArg
+FuncArg → Joinable | [ Expr ]
+
+List → { ListContent }
+ListContent → ε | ListItems
+ListItems → ListItem | ListItems , ListItem
+ListItem → Expr
+
+Tuple → ( TupleItems )
+TupleItems → TupleItem | TupleItems , TupleItem
+TupeItem → Expr

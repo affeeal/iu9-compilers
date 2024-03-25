@@ -1,0 +1,44 @@
+@ Объединение двух списков
+zip (*int, *int) :: *(int, int) is
+  (x : xs, y : ys) = (x, y) : zip (xs, ys);
+  (xs, ys) = {}
+end
+
+@ Декартово произведение
+cart_prod (*int, *int) :: *(int, int) is
+  (x : xs, ys) = append (bind (x, ys), cart_prod(xs, ys));
+  ({}, ys) = {}
+end
+
+bind (int, *int) :: *(int, int) is
+  (x, {}) = {};
+  (x, y : ys) = (x, y) : bind (x, ys)
+end
+
+@ Конкатенация списков пар
+append (*(int, int), *(int, int)) :: *(int, int) is
+  (x : xs, ys) = x : append (xs, ys);
+  ({}, ys) = ys
+end
+
+@ Расплющивание вложенного списка
+flat **int :: *int is
+  (x : xs) : xss = x : flat [xs : xss];
+  {} : xss = flat xss;
+  {} = {}
+end
+
+@ Сумма элементов списка
+sum *int :: int is
+  x : xs = x + sum xs;
+  {} = 0
+end
+
+@ Вычисление полинома по схеме Горнера
+polynom (int, *int) :: int is
+  (x, {}) = 0;
+  (x, coef : coefs) = polynom (x, coefs) * x + coef
+end
+
+@ Вычисление полинома x³+x²+x+1
+polynom1111 int :: int is x = polynom (x, {1, 1, 1, 1}) end
