@@ -1,6 +1,7 @@
 build
 prd
 prr
+__pycache__
 .cache
 *.aux
 *.log
