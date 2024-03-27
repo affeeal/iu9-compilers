@@ -30,70 +30,63 @@ class ListType(Type):
     types: list[Type]
 
 
-class PatternUnit(abc.ABC):
+class Pattern(abc.ABC):
     pass
 
 
 @dataclass
-class Pattern:
-    pattern_units: list[PatternUnit]
+class PatternBinary(Pattern):
+    lhs: Pattern
+    op: str
+    rhs: Pattern
 
 
 @dataclass
-class PatternList(PatternUnit):
+class PatternList(Pattern):
     patterns: list[Pattern]
 
 
 @dataclass
-class PatternTuple(PatternUnit):
+class PatternTuple(Pattern):
     patterns: list[Pattern]
 
 
-class ResultUnit(abc.ABC):
+class Result(abc.ABC):
     pass
 
 
 @dataclass
-class Result:
-    result_units: list[ResultUnit]
+class ResultBinary(Result):
+    lhs: Result
+    op: str
+    rhs: Result
 
 
 @dataclass
-class ResultList(ResultUnit):
+class ResultList(Result):
     results: list[Result]
 
 
 @dataclass
-class ResultTuple(ResultUnit):
+class ResultTuple(Result):
     results: list[Result]
 
 
-class Expr(ResultUnit, abc.ABC):
-    pass
-
-
 @dataclass
-class VarExpr(Expr, PatternUnit):
+class VarExpr(Pattern, Result):
     varname: str
 
 
 @dataclass
-class ConstExpr(Expr, PatternUnit):
+class ConstExpr(Pattern, Result):
     value: typing.Any
     type_: TypeEnum
 
 
 @dataclass
-class FuncCallExpr(Expr):
+class FuncCallExpr(Result):
     funcname: str
     argument: Result
-
-
-@dataclass
-class BinaryExpr(Expr):
-    lhs: Expr
-    op: str
-    rhs: Expr
 
 
 @dataclass
@@ -140,8 +133,8 @@ NTupleTypeItems, NStatements, NStatement = \
 NPattern, NPatternUnit, NConst, NPatternList = \
     map(pe.NonTerminal, ['Pattern', 'PatternUnit', 'Const', 'PatternList'])
 
-NPatternListContent, NPatternListItems = \
-    map(pe.NonTerminal, ['PatternListContent', 'PatternListItems'])
+NConsOp, NPatternListContent, NPatternListItems = \
+    map(pe.NonTerminal, ['ConsOp', 'PatternListContent', 'PatternListItems'])
 
 NPatternListItem, NPatternTuple = \
     map(pe.NonTerminal, ['PatternListItem', 'PatternTuple'])
@@ -197,8 +190,10 @@ NStatements |= NStatements, ';', NStatement, lambda ss, s: ss + [s]
 
 NStatement |= NPattern, '=', NResult, Statement
 
-NPattern |= NPatternUnit, lambda pu: [pu]
-NPattern |= NPatternUnit, ':', NPattern, lambda pu, p: [pu] + p
+NPattern |= NPatternUnit
+NPattern |= NPatternUnit, NConsOp, NPattern, PatternBinary
+
+NConsOp |= ':', lambda: ':'
 
 NPatternUnit |= IDENT, VarExpr
 NPatternUnit |= NConst
@@ -230,21 +225,21 @@ NPatternTupleItems |= NPatternTupleItems, ',', NPatternTupleItem, \
 
 NPatternTupleItem |= NPattern
 
-NResult |= NResultUnit, lambda ru: [ru]
-NResult |= NResultUnit, ':', NResult, lambda ru, r: [ru] + r
+NResult |= NResultUnit
+NResult |= NResultUnit, NConsOp, NResult, ResultBinary
 
 NResultUnit |= NExpr
 NResultUnit |= NResultList,
 NResultUnit |= NResultTuple,
 
 NExpr |= NTerm
-NExpr |= NExpr, NAddOp, NTerm, BinaryExpr
+NExpr |= NExpr, NAddOp, NTerm, ResultBinary
 
 NAddOp |= '+', lambda: '+'
 NAddOp |= '-', lambda: '-'
 
 NTerm |= NFactor
-NTerm |= NTerm, NMulOp, NFactor, BinaryExpr
+NTerm |= NTerm, NMulOp, NFactor, ResultBinary
 
 NMulOp |= '*', lambda: '*'
 NMulOp |= '/', lambda: '/'
@@ -256,8 +251,13 @@ NFactor |= NFuncCall
 
 NFuncCall |= IDENT, NFuncArg, FuncCallExpr
 
+# TODO: fix this place in grammars
 NFuncArg |= '[', NResult, ']'
-NFuncArg |= NResultUnit
+NFuncArg |= IDENT, VarExpr
+NFuncArg |= NConst
+NFuncArg |= NResultList
+NFuncArg |= NResultTuple
+NFuncArg |= NFuncCall
 
 NResultList |= '{', NResultListContent, '}', ResultList
 
@@ -283,8 +283,7 @@ NResultTupleItem |= NResult
 
 if __name__ == "__main__":
     p = pe.Parser(NProgram)
-    # TODO: разобраться, почему не проходит. Проблема в определении NFuncArg
-    # assert p.is_lalr_one()
+    assert p.is_lalr_one()
 
     p.add_skipped_domain('\\s')
     p.add_skipped_domain('@[^\\n]*')

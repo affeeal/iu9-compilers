@@ -23,7 +23,7 @@ end
 
 @ Расплющивание вложенного списка
 flat **int :: *int is
-  (x : xs) : xss = x : flat [xs : xss];
+  [x : xs] : xss = x : flat [xs : xss];
   {} : xss = flat xss;
   {} = {}
 end
