@@ -96,19 +96,21 @@ class Statement:
 
 
 @dataclass
-class Func:
-    funcname: str
+class FuncType:
     input_: Type
     output: Type
+
+
+@dataclass
+class Func:
+    name: str
+    type_: FuncType
     body: list[Statement]
 
 
 @dataclass
 class Program:
     funcs: list[Func]
-
-
-# Лексическая структура и грамматика
 
 
 IDENT = pe.Terminal('IDENT', '[A-Za-z_][A-Za-z_0-9]*', str)
@@ -121,45 +123,57 @@ def make_keyword(image):
 
 KW_IS, KW_END, KW_INT = map(make_keyword, ['is', 'end', 'int'])
 
-NProgram, NFuncs, NFunc, NType, NElementaryType = \
-    map(pe.NonTerminal, ['Program', 'Funcs', 'Func', 'Type', 'ElementaryType'])
+NProgram = pe.NonTerminal('Program')
+NFuncs = pe.NonTerminal('Funcs')
+NFunc = pe.NonTerminal('Func')
 
-NListType, NTupleType, NTupleTypeContent = \
-    map(pe.NonTerminal, ['ListType', 'TupleType', 'TupleTypeContent'])
+NFuncType = pe.NonTerminal('FuncType')
+NType = pe.NonTerminal('Type')
+NElementaryType = pe.NonTerminal('ElementaryType')
+NListType = pe.NonTerminal('ListType')
+NTupleType = pe.NonTerminal('TupleType')
+NTupleTypeContent = pe.NonTerminal('TupleTypeContent')
+NTupleTypeItems = pe.NonTerminal('TupleTypeContent')
 
-NTupleTypeItems, NStatements, NStatement = \
-    map(pe.NonTerminal, ['TupleTypeItems', 'Statements', 'Statement'])
+NFuncBody = pe.NonTerminal('FuncBody')
+NStatements = pe.NonTerminal('Statements')
+NStatement = pe.NonTerminal('Statement')
 
-NPattern, NPatternUnit, NConst, NPatternList = \
-    map(pe.NonTerminal, ['Pattern', 'PatternUnit', 'Const', 'PatternList'])
+NPattern = pe.NonTerminal('Pattern')
+NConsOp = pe.NonTerminal('ConsOp')
+NPatternUnit = pe.NonTerminal('PatternUnit')
+NConst = pe.NonTerminal('Const')
 
-NConsOp, NPatternListContent, NPatternListItems = \
-    map(pe.NonTerminal, ['ConsOp', 'PatternListContent', 'PatternListItems'])
+NPatternList = pe.NonTerminal('PatternList')
+NPatternListContent = pe.NonTerminal('PatternListContent')
+NPatternListItems = pe.NonTerminal('PatternListItems')
+NPatternListItem = pe.NonTerminal('PatternListItem')
 
-NPatternListItem, NPatternTuple = \
-    map(pe.NonTerminal, ['PatternListItem', 'PatternTuple'])
+NPatternTuple = pe.NonTerminal('PatternTuple')
+NPatternTupleContent = pe.NonTerminal('PatternTupleContent')
+NPatternTupleItems = pe.NonTerminal('PatternTupleItems')
+NPatternTupleItem = pe.NonTerminal('PatternTupleItem')
 
-NPatternTupleContent, NPatternTupleItems = \
-    map(pe.NonTerminal, ['PatternTupleContent', 'PatternTupleItems'])
+NResult = pe.NonTerminal('Result')
+NResultUnit = pe.NonTerminal('ResultUnit')
 
-NPatternTupleItem, NResult, NResultUnit = \
-    map(pe.NonTerminal, ['PatternTupleItem', 'Result', 'ResultUnit'])
+NExpr = pe.NonTerminal('Expr')
+NAddOp = pe.NonTerminal('AddOp')
+NTerm = pe.NonTerminal('Term')
+NMulOp = pe.NonTerminal('MulOp')
+NFactor = pe.NonTerminal('Factor')
+NAtom = pe.NonTerminal('Atom')
+NFuncCall = pe.NonTerminal('FuncCall')
+NFuncArg = pe.NonTerminal('FuncArg')
 
-NExpr, NAddOp, NTerm, NMulOp, NFactor = \
-    map(pe.NonTerminal, ['Expr', 'AddOp', 'Term', 'MulOp', 'Factor'])
+NResultList = pe.NonTerminal('ResultList')
+NResultListContent = pe.NonTerminal('ResultListContent')
+NResultListItems = pe.NonTerminal('ResultListItems')
+NResultListItem = pe.NonTerminal('ResultListItem')
 
-NFuncCall, NFuncArg, NResultList = \
-    map(pe.NonTerminal, ['FuncCall', 'FuncArg', 'ResultList'])
-
-NResultListContent, NResultListItems = \
-    map(pe.NonTerminal, ['ResultListContent', 'ResultListItems'])
-
-NResultListItem, NResultTuple = \
-    map(pe.NonTerminal, ['ResultListItem', 'ResultTuple'])
-
-NResultTupleContent, NResultTupleItems = \
-    map(pe.NonTerminal, ['ResultTupleContent', 'ResultTupleItems'])
-
+NResultTuple = pe.NonTerminal('ResultTuple')
+NResultTupleContent = pe.NonTerminal('ResultTupleContent')
+NResultTupleItems = pe.NonTerminal('ResultTupleItems')
 NResultTupleItem = pe.NonTerminal('ResultTupleItem')
 
 NProgram |= NFuncs, Program
@@ -167,7 +181,9 @@ NProgram |= NFuncs, Program
 NFuncs |= lambda: []
 NFuncs |= NFuncs, NFunc, lambda fs, f: fs + [f]
 
-NFunc |= IDENT, NType, '::', NType, KW_IS, NStatements, KW_END, Func
+NFunc |= IDENT, NFuncType, KW_IS, NFuncBody, KW_END, Func
+
+NFuncType |= NType, '::', NType, FuncType
 
 NType |= NElementaryType
 NType |= NListType
@@ -184,6 +200,8 @@ NTupleTypeContent |= NTupleTypeItems
 
 NTupleTypeItems |= NType, lambda t: [t]
 NTupleTypeItems |= NTupleTypeItems, ',', NType, lambda ts, t: ts + [t]
+
+NFuncBody |= NStatements
 
 NStatements |= NStatement, lambda s: [s]
 NStatements |= NStatements, ';', NStatement, lambda ss, s: ss + [s]
@@ -244,20 +262,19 @@ NTerm |= NTerm, NMulOp, NFactor, ResultBinary
 NMulOp |= '*', lambda: '*'
 NMulOp |= '/', lambda: '/'
 
-NFactor |= IDENT, VarExpr
-NFactor |= NConst
+NFactor |= NAtom
 NFactor |= '[', NExpr, ']'
-NFactor |= NFuncCall
+
+NAtom |= IDENT, VarExpr
+NAtom |= NConst
+NAtom |= NFuncCall
 
 NFuncCall |= IDENT, NFuncArg, FuncCallExpr
 
-# TODO: fix this place in grammars
-NFuncArg |= '[', NResult, ']'
-NFuncArg |= IDENT, VarExpr
-NFuncArg |= NConst
+NFuncArg |= NAtom
 NFuncArg |= NResultList
 NFuncArg |= NResultTuple
-NFuncArg |= NFuncCall
+NFuncArg |= '[', NResult, ']'
 
 NResultList |= '{', NResultListContent, '}', ResultList
 

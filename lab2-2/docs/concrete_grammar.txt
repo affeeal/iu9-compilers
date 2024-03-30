@@ -1,7 +1,8 @@
 Program → Funcs
 Funcs → ε | Funcs Func
-Func → IDENT Type :: Type IS Statements END
+Func → IDENT FuncType IS FuncBody END
 
+FuncType → Type :: Type
 Type → ElementaryType | ListType | TupleType
 ElementaryType → INT
 ListType → * Type
@@ -9,6 +10,7 @@ TupleType → ( TupleTypeContent )
 TupleTypeContent → ε | TupleTypeItems
 TupleTypeItems → Type | TupleTypeItems , Type
 
+FuncBody → Statements
 Statements → Statement | Statements ; Statement
 Statement → Pattern = Result
 
@@ -27,16 +29,17 @@ PatternTupleContent → ε | PatternTupleItems
 PatternTupleItems → PatternTupleItem | PatternTupleItems , PatternTupleItem
 PatternTupleItem → Pattern
 
-Result → ResultUnit | ResultUnit : Result
+Result → ResultUnit | ResultUnit ConsOp Result
 ResultUnit → Expr | ResultList | ResultTuple
 
 Expr → Term | Expr AddOp Term
 AddOp → + | -
 Term → Factor | Term MulOp Factor
 MulOp → * | /
-Factor → IDENT | Const | [ Expr ] | FuncCall 
+Factor → Atom | [ Expr ]
+Atom → IDENT | Const | FuncCall 
 FuncCall → IDENT FuncArg
-FuncArg → ResultUnit | [ Result ]
+FuncArg → Atom | ResultList | ResultTuple | [ Result ]
 
 ResultList → { ResultListContent }
 ResultListContent → ε | ResultListItems

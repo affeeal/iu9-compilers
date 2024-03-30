@@ -1,7 +1,8 @@
 Program → Funcs
 Funcs → ε | Funcs Func
-Func → IDENT Type :: Type IS Statements END
+Func → IDENT FuncType IS FuncBody END
 
+FuncType → Type :: Type
 Type → ElementaryType | ListType | TupleType
 ElementaryType → INT
 ListType → * Type
@@ -9,6 +10,7 @@ TupleType → ( TupleTypeContent )
 TupleTypeContent → ε | TupleTypeItems
 TupleTypeItems → Type | TupleTypeItems , Type
 
+FuncBody → Statements
 Statements → Statement | Statements ; Statement
 Statement → Pattern = Result
 
@@ -40,7 +42,7 @@ Result → IDENT
        | Result ResultBinaryOp Result
 ResultBinaryOp → : | + | - | * | /
 FuncCall → IDENT FuncArg
-FuncArg → ResultUnit | [ Result ]
+FuncArg → Result
 
 ResultList → { ResultListContent }
 ResultListContent → ε | ResultListItems
