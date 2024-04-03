@@ -1,5 +1,9 @@
-PLUS ::= '+'
-STAR ::= '*'
-IDEN ::= 'n'
-LPAR ::= '('
-RPAR ::= ')'
+WHITESPACE  ::= [ \t\n\r]+
+COMMENT     ::= #[^\n]*
+NONTERMINAL ::= [a-zA-Z][a-zA-Z0-9]*
+TERMINAL    ::= "[^"]"
+OP_ARROW    ::= ->
+KW_AXIOM    ::= 'axiom
+KW_EPSILON  ::= 'epsilon
+KW_OR       ::= 'or
+KW_END      ::= 'end

@@ -5,21 +5,26 @@
 namespace lexer {
 
 enum class DomainTag {
-  kN,
-  kPlus,
-  kStar,
-  kLparen,
-  kRparen,
+  kNonTerminal,
+  kTerminal,
+  kOpArrow,
+  kKwAxiom,
+  kKwEpsilon,
+  kKwOr,
+  kKwEnd,
   kEndOfProgram,
 };
 
 std::ostream& operator<<(std::ostream& os, const DomainTag tag);
 
-struct Token {
+class Token {
+ public:
+  virtual ~Token() {}
+
+  virtual void DumpAttr(std::ostream& os) const = 0;
+
   DomainTag get_tag() const noexcept { return tag_; }
   const Fragment& get_coords() const& noexcept { return coords_; }
-
-  virtual ~Token() {}
 
  protected:
   Token(const DomainTag tag, const Fragment& coords) noexcept
@@ -29,9 +34,39 @@ struct Token {
   Fragment coords_;
 };
 
-struct SpecToken final : Token {
+class NonTerminalToken final : public Token {
+  std::string str_;
+
+ public:
+  template <typename String>
+  NonTerminalToken(String&& str, const Fragment& coords) noexcept
+      : Token(DomainTag::kNonTerminal, coords),
+        str_(std::forward<String>(str)) {}
+
+  const std::string& get_str() const& noexcept { return str_; }
+
+  void DumpAttr(std::ostream& os) const override { os << str_; }
+};
+
+class TerminalToken final : public Token {
+  std::string str_;
+
+ public:
+  template <typename String>
+  TerminalToken(String&& str, const Fragment& coords) noexcept
+      : Token(DomainTag::kTerminal, coords), str_(std::forward<String>(str)) {}
+
+  const std::string& get_str() const& noexcept { return str_; }
+
+  void DumpAttr(std::ostream& os) const override { os << str_; }
+};
+
+class SpecToken final : public Token {
+ public:
   SpecToken(const DomainTag tag, const Fragment& coords) noexcept
       : Token(tag, coords) {}
+
+  void DumpAttr(std::ostream& os) const override {}
 };
 
 std::ostream& operator<<(std::ostream& os, const Token& token);

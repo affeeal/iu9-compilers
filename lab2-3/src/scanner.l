@@ -3,7 +3,7 @@
 
 #define yyterminate() return lexer::DomainTag::kEndOfProgram
 
-#define YY_USER_ACTION AdjustCoords(yylloc);
+#define YY_USER_ACTION AdjustCoords(coords);
 
 using lexer::DomainTag;
 using lexer::MessageType;
@@ -14,33 +14,35 @@ using lexer::MessageType;
 %option noyywrap
 
 WHITESPACE  [ \t\r\n]
-N           n
-PLUS        \+
-STAR        \*
-LPAREN      \(
-RPAREN      \)
+COMMENT     #[^\n]*
+NONTERMINAL [A-Za-z][A-Za-z0-9]*
+TERMINAL    \"[^"]\"
+OP_ARROW    \-\>
+KW_AXIOM    'axiom
+KW_EPSILON  'epsilon
+KW_OR       'or
+KW_END      'end
 
 %%
 
 {WHITESPACE}+  /* pass */
-{N}            { return DomainTag::kN; }
-{PLUS}         { return DomainTag::kPlus; }
-{STAR}         { return DomainTag::kStar; }
-{LPAREN}       { return DomainTag::kLparen; }
-{RPAREN}       { return DomainTag::kRparen; }
-.              { compiler_->AddMessage(MessageType::kError, yylloc.starting,
+{NONTERMINAL}  { return HandleNonTerminal(attr); }
+{TERMINAL}     { return HandleTerminal(attr); }
+{OP_ARROW}     { return DomainTag::kOpArrow; }
+{KW_AXIOM}     { return DomainTag::kKwAxiom; }
+{KW_EPSILON}   { return DomainTag::kKwEpsilon; }
+{KW_OR}        { return DomainTag::kKwOr; }
+{KW_END}       { return DomainTag::kKwEnd; }
+{COMMENT}      { comments_.emplace_back(coords.starting, coords.following); }
+.              { compiler_->AddMessage(MessageType::kError, coords.starting,
                                        "unexpected character"); }
 
 %%
 
 namespace lexer {
 
-Scanner::Scanner(std::shared_ptr<Compiler> compiler, std::istream& is,
-                 std::ostream& os)
-    : yyFlexLexer(is, os), compiler_(std::move(compiler)) {}
-
-void Scanner::AdjustCoords(Fragment& yylloc) noexcept {
-  yylloc.starting = cur_;
+void Scanner::AdjustCoords(Fragment& coords) noexcept {
+  coords.starting = cur_;
 
   for (std::size_t i = 0; i < yyleng; ++i) {
     if (yytext[i] == '\n') {
@@ -53,14 +55,20 @@ void Scanner::AdjustCoords(Fragment& yylloc) noexcept {
     ++cur_.index;
   }
 
-  yylloc.following = cur_;
+  coords.following = cur_;
+}
+
+DomainTag Scanner::HandleNonTerminal(Attribute& attr) const {
+  attr = std::make_unique<std::string>(yytext);
+  return DomainTag::kNonTerminal;
+}
+
+DomainTag Scanner::HandleTerminal(Attribute& attr) const {
+  attr = std::make_unique<std::string>(yytext + 1, yyleng - 2);
+  return DomainTag::kTerminal;
 }
 
 }  // namespace lexer
-
-#ifdef yylex
-#undef yylex
-#endif
 
 int yyFlexLexer::yylex() {
   return 0;

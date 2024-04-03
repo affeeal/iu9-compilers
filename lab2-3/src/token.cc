@@ -6,28 +6,38 @@ namespace lexer {
 
 std::ostream& operator<<(std::ostream& os, const DomainTag tag) {
   switch (tag) {
-    case DomainTag::kN: {
-      os << "N";
+    case DomainTag::kNonTerminal: {
+      os << "NONTERMINAL";
       break;
     }
 
-    case DomainTag::kPlus: {
-      os << "PLUS";
+    case DomainTag::kTerminal: {
+      os << "TERMINAL";
       break;
     }
 
-    case DomainTag::kStar: {
-      os << "STAR";
+    case DomainTag::kOpArrow: {
+      os << "OP_ARROW";
       break;
     }
 
-    case DomainTag::kLparen: {
-      os << "LPAREN";
+    case DomainTag::kKwAxiom: {
+      os << "KW_AXIOM";
       break;
     }
 
-    case DomainTag::kRparen: {
-      os << "RPAREN";
+    case DomainTag::kKwEpsilon: {
+      os << "KW_EPSILON";
+      break;
+    }
+
+    case DomainTag::kKwOr: {
+      os << "KW_OR";
+      break;
+    }
+
+    case DomainTag::kKwEnd: {
+      os << "KW_END";
       break;
     }
 
@@ -41,7 +51,8 @@ std::ostream& operator<<(std::ostream& os, const DomainTag tag) {
 }
 
 std::ostream& operator<<(std::ostream& os, const Token& token) {
-  os << token.get_coords() << " " << token.get_tag();
+  os << token.get_coords() << " " << token.get_tag() << ": ";
+  token.DumpAttr(os);
 
   return os;
 }
