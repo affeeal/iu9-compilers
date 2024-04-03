@@ -1,5 +1,5 @@
 %{
-#include "scanner.hpp"
+#include "scanner.h"
 
 #define yyterminate() return lexer::DomainTag::kEndOfProgram
 

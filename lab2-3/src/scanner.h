@@ -8,9 +8,9 @@
 #include <FlexLexer.h>
 #endif
 
-#include "compiler.hpp"
-#include "message.hpp"
-#include "token.hpp"
+#include "compiler.h"
+#include "message.h"
+#include "token.h"
 
 namespace lexer {
 

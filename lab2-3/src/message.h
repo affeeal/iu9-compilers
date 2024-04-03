@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "position.hpp"
+#include "position.h"
 
 namespace lexer {
 

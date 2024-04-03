@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include "scanner.hpp"
+#include "scanner.h"
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {

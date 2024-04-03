@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.22.1)
-project(lab1-5)
+project(lab2-3)
 
 find_package(FLEX REQUIRED)
 
 flex_target(scanner
   scanner.l
-  ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp
+  ${CMAKE_CURRENT_BINARY_DIR}/scanner.cc
 )
 
-file (GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
+file (GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
 
 add_executable(${PROJECT_NAME}
   ${SOURCES}

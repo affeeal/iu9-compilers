@@ -2,7 +2,7 @@
 
 #include <map>
 
-#include "message.hpp"
+#include "message.h"
 
 namespace lexer {
 

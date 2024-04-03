@@ -1,6 +1,6 @@
 #pragma once
 
-#include "position.hpp"
+#include "position.h"
 
 namespace lexer {
 
