@@ -1,23 +1,11 @@
-       |NONTERMINAL             |TERMINAL    |OP_ARROW|KW_AXIOM                |
-Program|Rules                   |            |        |Rules                   |
-Rules  |Rule Rules              |            |        |Rule Rules              |
-Rule   |RuleLHS OP_ARROW RuleRHS|            |        |RuleLHS OP_ARROW RuleRHS|
-RuleLHS|NONTERMINAL             |            |        |KW_AXIOM NONTERMINAL    |
-RuleRHS|Expr KW_END             |Expr KW_END |        |                        |
-Expr   |Term Expr1              |Term Expr1  |        |                        |
-Expr1  |                        |            |        |                        |
-Term   |Factor Term1            |Factor Term1|        |                        |
-Term1  |Factor Term1            |Factor Term1|        |                        |
-Factor |NONTERMINAL             |TERMINAL    |        |                        |
-
-       |KW_EPSILON  |KW_OR           |KW_END|$    |
-Program|            |                |      |Rules|
-Rules  |            |                |      |ε    |
-Rule   |            |                |      |     |
-RuleLHS|            |                |      |     |
-RuleRHS|Expr KW_END |                |      |     |
-Expr   |Term Expr1  |                |      |     |
-Expr1  |            |KW_OR Term Expr1|ε     |     |
-Term   |Factor Term1|                |      |     |
-Term1  |Factor Term1|ε               |ε     |     |
-Factor |KW_EPSILON  |                |      |     |
+       |NONTERMINAL             |TERMINAL    |OP_ARROW|KW_AXIOM                |KW_EPSILON  |KW_OR           |KW_END|$    |
+Program|Rules                   |            |        |Rules                   |            |                |      |Rules|
+Rules  |Rule Rules              |            |        |Rule Rules              |            |                |      |ε    |
+Rule   |RuleLHS OP_ARROW RuleRHS|            |        |RuleLHS OP_ARROW RuleRHS|            |                |      |     |
+RuleLHS|NONTERMINAL             |            |        |KW_AXIOM NONTERMINAL    |            |                |      |     |
+RuleRHS|Expr KW_END             |Expr KW_END |        |                        |Expr KW_END |                |      |     |
+Expr   |Term Expr1              |Term Expr1  |        |                        |Term Expr1  |                |      |     |
+Expr1  |                        |            |        |                        |            |KW_OR Term Expr1|ε     |     |
+Term   |Factor Term1            |Factor Term1|        |                        |Factor Term1|                |      |     |
+Term1  |Factor Term1            |Factor Term1|        |                        |Factor Term1|ε               |ε     |     |
+Factor |NONTERMINAL             |TERMINAL    |        |                        |KW_EPSILON  |                |      |     |
