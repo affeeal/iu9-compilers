@@ -1,0 +1,18 @@
+FIRST(Program) = FIRST(Rules) = {ε} ∪ FIRST(Rule) = {ε, KW_AXIOM, NONTERMINAL}
+FIRST(Rule) = FIRST(RuleLHS) = {KW_AXIOM, NONTERMINAL}
+FIRST(RuleRHS) = FIRST(Expr) = FIRST(Term) = FIRST(Factor) = {TERMINAL,
+  NONTERMINAL, KW_EPSILON}
+FIRST(Expr1) = {KW_OR, ε}
+FIRST(Term1) = {TERMINAL, NONTERMINAL, KW_EPSILON, ε}
+
+FOLLOW(Program) = {$}
+FOLLOW(Rules) = FOLLOW(Program) = {$}
+FOLLOW(Rule) = FIRST(Rules) / {ε} ∪ FOLLOW(Rules) = {KW_AXIOM, NONTERMINAL, $}
+FOLLOW(RuleLHS) = {OP_ARROW}
+FOLLOW(RuleRHS) = FOLLOW(Rule) = {KW_AXIOM, NONTERMINAL, $}
+FOLLOW(Expr) = {KW_END}
+FOLLOW(Expr1) = FOLLOW(Expr) = {KW_END}
+FOLLOW(Term) = FOLLOW(Expr) ∪ FIRST(Expr1) / {ε} = {KW_END, KW_OR}
+FOLLOW(Term1) = FOLLOW(Term) = {KW_END, KW_OR}
+FOLLOW(Factor) = FOLLOW(Term) ∪ FIRST(Term1) / {ε} = {KW_END, KW_OR, TERMINAL,
+  NONTERMINAL, KW_EPSILON}
