@@ -8,9 +8,8 @@ namespace lexer {
 
 class Compiler final {
  public:
-  const std::map<Position, Message>& get_messages() const& noexcept {
-    return messages_;
-  }
+  auto MessagesCbegin() const& noexcept { return messages_.cbegin(); }
+  auto MessagesCend() const& noexcept { return messages_.cend(); }
 
   void AddMessage(const MessageType type, const Position& p,
                   const std::string& text);

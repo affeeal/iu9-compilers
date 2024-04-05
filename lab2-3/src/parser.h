@@ -25,26 +25,30 @@ class SententionalForm final {
 
 class AnalyzerTable final {
  public:
-  using Key = std::pair<NonTerminal, lexer::DomainTag>;
-  using SFRef = std::reference_wrapper<const SententionalForm>;
-  using Data = std::unordered_map<Key, SFRef, boost::hash<Key>>;
-
   static const AnalyzerTable& Instance();
 
   AnalyzerTable(const AnalyzerTable&) = delete;
   AnalyzerTable& operator=(const AnalyzerTable&) = delete;
 
-  auto Find(const NonTerminal nt, const lexer::DomainTag t) const&;
-  auto Cend() const& noexcept;
+  auto Find(const NonTerminal non_terminal, const lexer::DomainTag tag) const&;
+  auto Cend() const& noexcept { return um_.cend(); }
 
  private:
+  using Key = std::pair<NonTerminal, lexer::DomainTag>;
+  using SententionalFormRef = std::reference_wrapper<const SententionalForm>;
+
   AnalyzerTable();
 
   std::vector<SententionalForm> sfs_;
-  Data data_;
+  std::unordered_map<Key, SententionalFormRef, boost::hash<Key>> um_;
 };
 
-std::unique_ptr<Node> TopDownParse(lexer::Scanner& scanner,
-                                   const AnalyzerTable& table);
+class Parser final {
+ public:
+  std::unique_ptr<Node> TopDownParse(lexer::IScanner& scanner);
+
+ private:
+  const AnalyzerTable& table_ = AnalyzerTable::Instance();
+};
 
 }  // namespace parser

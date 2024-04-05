@@ -83,4 +83,9 @@ void LeafNode::Output(std::ostream& os, const std::string& indent) const {
   os << "\n";
 }
 
+Node& InnerNode::AddChild(std::unique_ptr<Node>&& node) {
+  children_.push_back(std::move(node));
+  return *children_.back();
+}
+
 }  // namespace parser

@@ -1,13 +1,10 @@
-#include <FlexLexer.h>
-
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <vector>
+#include <stdexcept>
 
+#include "parser.h"
 #include "scanner.h"
-#include "table.h"
-#include "token.h"
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
@@ -22,9 +19,14 @@ int main(int argc, char* argv[]) {
   }
 
   auto compiler = std::make_shared<lexer::Compiler>();
-  auto scanner = std::make_unique<lexer::Scanner>(compiler, file);
+  auto scanner = lexer::Scanner(compiler, file);
+  auto parser = parser::Parser();
 
-  const auto root =
-      parser::TopDownParse(*scanner, parser::AnalyzerTable::Instance());
-  root->Output();
+  try {
+    const auto root = parser.TopDownParse(scanner);
+    root->Output();
+  } catch (const std::runtime_error& e) {
+    std::cerr << e.what() << std::endl;
+    return 1;
+  }
 }

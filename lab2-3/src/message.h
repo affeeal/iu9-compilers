@@ -17,4 +17,6 @@ struct Message final {
   std::string text;
 };
 
+std::ostream& operator<<(std::ostream& os, const Message& message);
+
 }  // namespace lexer

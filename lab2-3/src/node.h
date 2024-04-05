@@ -39,10 +39,10 @@ class InnerNode final : public Node {
   InnerNode(const NonTerminal non_terminal) noexcept
       : non_terminal_(non_terminal) {}
 
-  Node& AddChild(std::unique_ptr<Node>&& node) {
-    children_.push_back(std::move(node));
-    return *children_.back();
-  }
+  std::vector<std::unique_ptr<Node>>& Children() noexcept { return children_; }
+  NonTerminal non_terminal() const noexcept { return non_terminal_; }
+
+  Node& AddChild(std::unique_ptr<Node>&& node);
 
   void Output(std::ostream& os, const std::string& indent) const override;
 

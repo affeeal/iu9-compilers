@@ -1,10 +1,6 @@
-#include "table.h"
+#include "parser.h"
 
-#include <concepts>
-#include <functional>
-#include <sstream>
 #include <stack>
-#include <stdexcept>
 
 #include "node.h"
 #include "token.h"
@@ -27,12 +23,12 @@ void ThrowParseError(const lexer::Token& token, T&& t) {
 
 }  // namespace
 
-using lexer::DomainTag;
-
 const AnalyzerTable& AnalyzerTable::Instance() {
   static AnalyzerTable table{};
   return table;
 }
+
+using lexer::DomainTag;
 
 AnalyzerTable::AnalyzerTable()
     : sfs_({
@@ -50,7 +46,7 @@ AnalyzerTable::AnalyzerTable()
           {DomainTag::kTerminal},                                       // 10
           {DomainTag::kKwEpsilon},                                      // 11
       }),
-      data_({
+      um_({
           {{NonTerminal::kProgram, DomainTag::kNonTerminal}, sfs_[0]},
           {{NonTerminal::kProgram, DomainTag::kKwAxiom}, sfs_[0]},
           {{NonTerminal::kProgram, DomainTag::kEndOfProgram}, sfs_[0]},
@@ -84,23 +80,20 @@ AnalyzerTable::AnalyzerTable()
 
 auto AnalyzerTable::Find(const NonTerminal non_terminal,
                          const DomainTag tag) const& {
-  return data_.find({non_terminal, tag});
+  return um_.find({non_terminal, tag});
 }
 
-auto AnalyzerTable::Cend() const& noexcept { return data_.cend(); }
-
-std::unique_ptr<Node> TopDownParse(lexer::Scanner& scanner,
-                                   const AnalyzerTable& table) {
+std::unique_ptr<Node> Parser::TopDownParse(lexer::IScanner& scanner) {
   using StackItem = std::pair<Symbol, std::reference_wrapper<InnerNode>>;
 
-  auto dummy_parent = std::make_unique<InnerNode>(NonTerminal::kDummy);
+  auto dummy = std::make_unique<InnerNode>(NonTerminal::kDummy);
 
   auto stack = std::stack<StackItem>{};
-  stack.push({{DomainTag::kEndOfProgram}, *dummy_parent});
-  stack.push({{NonTerminal::kProgram}, *dummy_parent});
+  stack.push({{DomainTag::kEndOfProgram}, *dummy});
+  stack.push({{NonTerminal::kProgram}, *dummy});
 
   auto token = scanner.NextToken();
-  const auto cend = table.Cend();
+  const auto cend = table_.Cend();
 
   do {
     auto& [symbol, parent] = stack.top();
@@ -116,7 +109,7 @@ std::unique_ptr<Node> TopDownParse(lexer::Scanner& scanner,
     } else {
       const auto non_terminal = std::get<NonTerminal>(symbol);
 
-      if (auto it = table.Find(non_terminal, token->tag()); it != cend) {
+      if (auto it = table_.Find(non_terminal, token->tag()); it != cend) {
         stack.pop();
         auto& child = static_cast<InnerNode&>(
             parent.get().AddChild(std::make_unique<InnerNode>(non_terminal)));
@@ -131,7 +124,7 @@ std::unique_ptr<Node> TopDownParse(lexer::Scanner& scanner,
     }
   } while (!stack.empty());
 
-  return dummy_parent;
+  return std::move(dummy->Children().front());
 }
 
 }  // namespace parser

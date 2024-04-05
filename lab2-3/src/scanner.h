@@ -21,7 +21,14 @@ namespace lexer {
 
 using Attribute = std::unique_ptr<std::string>;
 
-class Scanner final : private yyFlexLexer {
+class IScanner {
+ public:
+  virtual std::unique_ptr<Token> NextToken() = 0;
+
+  virtual ~IScanner() = default;
+};
+
+class Scanner final : private yyFlexLexer, public IScanner {
  public:
   Scanner(std::shared_ptr<Compiler> compiler, std::istream& is = std::cin,
           std::ostream& os = std::cout);
@@ -29,7 +36,7 @@ class Scanner final : private yyFlexLexer {
   auto CommentsCbegin() const& noexcept;
   auto CommentsCend() const& noexcept;
 
-  std::unique_ptr<Token> NextToken();
+  std::unique_ptr<Token> NextToken() override;
 
  private:
   DomainTag Lex(Attribute& attr, Fragment& coords);

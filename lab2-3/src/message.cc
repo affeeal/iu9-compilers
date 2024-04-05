@@ -13,4 +13,9 @@ std::ostream& operator<<(std::ostream& os, const MessageType type) {
   return os;
 }
 
+std::ostream& operator<<(std::ostream& os, const Message& message) {
+  os << message.type << " " << message.text;
+  return os;
+}
+
 }  // namespace lexer
