@@ -1,0 +1,6 @@
+Program ::= Rule*
+Rule ::= RuleLHS OP_ARROW RuleRHS
+RuleLHS ::= KW_AXIOM? NONTERMINAL
+RuleRHS ::= Expr KW_END
+Expr ::= Factor+ (KW_OR Factor+)*
+Factor ::= TERMINAL | NONTERMINAL | KW_EPSILON

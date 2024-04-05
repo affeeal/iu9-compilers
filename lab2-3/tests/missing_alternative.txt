@@ -1,0 +1,1 @@
+'axiom S -> E 'or 'end

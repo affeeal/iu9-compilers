@@ -1,0 +1,10 @@
+Program ::= Rules
+Rules ::= Rule Rules | ε
+Rule ::= RuleLHS OP_ARROW RuleRHS
+RuleLHS ::= KW_AXIOM NONTERMINAL | NONTERMINAL
+RuleRHS ::= Expr KW_END
+Expr ::= Term Expr1
+Expr1 ::= KW_OR Term Expr1 | ε
+Term ::= Factor Term1
+Term1 ::= Factor Term1 | ε
+Factor ::= TERMINAL | NONTERMINAL | KW_EPSILON
