@@ -1,3 +1,3 @@
-#include "node.h"
+#pragma once
 
 namespace parser {}  // namespace parser

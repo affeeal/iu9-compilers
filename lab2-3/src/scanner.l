@@ -16,7 +16,7 @@ using lexer::MessageType;
 WHITESPACE  [ \t\r\n]
 COMMENT     #[^\n]*
 NONTERMINAL [A-Za-z][A-Za-z0-9]*
-TERMINAL    \"[^"]\"
+TERMINAL    \"[^"]+\"
 OP_ARROW    \-\>
 KW_AXIOM    'axiom
 KW_EPSILON  'epsilon
