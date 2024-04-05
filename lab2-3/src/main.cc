@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "scanner.h"
+#include "table.h"
 #include "token.h"
 
 int main(int argc, char* argv[]) {
@@ -22,4 +23,8 @@ int main(int argc, char* argv[]) {
 
   auto compiler = std::make_shared<lexer::Compiler>();
   auto scanner = std::make_unique<lexer::Scanner>(compiler, file);
+
+  const auto root =
+      parser::TopDownParse(*scanner, parser::AnalyzerTable::Instance());
+  root->Output();
 }

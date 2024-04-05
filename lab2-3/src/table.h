@@ -10,13 +10,7 @@
 
 namespace parser {
 
-struct Symbol final {
-  std::variant<NonTerminal, lexer::DomainTag> data;
-
-  bool IsTerminal() const noexcept {
-    return std::holds_alternative<lexer::DomainTag>(data);
-  }
-};
+using Symbol = std::variant<NonTerminal, lexer::DomainTag>;
 
 class SententionalForm final {
  public:
@@ -32,6 +26,8 @@ class SententionalForm final {
 class AnalyzerTable final {
  public:
   using Key = std::pair<NonTerminal, lexer::DomainTag>;
+  using SFRef = std::reference_wrapper<const SententionalForm>;
+  using Data = std::unordered_map<Key, SFRef, boost::hash<Key>>;
 
   static const AnalyzerTable& Instance();
 
@@ -42,16 +38,13 @@ class AnalyzerTable final {
   auto Cend() const& noexcept;
 
  private:
-  using SFRef = std::reference_wrapper<const SententionalForm>;
-  using KeyToSFRef = std::unordered_map<Key, SFRef, boost::hash<Key>>;
-
   AnalyzerTable();
 
   std::vector<SententionalForm> sfs_;
-  KeyToSFRef data_;
+  Data data_;
 };
 
-std::unique_ptr<Node> TopDownParse(const lexer::Scanner& scanner,
+std::unique_ptr<Node> TopDownParse(lexer::Scanner& scanner,
                                    const AnalyzerTable& table);
 
 }  // namespace parser

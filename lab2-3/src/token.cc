@@ -51,8 +51,8 @@ std::ostream& operator<<(std::ostream& os, const DomainTag tag) {
 }
 
 std::ostream& operator<<(std::ostream& os, const Token& token) {
-  os << token.get_coords() << " " << token.get_tag() << ": ";
-  token.DumpAttr(os);
+  os << token.coords() << " " << token.tag() << ": ";
+  token.OutputAttr(os);
 
   return os;
 }

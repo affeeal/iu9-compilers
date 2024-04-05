@@ -21,10 +21,10 @@ class Token {
  public:
   virtual ~Token() {}
 
-  virtual void DumpAttr(std::ostream& os) const = 0;
+  virtual void OutputAttr(std::ostream& os) const = 0;
 
-  DomainTag get_tag() const noexcept { return tag_; }
-  const Fragment& get_coords() const& noexcept { return coords_; }
+  DomainTag tag() const noexcept { return tag_; }
+  const Fragment& coords() const& noexcept { return coords_; }
 
  protected:
   Token(const DomainTag tag, const Fragment& coords) noexcept
@@ -45,7 +45,7 @@ class NonTerminalToken final : public Token {
 
   const std::string& get_str() const& noexcept { return str_; }
 
-  void DumpAttr(std::ostream& os) const override { os << str_; }
+  void OutputAttr(std::ostream& os) const override { os << str_; }
 };
 
 class TerminalToken final : public Token {
@@ -58,7 +58,7 @@ class TerminalToken final : public Token {
 
   const std::string& get_str() const& noexcept { return str_; }
 
-  void DumpAttr(std::ostream& os) const override { os << str_; }
+  void OutputAttr(std::ostream& os) const override { os << str_; }
 };
 
 class SpecToken final : public Token {
@@ -66,7 +66,7 @@ class SpecToken final : public Token {
   SpecToken(const DomainTag tag, const Fragment& coords) noexcept
       : Token(tag, coords) {}
 
-  void DumpAttr(std::ostream& os) const override {}
+  void OutputAttr(std::ostream& os) const override {}
 };
 
 std::ostream& operator<<(std::ostream& os, const Token& token);
