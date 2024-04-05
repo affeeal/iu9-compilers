@@ -5,6 +5,7 @@
 // clang-format on
 
 #include "node.h"
+#include "scanner.h"
 #include "token.h"
 
 namespace parser {
@@ -37,7 +38,8 @@ class AnalyzerTable final {
   AnalyzerTable(const AnalyzerTable&) = delete;
   AnalyzerTable& operator=(const AnalyzerTable&) = delete;
 
-  // Table operations
+  auto Find(const NonTerminal nt, const lexer::DomainTag t) const&;
+  auto Cend() const& noexcept;
 
  private:
   using SFRef = std::reference_wrapper<const SententionalForm>;
@@ -48,5 +50,8 @@ class AnalyzerTable final {
   std::vector<SententionalForm> sfs_;
   KeyToSFRef data_;
 };
+
+std::unique_ptr<Node> TopDownParse(const lexer::Scanner& scanner,
+                                   const AnalyzerTable& table);
 
 }  // namespace parser

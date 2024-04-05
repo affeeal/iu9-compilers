@@ -41,6 +41,39 @@ KW_END      'end
 
 namespace lexer {
 
+Scanner::Scanner(std::shared_ptr<Compiler> compiler, std::istream& is,
+                 std::ostream& os)
+    : yyFlexLexer(is, os), compiler_(std::move(compiler)) {}
+
+auto Scanner::CommentsCbegin() const& noexcept {
+  return comments_.cbegin();
+}
+
+auto Scanner::CommentsCend() const& noexcept {
+  return comments_.cend();
+}
+
+std::unique_ptr<Token> Scanner::NextToken() {
+  Fragment coords;
+  Attribute attr;
+
+  const auto tag = Lex(attr, coords);
+
+  switch (tag) {
+    case DomainTag::kNonTerminal: {
+      return std::make_unique<NonTerminalToken>(std::move(*attr), coords);
+    }
+
+    case DomainTag::kTerminal: {
+      return std::make_unique<TerminalToken>(std::move(*attr), coords);
+    }
+
+    default: {
+      return std::make_unique<SpecToken>(tag, coords);
+    }
+  }
+}
+
 void Scanner::AdjustCoords(Fragment& coords) noexcept {
   coords.starting = cur_;
 

@@ -65,4 +65,14 @@ AnalyzerTable::AnalyzerTable()
           {{NonTerminal::kFactor, DomainTag::kKwEpsilon}, sfs_[11]},
       }) {}
 
+auto AnalyzerTable::Find(const NonTerminal nt, const DomainTag t) const& {
+  return data_.find({nt, t});
+}
+
+auto AnalyzerTable::Cend() const& noexcept { return data_.cend(); }
+
+std::unique_ptr<Node> TopDownParse(const lexer::Scanner& scanner,
+                                   const AnalyzerTable& table) {
+}
+
 }  // namespace parser

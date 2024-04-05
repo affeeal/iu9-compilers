@@ -1,16 +1,16 @@
 #pragma once
 
 #ifndef YY_DECL
-#define YY_DECL                                                      \
-  lexer::DomainTag lexer::Scanner::NextToken(lexer::Attribute& attr, \
-                                             lexer::Fragment& coords)
+#define YY_DECL                                                \
+  lexer::DomainTag lexer::Scanner::Lex(lexer::Attribute& attr, \
+                                       lexer::Fragment& coords)
 #endif
+
+#include <vector>
 
 #ifndef yyFlexLexer
 #include <FlexLexer.h>
 #endif
-
-#include <vector>
 
 #include "compiler.h"
 #include "fragment.h"
@@ -21,19 +21,19 @@ namespace lexer {
 
 using Attribute = std::unique_ptr<std::string>;
 
-class Scanner : public yyFlexLexer {
+class Scanner final : private yyFlexLexer {
  public:
   Scanner(std::shared_ptr<Compiler> compiler, std::istream& is = std::cin,
-          std::ostream& os = std::cout)
-      : yyFlexLexer(is, os), compiler_(std::move(compiler)) {}
+          std::ostream& os = std::cout);
 
-  DomainTag NextToken(Attribute& attr, Fragment& coords);
+  auto CommentsCbegin() const& noexcept;
+  auto CommentsCend() const& noexcept;
 
-  const std::vector<Fragment>& get_comments() const& noexcept {
-    return comments_;
-  }
+  std::unique_ptr<Token> NextToken();
 
  private:
+  DomainTag Lex(Attribute& attr, Fragment& coords);
+
   void AdjustCoords(Fragment& coords) noexcept;
 
   DomainTag HandleNonTerminal(Attribute& attr) const;
