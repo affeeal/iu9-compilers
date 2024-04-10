@@ -1,7 +1,7 @@
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <memory>
-#include <stdexcept>
 
 #include "parser.h"
 #include "scanner.h"
@@ -25,7 +25,7 @@ int main(int argc, char* argv[]) {
   try {
     const auto root = parser.TopDownParse(scanner);
     root->Output();
-  } catch (const std::runtime_error& e) {
+  } catch (const std::exception& e) {
     std::cerr << e.what() << std::endl;
     return 1;
   }

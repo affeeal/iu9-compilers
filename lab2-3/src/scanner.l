@@ -14,14 +14,14 @@ using lexer::MessageType;
 %option noyywrap
 
 WHITESPACE  [ \t\r\n]
-COMMENT     #[^\n]*
+COMMENT     #.*
 NONTERMINAL [A-Za-z][A-Za-z0-9]*
-TERMINAL    \"[^"]+\"
-OP_ARROW    \-\>
-KW_AXIOM    \'axiom
-KW_EPSILON  \'epsilon
-KW_OR       \'or
-KW_END      \'end
+TERMINAL    \"[^"\n]+\"
+OP_ARROW    ->
+KW_AXIOM    'axiom
+KW_EPSILON  'epsilon
+KW_OR       'or
+KW_END      'end
 
 %%
 
@@ -77,7 +77,8 @@ std::unique_ptr<Token> Scanner::NextToken() {
 void Scanner::AdjustCoords(Fragment& coords) noexcept {
   coords.starting = cur_;
 
-  for (std::size_t i = 0; i < yyleng; ++i) {
+  for (std::size_t i = 0, end = static_cast<std::size_t>(yyleng);
+       i < end; ++i) {
     if (yytext[i] == '\n') {
       ++cur_.line;
       cur_.pos = 1;

@@ -14,7 +14,6 @@
 
 #include "compiler.h"
 #include "fragment.h"
-#include "message.h"
 #include "token.h"
 
 namespace lexer {

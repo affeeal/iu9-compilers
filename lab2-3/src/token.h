@@ -66,7 +66,7 @@ class SpecToken final : public Token {
   SpecToken(const DomainTag tag, const Fragment& coords) noexcept
       : Token(tag, coords) {}
 
-  void OutputAttr(std::ostream& os) const override {}
+  void OutputAttr(std::ostream&) const override {}
 };
 
 std::ostream& operator<<(std::ostream& os, const Token& token);

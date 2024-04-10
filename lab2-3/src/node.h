@@ -1,9 +1,6 @@
 #pragma once
 
-#include <initializer_list>
 #include <iostream>
-#include <unordered_map>
-#include <variant>
 #include <vector>
 
 #include "token.h"
@@ -20,7 +17,7 @@ enum class NonTerminal {
   kExpr1,
   kTerm,
   kTerm1,
-  kFactor,
+  kSymbol,
   kDummy,
 };
 

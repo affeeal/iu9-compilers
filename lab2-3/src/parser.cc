@@ -42,7 +42,7 @@ AnalyzerTable::AnalyzerTable()
           {NonTerminal::kExpr, DomainTag::kKwEnd},                      // 6
           {NonTerminal::kTerm, NonTerminal::kExpr1},                    // 7
           {DomainTag::kKwOr, NonTerminal::kTerm, NonTerminal::kExpr1},  // 8
-          {NonTerminal::kFactor, NonTerminal::kTerm1},                  // 9
+          {NonTerminal::kSymbol, NonTerminal::kTerm1},                  // 9
           {DomainTag::kTerminal},                                       // 10
           {DomainTag::kKwEpsilon},                                      // 11
       }),
@@ -67,15 +67,13 @@ AnalyzerTable::AnalyzerTable()
           {{NonTerminal::kExpr1, DomainTag::kKwEnd}, sfs_[2]},
           {{NonTerminal::kTerm, DomainTag::kNonTerminal}, sfs_[9]},
           {{NonTerminal::kTerm, DomainTag::kTerminal}, sfs_[9]},
-          {{NonTerminal::kTerm, DomainTag::kKwEpsilon}, sfs_[9]},
+          {{NonTerminal::kTerm, DomainTag::kKwEpsilon}, sfs_[11]},
           {{NonTerminal::kTerm1, DomainTag::kNonTerminal}, sfs_[9]},
           {{NonTerminal::kTerm1, DomainTag::kTerminal}, sfs_[9]},
-          {{NonTerminal::kTerm1, DomainTag::kKwEpsilon}, sfs_[9]},
           {{NonTerminal::kTerm1, DomainTag::kKwOr}, sfs_[2]},
           {{NonTerminal::kTerm1, DomainTag::kKwEnd}, sfs_[2]},
-          {{NonTerminal::kFactor, DomainTag::kNonTerminal}, sfs_[5]},
-          {{NonTerminal::kFactor, DomainTag::kTerminal}, sfs_[10]},
-          {{NonTerminal::kFactor, DomainTag::kKwEpsilon}, sfs_[11]},
+          {{NonTerminal::kSymbol, DomainTag::kNonTerminal}, sfs_[5]},
+          {{NonTerminal::kSymbol, DomainTag::kTerminal}, sfs_[10]},
       }) {}
 
 auto AnalyzerTable::Find(const NonTerminal non_terminal,

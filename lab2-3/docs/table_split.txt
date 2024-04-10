@@ -6,9 +6,9 @@ RuleLHS|NONTERMINAL             |            |        |KW_AXIOM NONTERMINAL    |
 RuleRHS|Expr KW_END             |Expr KW_END |        |                        |
 Expr   |Term Expr1              |Term Expr1  |        |                        |
 Expr1  |                        |            |        |                        |
-Term   |Factor Term1            |Factor Term1|        |                        |
-Term1  |Factor Term1            |Factor Term1|        |                        |
-Factor |NONTERMINAL             |TERMINAL    |        |                        |
+Term   |Symbol Term1            |Symbol Term1|        |                        |
+Term1  |Symbol Term1            |Symbol Term1|        |                        |
+Symbol |NONTERMINAL             |TERMINAL    |        |                        |
 
        |KW_EPSILON  |KW_OR           |KW_END|$    |
 Program|            |                |      |Rules|
@@ -18,6 +18,6 @@ RuleLHS|            |                |      |     |
 RuleRHS|Expr KW_END |                |      |     |
 Expr   |Term Expr1  |                |      |     |
 Expr1  |            |KW_OR Term Expr1|ε     |     |
-Term   |Factor Term1|                |      |     |
-Term1  |Factor Term1|ε               |ε     |     |
-Factor |KW_EPSILON  |                |      |     |
+Term   |KW_EPSILON  |                |      |     |
+Term1  |            |ε               |ε     |     |
+Symbol |            |                |      |     |

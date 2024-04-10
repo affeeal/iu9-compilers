@@ -53,8 +53,8 @@ std::ostream& operator<<(std::ostream& os, const NonTerminal non_terminal) {
       break;
     }
 
-    case NonTerminal::kFactor: {
-      os << "Factor";
+    case NonTerminal::kSymbol: {
+      os << "Symbol";
       break;
     }
 
