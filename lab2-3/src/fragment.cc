@@ -1,7 +1,5 @@
 #include "fragment.h"
 
-#include <ostream>
-
 namespace lexer {
 
 void Fragment::Dump(std::ostream& os) const {

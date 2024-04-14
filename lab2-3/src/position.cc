@@ -1,7 +1,5 @@
 #include "position.h"
 
-#include <ostream>
-
 namespace lexer {
 
 void Position::Dump(std::ostream& os) const {

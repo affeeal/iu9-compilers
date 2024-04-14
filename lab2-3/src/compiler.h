@@ -3,6 +3,7 @@
 #include <map>
 
 #include "message.h"
+#include "position.h"
 
 namespace lexer {
 

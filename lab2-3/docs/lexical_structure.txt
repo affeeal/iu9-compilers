@@ -1,7 +1,7 @@
 WHITESPACE  ::= [ \t\n\r]+
-COMMENT     ::= #[^\n]*
+COMMENT     ::= #.*
 NONTERMINAL ::= [a-zA-Z][a-zA-Z0-9]*
-TERMINAL    ::= \"[^"\n]+\"
+TERMINAL    ::= \"[^\n"]+\"
 OP_ARROW    ::= ->
 KW_AXIOM    ::= 'axiom
 KW_EPSILON  ::= 'epsilon

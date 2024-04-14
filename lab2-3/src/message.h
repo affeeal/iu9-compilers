@@ -1,8 +1,6 @@
 #pragma once
 
-#include <string>
-
-#include "position.h"
+#include <ostream>
 
 namespace lexer {
 

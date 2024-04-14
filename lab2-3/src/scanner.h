@@ -6,6 +6,7 @@
                                        lexer::Fragment& coords)
 #endif
 
+#include <memory>
 #include <vector>
 
 #ifndef yyFlexLexer
