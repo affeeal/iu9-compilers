@@ -10,13 +10,13 @@ TupleType ::= '(' (Type (',' Type)*)? ')'.
 FuncBody ::= Statement (';' Statement)*.
 Statement ::= Pattern '=' Result.
 
-Pattern ::= PatternUnit (':' PatternUnit)*.
+Pattern ::= PatternUnit (':' Pattern)?.
 PatternUnit ::= Ident | IntConst | PatternList | PatternTuple | '[' Pattern ']'.
 IntConst ::= [0-9]+.
 PatternList ::= '{' (Pattern (',' Pattern)*)? '}'.
 PatternTuple ::= '(' (Pattern (',' Pattern)*)? ')'.
 
-Result ::= ResultUnit (':' ResultUnit)*.
+Result ::= ResultUnit (':' Result)?.
 ResultUnit ::= Expr | ResultList | ResultTuple.
 
 Expr ::= Term ('+' Term | '-' Term)*.
