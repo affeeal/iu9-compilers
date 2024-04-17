@@ -6,38 +6,103 @@ namespace lexer {
 
 std::ostream& operator<<(std::ostream& os, const DomainTag tag) {
   switch (tag) {
-    case DomainTag::kNonTerminal: {
-      os << "NONTERMINAL";
+    case DomainTag::kPlus: {
+      os << "PLUS";
       break;
     }
 
-    case DomainTag::kTerminal: {
-      os << "TERMINAL";
+    case DomainTag::kMinus: {
+      os << "MINUS";
       break;
     }
 
-    case DomainTag::kOpArrow: {
-      os << "OP_ARROW";
+    case DomainTag::kStar: {
+      os << "STAR";
       break;
     }
 
-    case DomainTag::kKwAxiom: {
-      os << "KW_AXIOM";
+    case DomainTag::kSlash: {
+      os << "SLASH";
       break;
     }
 
-    case DomainTag::kKwEpsilon: {
-      os << "KW_EPSILON";
+    case DomainTag::kEqual: {
+      os << "EQUAL";
       break;
     }
 
-    case DomainTag::kKwOr: {
-      os << "KW_OR";
+    case DomainTag::kComma: {
+      os << "COMMA";
       break;
     }
 
-    case DomainTag::kKwEnd: {
-      os << "KW_END";
+    case DomainTag::kColon: {
+      os << "COLON";
+      break;
+    }
+
+    case DomainTag::kColonColon: {
+      os << "COLON_COLON";
+      break;
+    }
+
+    case DomainTag::kSemicolon: {
+      os << "SEMICOLON";
+      break;
+    }
+
+    case DomainTag::kParanthesisLeft: {
+      os << "PARENTHESIS_LEFT";
+      break;
+    }
+
+    case DomainTag::kParanthesisRight: {
+      os << "PARENTHESIS_RIGHT";
+      break;
+    }
+
+    case DomainTag::kCurlyBracketLeft: {
+      os << "CURLY_BRACKET_LEFT";
+      break;
+    }
+
+    case DomainTag::kCurlyBracketRight: {
+      os << "CURLY_BRACKET_RIGHT";
+      break;
+    }
+
+    case DomainTag::kSquareBracketLeft: {
+      os << "SQUARE_BRACKET_LEFT";
+      break;
+    }
+
+    case DomainTag::kSquareBracketRight: {
+      os << "SQUARE_BRACKET_RIGHT";
+      break;
+    }
+
+    case DomainTag::kInt: {
+      os << "INT";
+      break;
+    }
+
+    case DomainTag::kIs: {
+      os << "IS";
+      break;
+    }
+
+    case DomainTag::kEnd: {
+      os << "END";
+      break;
+    }
+
+    case DomainTag::kIdent: {
+      os << "IDENT";
+      break;
+    }
+
+    case DomainTag::kIntConst: {
+      os << "INT_CONST";
       break;
     }
 
@@ -46,13 +111,6 @@ std::ostream& operator<<(std::ostream& os, const DomainTag tag) {
       break;
     }
   }
-
-  return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const Token& token) {
-  os << token.coords() << " " << token.tag() << ": ";
-  token.OutputAttr(os);
 
   return os;
 }

@@ -10,26 +10,33 @@ namespace parser {
 
 enum class NonTerminal {
   kProgram,
-  kRules,
-  kRule,
-  kRuleLHS,
-  kRuleRHS,
+  kFunc,
+  kFuncType,
+  kType,
+  kListType,
+  kTupleType,
+  kFuncBody,
+  kStatement,
+  kPattern,
+  kPatternUnit,
+  kPatternList,
+  kPatternTuple,
+  kResult,
+  kResultUnit,
+  kResultList,
+  kResultTuple,
   kExpr,
-  kExpr1,
   kTerm,
-  kTerm1,
-  kSymbol,
-  kDummy,
+  kFactor,
+  kAtom,
+  kFuncArg,
 };
 
 std::ostream& operator<<(std::ostream& os, const NonTerminal non_terminal);
 
 class Node {
  public:
-  virtual void Output(std::ostream& os = std::cout,
-                      const std::string& indent = std::string()) const = 0;
-
-  virtual ~Node() {}
+  virtual ~Node() = default;
 };
 
 class InnerNode final : public Node {
@@ -37,12 +44,9 @@ class InnerNode final : public Node {
   InnerNode(const NonTerminal non_terminal) noexcept
       : non_terminal_(non_terminal) {}
 
-  std::vector<std::unique_ptr<Node>>& Children() noexcept { return children_; }
-  NonTerminal non_terminal() const noexcept { return non_terminal_; }
+  NonTerminal get_non_terminal() const noexcept { return non_terminal_; }
 
   Node& AddChild(std::unique_ptr<Node>&& node);
-
-  void Output(std::ostream& os, const std::string& indent) const override;
 
  private:
   NonTerminal non_terminal_;
@@ -53,8 +57,6 @@ class LeafNode final : public Node {
  public:
   LeafNode(std::unique_ptr<lexer::Token>&& token) noexcept
       : token_(std::move(token)) {}
-
-  void Output(std::ostream& os, const std::string& indent) const override;
 
  private:
   std::unique_ptr<lexer::Token> token_;

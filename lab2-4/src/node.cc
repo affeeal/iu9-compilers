@@ -13,23 +13,78 @@ std::ostream& operator<<(std::ostream& os, const NonTerminal non_terminal) {
       break;
     }
 
-    case NonTerminal::kRules: {
-      os << "Rules";
+    case NonTerminal::kFunc: {
+      os << "Func";
       break;
     }
 
-    case NonTerminal::kRule: {
-      os << "Rule";
+    case NonTerminal::kFuncType: {
+      os << "FuncType";
       break;
     }
 
-    case NonTerminal::kRuleLHS: {
-      os << "RuleLHS";
+    case NonTerminal::kType: {
+      os << "Type";
       break;
     }
 
-    case NonTerminal::kRuleRHS: {
-      os << "RuleRHS";
+    case NonTerminal::kListType: {
+      os << "ListType";
+      break;
+    }
+
+    case NonTerminal::kTupleType: {
+      os << "TupleType";
+      break;
+    }
+
+    case NonTerminal::kFuncBody: {
+      os << "FuncBody";
+      break;
+    }
+
+    case NonTerminal::kStatement: {
+      os << "Statement";
+      break;
+    }
+
+    case NonTerminal::kPattern: {
+      os << "Pattern";
+      break;
+    }
+
+    case NonTerminal::kPatternUnit: {
+      os << "PatternUnit";
+      break;
+    }
+
+    case NonTerminal::kPatternList: {
+      os << "PatternList";
+      break;
+    }
+
+    case NonTerminal::kPatternTuple: {
+      os << "PatternTuple";
+      break;
+    }
+
+    case NonTerminal::kResult: {
+      os << "Result";
+      break;
+    }
+
+    case NonTerminal::kResultUnit: {
+      os << "ResultUnit";
+      break;
+    }
+
+    case NonTerminal::kResultList: {
+      os << "ResultList";
+      break;
+    }
+
+    case NonTerminal::kResultTuple: {
+      os << "ResultTuple";
       break;
     }
 
@@ -38,49 +93,28 @@ std::ostream& operator<<(std::ostream& os, const NonTerminal non_terminal) {
       break;
     }
 
-    case NonTerminal::kExpr1: {
-      os << "Expr1";
-      break;
-    }
-
     case NonTerminal::kTerm: {
       os << "Term";
       break;
     }
 
-    case NonTerminal::kTerm1: {
-      os << "Term1";
+    case NonTerminal::kFactor: {
+      os << "Factor";
       break;
     }
 
-    case NonTerminal::kSymbol: {
-      os << "Symbol";
+    case NonTerminal::kAtom: {
+      os << "Atom";
       break;
     }
 
-    case NonTerminal::kDummy: {
-      os << "Dummy";
+    case NonTerminal::kFuncArg: {
+      os << "FuncArg";
       break;
     }
   }
 
   return os;
-}
-
-void InnerNode::Output(std::ostream& os, const std::string& indent) const {
-  os << indent << non_terminal_ << " {\n";
-
-  std::for_each(
-      children_.cbegin(), children_.cend(),
-      [&os, &indent](auto&& child) { child->Output(os, indent + kIndent); });
-
-  os << indent << "}\n";
-}
-
-void LeafNode::Output(std::ostream& os, const std::string& indent) const {
-  os << indent << token_->tag() << ": ";
-  token_->OutputAttr(os);
-  os << "\n";
 }
 
 Node& InnerNode::AddChild(std::unique_ptr<Node>&& node) {

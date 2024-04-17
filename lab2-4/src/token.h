@@ -5,13 +5,26 @@
 namespace lexer {
 
 enum class DomainTag {
-  kNonTerminal,
-  kTerminal,
-  kOpArrow,
-  kKwAxiom,
-  kKwEpsilon,
-  kKwOr,
-  kKwEnd,
+  kPlus,
+  kMinus,
+  kStar,
+  kSlash,
+  kEqual,
+  kComma,
+  kColon,
+  kColonColon,
+  kSemicolon,
+  kParanthesisLeft,
+  kParanthesisRight,
+  kCurlyBracketLeft,
+  kCurlyBracketRight,
+  kSquareBracketLeft,
+  kSquareBracketRight,
+  kInt,
+  kIs,
+  kEnd,
+  kIdent,
+  kIntConst,
   kEndOfProgram,
 };
 
@@ -19,9 +32,7 @@ std::ostream& operator<<(std::ostream& os, const DomainTag tag);
 
 class Token {
  public:
-  virtual ~Token() {}
-
-  virtual void OutputAttr(std::ostream& os) const = 0;
+  virtual ~Token() = default;
 
   DomainTag tag() const noexcept { return tag_; }
   const Fragment& coords() const& noexcept { return coords_; }
@@ -34,41 +45,30 @@ class Token {
   Fragment coords_;
 };
 
-class NonTerminalToken final : public Token {
-  std::string str_;
+class IdentToken final : public Token {
+  std::size_t code_;
 
  public:
-  template <typename String>
-  NonTerminalToken(String&& str, const Fragment& coords) noexcept
-      : Token(DomainTag::kNonTerminal, coords),
-        str_(std::forward<String>(str)) {}
+  IdentToken(const std::size_t code, const Fragment& coords) noexcept
+      : Token(DomainTag::kIdent, coords), code_(code) {}
 
-  const std::string& get_str() const& noexcept { return str_; }
-
-  void OutputAttr(std::ostream& os) const override { os << str_; }
+  std::size_t get_code() const noexcept { return code_; }
 };
 
-class TerminalToken final : public Token {
-  std::string str_;
+class IntConstToken final : public Token {
+  std::int64_t value_;
 
  public:
-  template <typename String>
-  TerminalToken(String&& str, const Fragment& coords) noexcept
-      : Token(DomainTag::kTerminal, coords), str_(std::forward<String>(str)) {}
+  IntConstToken(const std::int64_t value, const Fragment& coords) noexcept
+      : Token(DomainTag::kIntConst, coords), value_(value) {}
 
-  const std::string& get_str() const& noexcept { return str_; }
-
-  void OutputAttr(std::ostream& os) const override { os << str_; }
+  std::int64_t get_value() const noexcept { return value_; }
 };
 
 class SpecToken final : public Token {
  public:
   SpecToken(const DomainTag tag, const Fragment& coords) noexcept
       : Token(tag, coords) {}
-
-  void OutputAttr(std::ostream&) const override {}
 };
-
-std::ostream& operator<<(std::ostream& os, const Token& token);
 
 }  // namespace lexer

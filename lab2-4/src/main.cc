@@ -24,7 +24,7 @@ int main(int argc, char* argv[]) {
 
   try {
     const auto root = parser.Parse(scanner);
-    root->Output();
+    // TODO: output nodes
   } catch (const std::exception& e) {
     std::cerr << e.what() << std::endl;
     return 1;

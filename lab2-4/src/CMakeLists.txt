@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22.1)
-project(lab2-3)
+project(lab2-4)
 
 # TODO: link Boost.
 find_package(FLEX REQUIRED)
