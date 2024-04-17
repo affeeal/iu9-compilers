@@ -1,0 +1,22 @@
+PLUS ::= '+'
+MINUS ::= '-'
+STAR ::= '*'
+SLASH ::= '/'
+EQUAL ::= '='
+COMMA ::= ','
+SEMICOLON ::= ';'
+LEFT_BRACKET ::= '('
+RIGHT_BRACKET ::= ')'
+LEFT_CURLY_BRACKET = '{'
+RIGHT_CURLY_BRACKET = '}'
+LEFT_SQUARE_BRACKET = '['
+RIGHT_SQUARE_BRACKET = ']'
+COLON ::= ':' 
+COLON_COLON ::= '::'
+
+INT ::= 'int'
+IS ::= 'is'
+END ::= 'end'
+
+IDENT ::= [A-Za-z_][A-Za-z_0-9]*
+INT_CONST ::= [0-9]+
