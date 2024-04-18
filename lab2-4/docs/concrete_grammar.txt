@@ -3,7 +3,8 @@ Func ::= Ident FuncType 'is' FuncBody 'end'.
 Ident ::= [A-Za-z_] [A-Za-z_0-9]*.
 
 FuncType ::= Type '::' Type.
-Type ::= 'int' | ListType | TupleType.
+Type ::= ElementaryType | ListType | TupleType.
+ElementaryType ::= 'int'.
 ListType ::= '*' Type.
 TupleType ::= '(' (Type (',' Type)*)? ')'.
 

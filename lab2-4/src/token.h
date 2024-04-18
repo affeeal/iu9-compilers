@@ -34,8 +34,8 @@ class Token {
  public:
   virtual ~Token() = default;
 
-  DomainTag tag() const noexcept { return tag_; }
-  const Fragment& coords() const& noexcept { return coords_; }
+  DomainTag get_tag() const noexcept { return tag_; }
+  const Fragment& get_coords() const& noexcept { return coords_; }
 
  protected:
   Token(const DomainTag tag, const Fragment& coords) noexcept

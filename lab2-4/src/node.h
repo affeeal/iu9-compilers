@@ -8,97 +8,7 @@
 
 namespace parser {
 
-class Func;
-class FuncType;
-class FuncBody;
-class Type;
-class Statement;
-class Pattern;
-class Result;
-
-class Program final {
-  std::vector<std::unique_ptr<Func>> funcs_;
-
- public:
-  using FuncsIterator = decltype(funcs_)::iterator;
-
-  Program(const std::move_iterator<FuncsIterator> begin,
-          const std::move_iterator<FuncsIterator> end)
-      : funcs_(begin, end) {}
-};
-
-class Func final {
-  std::unique_ptr<FuncType> type_;
-  std::unique_ptr<FuncBody> body_;
-  std::size_t ident_code_;
-
- public:
-  Func(std::unique_ptr<FuncType>&& type, std::unique_ptr<FuncBody>&& body,
-       const std::size_t ident_code)
-      : type_(std::move(type)),
-        body_(std::move(body)),
-        ident_code_(ident_code) {}
-};
-
-class FuncType final {
-  std::unique_ptr<Type> input_;
-  std::unique_ptr<Type> output_;
-
- public:
-  FuncType(std::unique_ptr<Type>&& input, std::unique_ptr<Type>&& output)
-      : input_(std::move(input)), output_(std::move(output)) {}
-};
-
-class Type {
- public:
-  virtual ~Type() = default;
-};
-
-class ListType final : public Type {
-  std::unique_ptr<Type> type_;
-
- public:
-  ListType(std::unique_ptr<Type>&& type) : type_(std::move(type)) {}
-};
-
-class TupleType final : public Type {
-  std::vector<std::unique_ptr<Type>> types_;
-
- public:
-  using TypesIterator = decltype(types_)::iterator;
-
-  TupleType(const std::move_iterator<TypesIterator> begin,
-            const std::move_iterator<TypesIterator> end)
-      : types_(begin, end) {}
-};
-
-class ElementaryType final : public Type {
-  lexer::DomainTag type_;
-
- public:
-  ElementaryType(const lexer::DomainTag type) : type_(type) {}
-};
-
-class FuncBody final {
-  std::vector<std::unique_ptr<Statement>> stmts_;
-
- public:
-  using StmtsIterator = decltype(stmts_)::iterator;
-
-  FuncBody(const std::move_iterator<StmtsIterator> begin,
-           const std::move_iterator<StmtsIterator> end)
-      : stmts_(begin, end) {}
-};
-
-class Statement final {
-  std::unique_ptr<Pattern> pattern_;
-  std::unique_ptr<Result> result_;
-
- public:
-  Statement(std::unique_ptr<Pattern>&& pattern,
-            std::unique_ptr<Result>&& result)
-      : pattern_(std::move(pattern)), result_(std::move(result)) {}
-};
+namespace ast {
 
 class Pattern {
  public:
@@ -198,5 +108,91 @@ class FuncCall final : public Result {
   FuncCall(std::unique_ptr<Result>&& arg, const std::size_t ident_code)
       : arg_(std::move(arg)), ident_code_(ident_code) {}
 };
+
+class Statement final {
+  std::unique_ptr<Pattern> pattern_;
+  std::unique_ptr<Result> result_;
+
+ public:
+  Statement(std::unique_ptr<Pattern>&& pattern,
+            std::unique_ptr<Result>&& result)
+      : pattern_(std::move(pattern)), result_(std::move(result)) {}
+};
+
+class FuncBody final {
+  std::vector<std::unique_ptr<Statement>> stmts_;
+
+ public:
+  using StmtsIterator = decltype(stmts_)::iterator;
+
+  FuncBody(const std::move_iterator<StmtsIterator> begin,
+           const std::move_iterator<StmtsIterator> end)
+      : stmts_(begin, end) {}
+};
+
+class Type {
+ public:
+  virtual ~Type() = default;
+};
+
+class ListType final : public Type {
+  std::unique_ptr<Type> type_;
+
+ public:
+  ListType(std::unique_ptr<Type>&& type) : type_(std::move(type)) {}
+};
+
+class TupleType final : public Type {
+  std::vector<std::unique_ptr<Type>> types_;
+
+ public:
+  using TypesIterator = decltype(types_)::iterator;
+
+  TupleType(const std::move_iterator<TypesIterator> begin,
+            const std::move_iterator<TypesIterator> end)
+      : types_(begin, end) {}
+};
+
+class ElementaryType final : public Type {
+  lexer::DomainTag type_;
+
+ public:
+  ElementaryType(const lexer::DomainTag type) : type_(type) {}
+};
+
+class FuncType final {
+  std::unique_ptr<Type> input_;
+  std::unique_ptr<Type> output_;
+
+ public:
+  FuncType(std::unique_ptr<Type>&& input, std::unique_ptr<Type>&& output)
+      : input_(std::move(input)), output_(std::move(output)) {}
+};
+
+class Func final {
+  std::unique_ptr<FuncType> type_;
+  std::unique_ptr<FuncBody> body_;
+  std::size_t ident_code_;
+
+ public:
+  Func(std::unique_ptr<FuncType>&& type, std::unique_ptr<FuncBody>&& body,
+       const std::size_t ident_code)
+      : type_(std::move(type)),
+        body_(std::move(body)),
+        ident_code_(ident_code) {}
+};
+
+class Program final {
+  std::vector<std::unique_ptr<Func>> funcs_;
+
+ public:
+  using FuncsIterator = decltype(funcs_)::iterator;
+
+  Program(const std::move_iterator<FuncsIterator> begin,
+          const std::move_iterator<FuncsIterator> end)
+      : funcs_(begin, end) {}
+};
+
+}  // namespace ast
 
 }  // namespace parser
