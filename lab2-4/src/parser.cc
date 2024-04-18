@@ -2,8 +2,12 @@
 
 namespace parser {
 
-std::unique_ptr<Node> Parser::Parse(lexer::IScanner& scanner) {
-  return nullptr;  // TODO
+namespace {
+
+}  // namespace
+
+std::unique_ptr<Program> Parser::Parse(lexer::IScanner& scanner) {
+  // TODO
 }
 
 }  // namespace parser

@@ -7,7 +7,7 @@ namespace parser {
 
 class Parser final {
  public:
-  std::unique_ptr<Node> Parse(lexer::IScanner& scanner);
+  std::unique_ptr<Program> Parse(lexer::IScanner& scanner);
 };
 
 }  // namespace parser
