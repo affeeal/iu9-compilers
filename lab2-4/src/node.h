@@ -8,8 +8,6 @@
 
 namespace parser {
 
-namespace ast {
-
 class Pattern {
  public:
   virtual ~Pattern() = default;
@@ -192,7 +190,5 @@ class Program final {
           const std::move_iterator<FuncsIterator> end)
       : funcs_(begin, end) {}
 };
-
-}  // namespace ast
 
 }  // namespace parser
