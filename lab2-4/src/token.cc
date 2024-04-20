@@ -4,115 +4,72 @@
 
 namespace lexer {
 
-std::ostream& operator<<(std::ostream& os, const DomainTag tag) {
+std::string ToString(const DomainTag tag) {
   switch (tag) {
     case DomainTag::kPlus: {
-      os << "PLUS";
-      break;
+      return "PLUS";
     }
-
     case DomainTag::kMinus: {
-      os << "MINUS";
-      break;
+      return "MINUS";
     }
-
     case DomainTag::kStar: {
-      os << "STAR";
-      break;
+      return "STAR";
     }
-
     case DomainTag::kSlash: {
-      os << "SLASH";
-      break;
+      return "SLASH";
     }
-
     case DomainTag::kEqual: {
-      os << "EQUAL";
-      break;
+      return "EQUAL";
     }
-
     case DomainTag::kComma: {
-      os << "COMMA";
-      break;
+      return "COMMA";
     }
-
     case DomainTag::kColon: {
-      os << "COLON";
-      break;
+      return "COLON";
     }
-
     case DomainTag::kColonColon: {
-      os << "COLON_COLON";
-      break;
+      return "COLON_COLON";
     }
-
     case DomainTag::kSemicolon: {
-      os << "SEMICOLON";
-      break;
+      return "SEMICOLON";
     }
-
     case DomainTag::kParanthesisLeft: {
-      os << "PARENTHESIS_LEFT";
-      break;
+      return "PARENTHESIS_LEFT";
     }
-
     case DomainTag::kParanthesisRight: {
-      os << "PARENTHESIS_RIGHT";
-      break;
+      return "PARENTHESIS_RIGHT";
     }
-
     case DomainTag::kCurlyBracketLeft: {
-      os << "CURLY_BRACKET_LEFT";
-      break;
+      return "CURLY_BRACKET_LEFT";
     }
-
     case DomainTag::kCurlyBracketRight: {
-      os << "CURLY_BRACKET_RIGHT";
-      break;
+      return "CURLY_BRACKET_RIGHT";
     }
-
     case DomainTag::kSquareBracketLeft: {
-      os << "SQUARE_BRACKET_LEFT";
-      break;
+      return "SQUARE_BRACKET_LEFT";
     }
-
     case DomainTag::kSquareBracketRight: {
-      os << "SQUARE_BRACKET_RIGHT";
-      break;
+      return "SQUARE_BRACKET_RIGHT";
     }
-
     case DomainTag::kInt: {
-      os << "INT";
-      break;
+      return "INT";
     }
-
     case DomainTag::kIs: {
-      os << "IS";
-      break;
+      return "IS";
     }
-
     case DomainTag::kEnd: {
-      os << "END";
-      break;
+      return "END";
     }
-
     case DomainTag::kIdent: {
-      os << "IDENT";
-      break;
+      return "IDENT";
     }
-
     case DomainTag::kIntConst: {
-      os << "INT_CONST";
-      break;
+      return "INT_CONST";
     }
-
     case DomainTag::kEndOfProgram: {
-      os << "END_OF_PROGRAM";
-      break;
+      return "END_OF_PROGRAM";
     }
   }
-
-  return os;
 }
 
 }  // namespace lexer

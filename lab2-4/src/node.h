@@ -4,13 +4,24 @@
 #include <memory>
 #include <vector>
 
+// clang-format off
+#include <boost/json.hpp>
+// clang-format on
+
 #include "token.h"
 
 namespace parser {
 
+class JsonSerializible {
+ public:
+  virtual ~JsonSerializible() = default;
+
+  virtual boost::json::value ToJson() const = 0;
+};
+
 namespace ast {
 
-class Pattern {
+class Pattern : public JsonSerializible {
  public:
   virtual ~Pattern() = default;
 };
@@ -23,6 +34,8 @@ class PatternBinary final : public Pattern {
   PatternBinary(std::unique_ptr<Pattern>&& lhs, std::unique_ptr<Pattern>&& rhs,
                 const lexer::DomainTag op)
       : lhs_(std::move(lhs)), rhs_(std::move(rhs)), op_(op) {}
+
+  boost::json::value ToJson() const override;
 };
 
 // TODO: collapse list to binary operations?
@@ -35,6 +48,8 @@ class PatternList final : public Pattern {
   PatternList(const std::move_iterator<PatternsIterator> begin,
               const std::move_iterator<PatternsIterator> end)
       : patterns_(begin, end) {}
+
+  boost::json::value ToJson() const override;
 };
 
 class PatternTuple final : public Pattern {
@@ -46,9 +61,11 @@ class PatternTuple final : public Pattern {
   PatternTuple(const std::move_iterator<PatternsIterator> begin,
                const std::move_iterator<PatternsIterator> end)
       : patterns_(begin, end) {}
+
+  boost::json::value ToJson() const override;
 };
 
-class Result {
+class Result : public JsonSerializible {
  public:
   virtual ~Result() = default;
 };
@@ -61,6 +78,8 @@ class ResultBinary final : public Result {
   ResultBinary(std::unique_ptr<Result>&& lhs, std::unique_ptr<Result>&& rhs,
                const lexer::DomainTag op)
       : lhs_(std::move(lhs)), rhs_(std::move(rhs)), op_(op) {}
+
+  boost::json::value ToJson() const override;
 };
 
 // TODO: collapse list to binary operations?
@@ -73,6 +92,8 @@ class ResultList final : public Result {
   ResultList(const std::move_iterator<ResultsIterator> begin,
              const std::move_iterator<ResultsIterator> end)
       : results_(begin, end) {}
+
+  boost::json::value ToJson() const override;
 };
 
 class ResultTuple final : public Result {
@@ -84,6 +105,8 @@ class ResultTuple final : public Result {
   ResultTuple(const std::move_iterator<ResultsIterator> begin,
               const std::move_iterator<ResultsIterator> end)
       : results_(begin, end) {}
+
+  boost::json::value ToJson() const override;
 };
 
 class Var final : public Pattern, public Result {
@@ -91,6 +114,8 @@ class Var final : public Pattern, public Result {
 
  public:
   Var(const std::size_t ident_code) : ident_code_(ident_code) {}
+
+  boost::json::value ToJson() const override;
 };
 
 class IntConst final : public Pattern, public Result {
@@ -98,6 +123,8 @@ class IntConst final : public Pattern, public Result {
 
  public:
   IntConst(const std::int64_t value) : value_(value) {}
+
+  boost::json::value ToJson() const override;
 };
 
 class FuncCall final : public Result {
@@ -107,9 +134,11 @@ class FuncCall final : public Result {
  public:
   FuncCall(std::unique_ptr<Result>&& arg, const std::size_t ident_code)
       : arg_(std::move(arg)), ident_code_(ident_code) {}
+
+  boost::json::value ToJson() const override;
 };
 
-class Statement final {
+class Statement final : public JsonSerializible {
   std::unique_ptr<Pattern> pattern_;
   std::unique_ptr<Result> result_;
 
@@ -117,9 +146,11 @@ class Statement final {
   Statement(std::unique_ptr<Pattern>&& pattern,
             std::unique_ptr<Result>&& result)
       : pattern_(std::move(pattern)), result_(std::move(result)) {}
+
+  boost::json::value ToJson() const override;
 };
 
-class FuncBody final {
+class FuncBody final : public JsonSerializible {
   std::vector<std::unique_ptr<Statement>> stmts_;
 
  public:
@@ -128,9 +159,11 @@ class FuncBody final {
   FuncBody(const std::move_iterator<StmtsIterator> begin,
            const std::move_iterator<StmtsIterator> end)
       : stmts_(begin, end) {}
+
+  boost::json::value ToJson() const override;
 };
 
-class Type {
+class Type : public JsonSerializible {
  public:
   virtual ~Type() = default;
 };
@@ -140,6 +173,8 @@ class ListType final : public Type {
 
  public:
   ListType(std::unique_ptr<Type>&& type) : type_(std::move(type)) {}
+
+  boost::json::value ToJson() const override;
 };
 
 class TupleType final : public Type {
@@ -151,25 +186,31 @@ class TupleType final : public Type {
   TupleType(const std::move_iterator<TypesIterator> begin,
             const std::move_iterator<TypesIterator> end)
       : types_(begin, end) {}
+
+  boost::json::value ToJson() const override;
 };
 
 class ElementaryType final : public Type {
-  lexer::DomainTag type_;
+  lexer::DomainTag tag_;
 
  public:
-  ElementaryType(const lexer::DomainTag type) : type_(type) {}
+  ElementaryType(const lexer::DomainTag type) : tag_(type) {}
+
+  boost::json::value ToJson() const override;
 };
 
-class FuncType final {
+class FuncType final : public JsonSerializible {
   std::unique_ptr<Type> input_;
   std::unique_ptr<Type> output_;
 
  public:
   FuncType(std::unique_ptr<Type>&& input, std::unique_ptr<Type>&& output)
       : input_(std::move(input)), output_(std::move(output)) {}
+
+  boost::json::value ToJson() const override;
 };
 
-class Func final {
+class Func final : public JsonSerializible {
   std::unique_ptr<FuncType> type_;
   std::unique_ptr<FuncBody> body_;
   std::size_t ident_code_;
@@ -180,9 +221,11 @@ class Func final {
       : type_(std::move(type)),
         body_(std::move(body)),
         ident_code_(ident_code) {}
+
+  boost::json::value ToJson() const override;
 };
 
-class Program final {
+class Program final : public JsonSerializible {
   std::vector<std::unique_ptr<Func>> funcs_;
 
  public:
@@ -191,6 +234,8 @@ class Program final {
   Program(const std::move_iterator<FuncsIterator> begin,
           const std::move_iterator<FuncsIterator> end)
       : funcs_(begin, end) {}
+
+  boost::json::value ToJson() const override;
 };
 
 }  // namespace ast

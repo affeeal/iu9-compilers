@@ -410,10 +410,10 @@ void Parser::Get(const DomainTag tag) {
   oss << sym_->get_coords() << ": expected ";
 
   for (const auto tag : expected) {
-    oss << tag << ", ";
+    oss << lexer::ToString(tag) << ", ";
   }
 
-  oss << "got " << sym_->get_tag();
+  oss << "got " << lexer::ToString(sym_->get_tag());
   throw std::runtime_error(oss.str());
 }
 

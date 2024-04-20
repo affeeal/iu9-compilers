@@ -28,7 +28,7 @@ enum class DomainTag {
   kEndOfProgram,
 };
 
-std::ostream& operator<<(std::ostream& os, const DomainTag tag);
+std::string ToString(const DomainTag tag);
 
 class Token {
  public:
