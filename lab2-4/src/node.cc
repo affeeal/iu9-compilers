@@ -80,16 +80,16 @@ boost::json::value FuncBody::ToJson() const {
 boost::json::value Statement::ToJson() const {
   return {
       {"pattern", pattern_->ToJson()},
-      {"result", nullptr},
+      {"result", result_->ToJson()},
   };
 }
 
 boost::json::value PatternBinary::ToJson() const {
   return {
       {"discriminator_type", "pattern_binary"},
+      {"op", lexer::ToString(op_)},
       {"lhs", lhs_->ToJson()},
       {"rhs", rhs_->ToJson()},
-      {"op", lexer::ToString(op_)},
   };
 }
 
@@ -139,9 +139,9 @@ boost::json::value IntConst::ToJson() const {
 boost::json::value ResultBinary::ToJson() const {
   return {
       {"discriminator_type", "result_binary"},
+      {"op", lexer::ToString(op_)},
       {"lhs", lhs_->ToJson()},
       {"rhs", rhs_->ToJson()},
-      {"op", lexer::ToString(op_)},
   };
 }
 
@@ -175,8 +175,9 @@ boost::json::value ResultTuple::ToJson() const {
 
 boost::json::value FuncCall::ToJson() const {
   return {
-      {"arg", arg_->ToJson()},
+      {"discriminator_type", "func_call"},
       {"ident_code", ident_code_},
+      {"arg", arg_->ToJson()},
   };
 }
 
