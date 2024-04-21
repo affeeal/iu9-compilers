@@ -118,11 +118,14 @@ class Var final : public Pattern, public Result {
   boost::json::value ToJson() const override;
 };
 
-class IntConst final : public Pattern, public Result {
-  std::int64_t value_;
+template <typename Value>
+class Const final : public Pattern, public Result {
+  Value value_;
+  lexer::DomainTag tag_;
 
  public:
-  IntConst(const std::int64_t value) : value_(value) {}
+  Const(Value&& value, const lexer::DomainTag tag)
+      : value_(std::forward<Value>(value)), tag_(tag) {}
 
   boost::json::value ToJson() const override;
 };

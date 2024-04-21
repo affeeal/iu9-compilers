@@ -28,6 +28,8 @@ class Parser final {
   std::unique_ptr<ast::Statement> Statement();
   std::unique_ptr<ast::Pattern> Pattern();
   std::unique_ptr<ast::Pattern> PatternUnit();
+  template <typename Value>
+  std::unique_ptr<ast::Const<Value>> Const();
   std::unique_ptr<ast::PatternList> PatternList();
   std::unique_ptr<ast::PatternTuple> PatternTuple();
   std::unique_ptr<ast::Result> Result();
@@ -41,10 +43,10 @@ class Parser final {
   std::unique_ptr<ast::ResultTuple> ResultTuple();
 
   template <typename T>
-  std::unique_ptr<T> GetCasted(const lexer::DomainTag tag);
+  std::unique_ptr<T> ExpectAndCast(const lexer::DomainTag tag);
+  void Expect(const lexer::DomainTag tag);
   template <typename T>
   std::unique_ptr<T> SymTo();
-  void Get(const lexer::DomainTag tag);
   [[noreturn]] void ThrowParseError(std::vector<lexer::DomainTag>&& expected);
 
   std::unique_ptr<lexer::IScanner> scanner_;

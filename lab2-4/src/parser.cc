@@ -14,7 +14,7 @@ using lexer::DomainTag;
 std::unique_ptr<ast::Program> Parser::RecursiveDescentParse() {
   sym_ = scanner_->NextToken();
   auto program = Program();
-  Get(DomainTag::kEndOfProgram);
+  Expect(DomainTag::kEndOfProgram);
   return program;
 }
 
@@ -31,11 +31,11 @@ std::unique_ptr<ast::Program> Parser::Program() {
 
 // Func ::= Ident FuncType 'is' FuncBody 'end'.
 std::unique_ptr<ast::Func> Parser::Func() {
-  const auto ident = GetCasted<lexer::IdentToken>(DomainTag::kIdent);
+  const auto ident = ExpectAndCast<lexer::IdentToken>(DomainTag::kIdent);
   auto type = FuncType();
-  Get(DomainTag::kIs);
+  Expect(DomainTag::kIs);
   auto body = FuncBody();
-  Get(DomainTag::kEnd);
+  Expect(DomainTag::kEnd);
 
   return std::make_unique<ast::Func>(std::move(type), std::move(body),
                                      ident->get_code());
@@ -44,7 +44,7 @@ std::unique_ptr<ast::Func> Parser::Func() {
 // FuncType ::= Type '::' Type.
 std::unique_ptr<ast::FuncType> Parser::FuncType() {
   auto input = Type();
-  Get(DomainTag::kColonColon);
+  Expect(DomainTag::kColonColon);
   auto output = Type();
 
   return std::make_unique<ast::FuncType>(std::move(input), std::move(output));
@@ -71,13 +71,13 @@ std::unique_ptr<ast::Type> Parser::Type() {
 
 // ElementaryType ::= 'int'.
 std::unique_ptr<ast::ElementaryType> Parser::ElementaryType() {
-  Get(DomainTag::kInt);
+  Expect(DomainTag::kInt);
   return std::make_unique<ast::ElementaryType>(DomainTag::kInt);
 }
 
 // ListType ::= '*' Type.
 std::unique_ptr<ast::ListType> Parser::ListType() {
-  Get(DomainTag::kStar);
+  Expect(DomainTag::kStar);
   return std::make_unique<ast::ListType>(Type());
 }
 
@@ -85,7 +85,7 @@ std::unique_ptr<ast::ListType> Parser::ListType() {
 std::unique_ptr<ast::TupleType> Parser::TupleType() {
   auto types = std::vector<std::unique_ptr<ast::Type>>{};
 
-  Get(DomainTag::kParanthesisLeft);
+  Expect(DomainTag::kParanthesisLeft);
   if (const auto tag = sym_->get_tag(); tag == DomainTag::kInt ||
                                         tag == DomainTag::kStar ||
                                         tag == DomainTag::kParanthesisLeft) {
@@ -95,7 +95,7 @@ std::unique_ptr<ast::TupleType> Parser::TupleType() {
       types.push_back(Type());
     }
   }
-  Get(DomainTag::kParanthesisRight);
+  Expect(DomainTag::kParanthesisRight);
 
   return std::make_unique<ast::TupleType>(
       std::make_move_iterator(types.begin()),
@@ -119,7 +119,7 @@ std::unique_ptr<ast::FuncBody> Parser::FuncBody() {
 // Statement ::= Pattern '=' Result.
 std::unique_ptr<ast::Statement> Parser::Statement() {
   auto pattern = Pattern();
-  Get(DomainTag::kEqual);
+  Expect(DomainTag::kEqual);
   auto result = Result();
 
   return std::make_unique<ast::Statement>(std::move(pattern),
@@ -128,29 +128,27 @@ std::unique_ptr<ast::Statement> Parser::Statement() {
 
 // Pattern ::= PatternUnit (':' Pattern)?.
 std::unique_ptr<ast::Pattern> Parser::Pattern() {
-  auto pattern_unit = PatternUnit();
+  auto pattern = PatternUnit();
   if (sym_->get_tag() == DomainTag::kColon) {
     sym_ = scanner_->NextToken();
-    return std::make_unique<ast::PatternBinary>(std::move(pattern_unit),
-                                                Pattern(), DomainTag::kColon);
+    return std::make_unique<ast::PatternBinary>(std::move(pattern), Pattern(),
+                                                DomainTag::kColon);
   }
 
-  return pattern_unit;
+  return pattern;
 }
 
-// PatternUnit ::= Ident | IntConst | PatternList | PatternTuple |
+// PatternUnit ::= Ident | Const | PatternList | PatternTuple |
 //                 '[' Pattern ']'.
 std::unique_ptr<ast::Pattern> Parser::PatternUnit() {
   switch (sym_->get_tag()) {
     case DomainTag::kIdent: {
-      const auto token = SymTo<lexer::IdentToken>();
+      const auto ident = SymTo<lexer::IdentToken>();
       sym_ = scanner_->NextToken();
-      return std::make_unique<ast::Var>(token->get_code());
+      return std::make_unique<ast::Var>(ident->get_code());
     }
     case DomainTag::kIntConst: {
-      const auto token = SymTo<lexer::IntConstToken>();
-      sym_ = scanner_->NextToken();
-      return std::make_unique<ast::IntConst>(token->get_value());
+      return Const<std::int64_t>();
     }
     case DomainTag::kCurlyBracketLeft: {
       return PatternList();
@@ -161,7 +159,7 @@ std::unique_ptr<ast::Pattern> Parser::PatternUnit() {
     case DomainTag::kSquareBracketLeft: {
       sym_ = scanner_->NextToken();
       auto pattern = Pattern();
-      Get(DomainTag::kSquareBracketRight);
+      Expect(DomainTag::kSquareBracketRight);
       return pattern;
     }
     default: {
@@ -173,13 +171,22 @@ std::unique_ptr<ast::Pattern> Parser::PatternUnit() {
   }
 }
 
+// Const ::= IntConst.
+template <typename Value>
+std::unique_ptr<ast::Const<Value>> Parser::Const() {
+  const auto int_const =
+      ExpectAndCast<lexer::IntConstToken>(DomainTag::kIntConst);
+  return std::make_unique<ast::Const<std::int64_t>>(int_const->get_value(),
+                                                    DomainTag::kIntConst);
+}
+
 // TODO: unsugar pattern list to pattern binary operations.
 
 // PatternList ::= '{' (Pattern (',' Pattern)*)? '}'.
 std::unique_ptr<ast::PatternList> Parser::PatternList() {
   auto patterns = std::vector<std::unique_ptr<ast::Pattern>>{};
 
-  Get(DomainTag::kCurlyBracketLeft);
+  Expect(DomainTag::kCurlyBracketLeft);
   if (const auto tag = sym_->get_tag(); tag == DomainTag::kIdent ||
                                         tag == DomainTag::kIntConst ||
                                         tag == DomainTag::kCurlyBracketLeft ||
@@ -191,7 +198,7 @@ std::unique_ptr<ast::PatternList> Parser::PatternList() {
       patterns.push_back(Pattern());
     }
   }
-  Get(DomainTag::kCurlyBracketRight);
+  Expect(DomainTag::kCurlyBracketRight);
 
   return std::make_unique<ast::PatternList>(
       std::make_move_iterator(patterns.begin()),
@@ -202,7 +209,7 @@ std::unique_ptr<ast::PatternList> Parser::PatternList() {
 std::unique_ptr<ast::PatternTuple> Parser::PatternTuple() {
   auto patterns = std::vector<std::unique_ptr<ast::Pattern>>{};
 
-  Get(DomainTag::kParanthesisLeft);
+  Expect(DomainTag::kParanthesisLeft);
   if (const auto tag = sym_->get_tag(); tag == DomainTag::kIdent ||
                                         tag == DomainTag::kIntConst ||
                                         tag == DomainTag::kCurlyBracketLeft ||
@@ -214,7 +221,7 @@ std::unique_ptr<ast::PatternTuple> Parser::PatternTuple() {
       patterns.push_back(Pattern());
     }
   }
-  Get(DomainTag::kParanthesisRight);
+  Expect(DomainTag::kParanthesisRight);
 
   return std::make_unique<ast::PatternTuple>(
       std::make_move_iterator(patterns.begin()),
@@ -223,13 +230,14 @@ std::unique_ptr<ast::PatternTuple> Parser::PatternTuple() {
 
 // Result ::= ResultUnit (':' Result)?.
 std::unique_ptr<ast::Result> Parser::Result() {
-  auto result_unit = ResultUnit();
+  auto result = ResultUnit();
   if (sym_->get_tag() == DomainTag::kColon) {
     sym_ = scanner_->NextToken();
-    return std::make_unique<ast::ResultBinary>(std::move(result_unit), Result(),
+    return std::make_unique<ast::ResultBinary>(std::move(result), Result(),
                                                DomainTag::kColon);
   }
-  return result_unit;
+
+  return result;
 }
 
 // ResultUnit ::= Expr | ResultList | ResultTuple.
@@ -259,6 +267,7 @@ std::unique_ptr<ast::Result> Parser::Expr() {
     result =
         std::make_unique<ast::ResultBinary>(std::move(result), Term(), tag);
   }
+
   return result;
 }
 
@@ -272,6 +281,7 @@ std::unique_ptr<ast::Result> Parser::Term() {
     result =
         std::make_unique<ast::ResultBinary>(std::move(result), Factor(), tag);
   }
+
   return result;
 }
 
@@ -283,7 +293,7 @@ std::unique_ptr<ast::Result> Parser::Factor() {
   } else if (tag == DomainTag::kSquareBracketLeft) {
     sym_ = scanner_->NextToken();
     auto expr = Expr();
-    Get(DomainTag::kSquareBracketRight);
+    Expect(DomainTag::kSquareBracketRight);
     return expr;
   } else {
     ThrowParseError({DomainTag::kIntConst, DomainTag::kIdent,
@@ -291,13 +301,11 @@ std::unique_ptr<ast::Result> Parser::Factor() {
   }
 }
 
-// Atom ::= IntConst | Ident FuncArg?.
+// Atom ::= Const | Ident FuncArg?.
 std::unique_ptr<ast::Result> Parser::Atom() {
   const auto tag = sym_->get_tag();
   if (tag == DomainTag::kIntConst) {
-    const auto int_const = SymTo<lexer::IntConstToken>();
-    sym_ = scanner_->NextToken();
-    return std::make_unique<ast::IntConst>(int_const->get_value());
+    return Const<std::int64_t>();
   } else if (tag == DomainTag::kIdent) {
     const auto ident = SymTo<lexer::IdentToken>();
     sym_ = scanner_->NextToken();
@@ -326,7 +334,7 @@ std::unique_ptr<ast::Result> Parser::FuncArg() {
   } else if (tag == DomainTag::kSquareBracketLeft) {
     sym_ = scanner_->NextToken();
     auto result = Result();
-    Get(DomainTag::kSquareBracketRight);
+    Expect(DomainTag::kSquareBracketRight);
     return result;
   } else {
     ThrowParseError({DomainTag::kIntConst, DomainTag::kIdent,
@@ -339,7 +347,7 @@ std::unique_ptr<ast::Result> Parser::FuncArg() {
 std::unique_ptr<ast::ResultList> Parser::ResultList() {
   auto results = std::vector<std::unique_ptr<ast::Result>>{};
 
-  Get(DomainTag::kCurlyBracketLeft);
+  Expect(DomainTag::kCurlyBracketLeft);
   if (const auto tag = sym_->get_tag(); tag == DomainTag::kIntConst ||
                                         tag == DomainTag::kIdent ||
                                         tag == DomainTag::kSquareBracketLeft ||
@@ -351,7 +359,7 @@ std::unique_ptr<ast::ResultList> Parser::ResultList() {
       results.push_back(Result());
     }
   }
-  Get(DomainTag::kCurlyBracketRight);
+  Expect(DomainTag::kCurlyBracketRight);
 
   return std::make_unique<ast::ResultList>(
       std::make_move_iterator(results.begin()),
@@ -362,7 +370,7 @@ std::unique_ptr<ast::ResultList> Parser::ResultList() {
 std::unique_ptr<ast::ResultTuple> Parser::ResultTuple() {
   auto results = std::vector<std::unique_ptr<ast::Result>>{};
 
-  Get(DomainTag::kParanthesisLeft);
+  Expect(DomainTag::kParanthesisLeft);
   if (const auto tag = sym_->get_tag(); tag == DomainTag::kIntConst ||
                                         tag == DomainTag::kIdent ||
                                         tag == DomainTag::kSquareBracketLeft ||
@@ -374,7 +382,7 @@ std::unique_ptr<ast::ResultTuple> Parser::ResultTuple() {
       results.push_back(Result());
     }
   }
-  Get(DomainTag::kParanthesisRight);
+  Expect(DomainTag::kParanthesisRight);
 
   return std::make_unique<ast::ResultTuple>(
       std::make_move_iterator(results.begin()),
@@ -382,12 +390,12 @@ std::unique_ptr<ast::ResultTuple> Parser::ResultTuple() {
 }
 
 template <typename T>
-std::unique_ptr<T> Parser::GetCasted(const DomainTag tag) {
+std::unique_ptr<T> Parser::ExpectAndCast(const DomainTag tag) {
   if (sym_->get_tag() != tag) {
     ThrowParseError({tag});
   }
 
-  auto casted_sym = std::unique_ptr<T>{static_cast<T*>(sym_.release())};
+  auto casted_sym = SymTo<T>();
   sym_ = scanner_->NextToken();
   return casted_sym;
 }
@@ -397,7 +405,7 @@ std::unique_ptr<T> Parser::SymTo() {
   return std::unique_ptr<T>{static_cast<T*>(sym_.release())};
 }
 
-void Parser::Get(const DomainTag tag) {
+void Parser::Expect(const DomainTag tag) {
   if (sym_->get_tag() != tag) {
     ThrowParseError({tag});
   }

@@ -1,8 +1,5 @@
 #include "node.h"
 
-#include <boost/json/object.hpp>
-#include <iostream>
-
 #include "token.h"
 
 namespace parser {
@@ -132,7 +129,8 @@ boost::json::value Var::ToJson() const {
   };
 }
 
-boost::json::value IntConst::ToJson() const {
+template <>
+boost::json::value Const<std::int64_t>::ToJson() const {
   return {
       {kDiscriminatorType, "int_const"},
       {"value", value_},

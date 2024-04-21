@@ -1,6 +1,5 @@
 Program ::= Func*.
 Func ::= Ident FuncType 'is' FuncBody 'end'.
-Ident ::= [A-Za-z_] [A-Za-z_0-9]*.
 
 FuncType ::= Type '::' Type.
 Type ::= ElementaryType | ListType | TupleType.
@@ -11,17 +10,16 @@ TupleType ::= '(' (Type (',' Type)*)? ')'.
 FuncBody ::= Statement (';' Statement)*.
 Statement ::= Pattern '=' Result.
 
-Pattern ::= Ident | IntConst | PatternList | PatternTuple | '[' Pattern ']' |
-            Pattern PatternBinaryOp Pattern
-IntConst ::= [0-9]+.
-PatternBinaryOp ::= ':'
+Pattern ::= Ident | Const | PatternList | PatternTuple | '[' Pattern ']' |
+            Pattern PatternBinaryOp Pattern.
+Const ::= IntConst.
+PatternBinaryOp ::= ':'.
 PatternList ::= '{' (Pattern (',' Pattern)*)? '}'.
 PatternTuple ::= '(' (Pattern (',' Pattern)*)? ')'.
 
-Result ::= Ident | IntConst | FuncCall | ResultList | ResultTuple |
-           '[' Result ']' | Result ResultBinaryOp Result
-FuncCall ::= Ident FuncArg
-FuncArg ::= Result
-           
+Result ::= Ident | Const | FuncCall | ResultList | ResultTuple |
+           '[' Result ']' | Result ResultBinaryOp Result.
+FuncCall ::= Ident FuncArg.
+FuncArg ::= Result.
 ResultList ::= '{' (Result (',' Result)*)? '}'.
 ResultTuple ::= '(' (Result (',' Result)*)? ')'.

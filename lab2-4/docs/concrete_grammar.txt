@@ -1,6 +1,5 @@
 Program ::= Func*.
 Func ::= Ident FuncType 'is' FuncBody 'end'.
-Ident ::= [A-Za-z_] [A-Za-z_0-9]*.
 
 FuncType ::= Type '::' Type.
 Type ::= ElementaryType | ListType | TupleType.
@@ -12,19 +11,17 @@ FuncBody ::= Statement (';' Statement)*.
 Statement ::= Pattern '=' Result.
 
 Pattern ::= PatternUnit (':' Pattern)?.
-PatternUnit ::= Ident | IntConst | PatternList | PatternTuple | '[' Pattern ']'.
-IntConst ::= [0-9]+.
+PatternUnit ::= Ident | Const | PatternList | PatternTuple | '[' Pattern ']'.
+Const ::= IntConst.
 PatternList ::= '{' (Pattern (',' Pattern)*)? '}'.
 PatternTuple ::= '(' (Pattern (',' Pattern)*)? ')'.
 
 Result ::= ResultUnit (':' Result)?.
 ResultUnit ::= Expr | ResultList | ResultTuple.
-
 Expr ::= Term ('+' Term | '-' Term)*.
 Term ::= Factor ('*' Factor | '/' Factor)*.
 Factor ::= Atom | '[' Expr ']'.
-Atom ::= IntConst | Ident FuncArg?.
+Atom ::= Const | Ident FuncArg?.
 FuncArg ::= Atom | ResultList | ResultTuple | '[' Result ']'.
-
 ResultList ::= '{' (Result (',' Result)*)? '}'.
 ResultTuple ::= '(' (Result (',' Result)*)? ')'.
