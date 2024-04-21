@@ -1,0 +1,22 @@
+WHITESPACE ::= [ \t\r\n]
+COMMENT ::= @.*
+PLUS ::= \+
+MINUS ::= \-
+STAR ::= \*
+SLASH ::= \/
+EQUAL ::= =
+COMMA ::= ,
+COLON ::= : 
+COLON_COLON ::= ::
+SEMICOLON ::= ;
+PARENTHESIS_LEFT ::= \(
+PARENTHESIS_RIGHT ::= \)
+CURLY_BRACKET_LEFT ::= \{
+CURLY_BRACKET_RIGHT ::= \}
+SQUARE_BRACKET_LEFT ::= \[
+SQUARE_BRACKET_RIGHT ::= \]
+INT ::= int
+IS ::= is
+END ::= end
+IDENT ::= [A-Za-z_][A-Za-z_0-9]*
+INT_CONST ::= [0-9]+

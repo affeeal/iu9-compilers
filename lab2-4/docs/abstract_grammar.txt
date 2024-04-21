@@ -1,0 +1,25 @@
+Program ::= Func*.
+Func ::= Ident FuncType 'is' FuncBody 'end'.
+
+FuncType ::= Type '::' Type.
+Type ::= ElementaryType | ListType | TupleType.
+ElementaryType ::= 'int'.
+ListType ::= '*' Type.
+TupleType ::= '(' (Type (',' Type)*)? ')'.
+
+FuncBody ::= Statement (';' Statement)*.
+Statement ::= Pattern '=' Result.
+
+Pattern ::= Ident | Const | PatternList | PatternTuple | '[' Pattern ']' |
+            Pattern PatternBinaryOp Pattern.
+Const ::= IntConst.
+PatternBinaryOp ::= ':'.
+PatternList ::= '{' (Pattern (',' Pattern)*)? '}'.
+PatternTuple ::= '(' (Pattern (',' Pattern)*)? ')'.
+
+Result ::= Ident | Const | FuncCall | ResultList | ResultTuple |
+           '[' Result ']' | Result ResultBinaryOp Result.
+FuncCall ::= Ident FuncArg.
+FuncArg ::= Result.
+ResultList ::= '{' (Result (',' Result)*)? '}'.
+ResultTuple ::= '(' (Result (',' Result)*)? ')'.

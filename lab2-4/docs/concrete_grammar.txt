@@ -1,0 +1,27 @@
+Program ::= Func*.
+Func ::= Ident FuncType 'is' FuncBody 'end'.
+
+FuncType ::= Type '::' Type.
+Type ::= ElementaryType | ListType | TupleType.
+ElementaryType ::= 'int'.
+ListType ::= '*' Type.
+TupleType ::= '(' (Type (',' Type)*)? ')'.
+
+FuncBody ::= Statement (';' Statement)*.
+Statement ::= Pattern '=' Result.
+
+Pattern ::= PatternUnit (':' Pattern)?.
+PatternUnit ::= Ident | Const | PatternList | PatternTuple | '[' Pattern ']'.
+Const ::= IntConst.
+PatternList ::= '{' (Pattern (',' Pattern)*)? '}'.
+PatternTuple ::= '(' (Pattern (',' Pattern)*)? ')'.
+
+Result ::= ResultUnit (':' Result)?.
+ResultUnit ::= Expr | ResultList | ResultTuple.
+Expr ::= Term ('+' Term | '-' Term)*.
+Term ::= Factor ('*' Factor | '/' Factor)*.
+Factor ::= Atom | '[' Expr ']'.
+Atom ::= Const | Ident FuncArg?.
+FuncArg ::= Atom | ResultList | ResultTuple | '[' Result ']'.
+ResultList ::= '{' (Result (',' Result)*)? '}'.
+ResultTuple ::= '(' (Result (',' Result)*)? ')'.
