@@ -1,12 +1,15 @@
 #include "node.h"
 
 #include <boost/json/object.hpp>
+#include <iostream>
 
 #include "token.h"
 
 namespace parser {
 
 namespace ast {
+
+static constexpr std::string_view kDiscriminatorType = "discriminator_type";
 
 boost::json::value Program::ToJson() const {
   auto program = boost::json::object{};
@@ -38,21 +41,21 @@ boost::json::value FuncType::ToJson() const {
 
 boost::json::value ElementaryType::ToJson() const {
   return {
-      {"discriminator_type", "elementary_type"},
+      {kDiscriminatorType, "elementary_type"},
       {"tag", lexer::ToString(tag_)},
   };
 }
 
 boost::json::value ListType::ToJson() const {
   return {
-      {"discriminator_type", "list_type"},
+      {kDiscriminatorType, "list_type"},
       {"type", type_->ToJson()},
   };
 }
 
 boost::json::value TupleType::ToJson() const {
   auto tuple = boost::json::object{};
-  tuple["discriminator_type"] = "tuple_type";
+  tuple[kDiscriminatorType] = "tuple_type";
 
   auto& types = (tuple["types"] = boost::json::array{}).as_array();
   types.reserve(types_.size());
@@ -86,7 +89,7 @@ boost::json::value Statement::ToJson() const {
 
 boost::json::value PatternBinary::ToJson() const {
   return {
-      {"discriminator_type", "pattern_binary"},
+      {kDiscriminatorType, "pattern_binary"},
       {"op", lexer::ToString(op_)},
       {"lhs", lhs_->ToJson()},
       {"rhs", rhs_->ToJson()},
@@ -95,7 +98,7 @@ boost::json::value PatternBinary::ToJson() const {
 
 boost::json::value PatternList::ToJson() const {
   auto pattern_list = boost::json::object{};
-  pattern_list["discriminator_type"] = "pattern_list";
+  pattern_list[kDiscriminatorType] = "pattern_list";
 
   auto& patterns = (pattern_list["patterns"] = boost::json::array{}).as_array();
   patterns.reserve(patterns_.size());
@@ -109,7 +112,7 @@ boost::json::value PatternList::ToJson() const {
 
 boost::json::value PatternTuple::ToJson() const {
   auto pattern_tuple = boost::json::object{};
-  pattern_tuple["discriminator_type"] = "pattern_tuple";
+  pattern_tuple[kDiscriminatorType] = "pattern_tuple";
 
   auto& patterns =
       (pattern_tuple["patterns"] = boost::json::array{}).as_array();
@@ -124,21 +127,21 @@ boost::json::value PatternTuple::ToJson() const {
 
 boost::json::value Var::ToJson() const {
   return {
-      {"discriminator_type", "var"},
+      {kDiscriminatorType, "var"},
       {"ident_code", ident_code_},
   };
 }
 
 boost::json::value IntConst::ToJson() const {
   return {
-      {"discriminator_type", "int_const"},
+      {kDiscriminatorType, "int_const"},
       {"value", value_},
   };
 }
 
 boost::json::value ResultBinary::ToJson() const {
   return {
-      {"discriminator_type", "result_binary"},
+      {kDiscriminatorType, "result_binary"},
       {"op", lexer::ToString(op_)},
       {"lhs", lhs_->ToJson()},
       {"rhs", rhs_->ToJson()},
@@ -147,7 +150,7 @@ boost::json::value ResultBinary::ToJson() const {
 
 boost::json::value ResultList::ToJson() const {
   auto result_list = boost::json::object{};
-  result_list["discriminator_type"] = "result_list";
+  result_list[kDiscriminatorType] = "result_list";
 
   auto& results = (result_list["results"] = boost::json::array{}).as_array();
   results.reserve(results_.size());
@@ -161,7 +164,7 @@ boost::json::value ResultList::ToJson() const {
 
 boost::json::value ResultTuple::ToJson() const {
   auto result_tuple = boost::json::object{};
-  result_tuple["discriminator_type"] = "result_tuple";
+  result_tuple[kDiscriminatorType] = "result_tuple";
 
   auto& results = (result_tuple["results"] = boost::json::array{}).as_array();
   results.reserve(results_.size());
@@ -175,7 +178,7 @@ boost::json::value ResultTuple::ToJson() const {
 
 boost::json::value FuncCall::ToJson() const {
   return {
-      {"discriminator_type", "func_call"},
+      {kDiscriminatorType, "func_call"},
       {"ident_code", ident_code_},
       {"arg", arg_->ToJson()},
   };

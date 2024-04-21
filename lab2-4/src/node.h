@@ -21,7 +21,7 @@ class JsonSerializible {
 
 namespace ast {
 
-class Pattern : public JsonSerializible {
+class Pattern : virtual public JsonSerializible {
  public:
   virtual ~Pattern() = default;
 };
@@ -65,7 +65,7 @@ class PatternTuple final : public Pattern {
   boost::json::value ToJson() const override;
 };
 
-class Result : public JsonSerializible {
+class Result : virtual public JsonSerializible {
  public:
   virtual ~Result() = default;
 };
