@@ -93,20 +93,6 @@ boost::json::value PatternBinary::ToJson() const {
   };
 }
 
-boost::json::value PatternList::ToJson() const {
-  auto pattern_list = boost::json::object{};
-  pattern_list[kDiscriminatorType] = "pattern_list";
-
-  auto& patterns = (pattern_list["patterns"] = boost::json::array{}).as_array();
-  patterns.reserve(patterns_.size());
-
-  for (auto&& pattern : patterns_) {
-    patterns.push_back(pattern->ToJson());
-  }
-
-  return pattern_list;
-}
-
 boost::json::value PatternTuple::ToJson() const {
   auto pattern_tuple = boost::json::object{};
   pattern_tuple[kDiscriminatorType] = "pattern_tuple";
@@ -120,6 +106,12 @@ boost::json::value PatternTuple::ToJson() const {
   }
 
   return pattern_tuple;
+}
+
+boost::json::value EmptyList::ToJson() const {
+  return {
+      {kDiscriminatorType, "empty_list"},
+  };
 }
 
 boost::json::value Var::ToJson() const {
@@ -144,20 +136,6 @@ boost::json::value ResultBinary::ToJson() const {
       {"lhs", lhs_->ToJson()},
       {"rhs", rhs_->ToJson()},
   };
-}
-
-boost::json::value ResultList::ToJson() const {
-  auto result_list = boost::json::object{};
-  result_list[kDiscriminatorType] = "result_list";
-
-  auto& results = (result_list["results"] = boost::json::array{}).as_array();
-  results.reserve(results_.size());
-
-  for (auto&& result : results_) {
-    results.push_back(result->ToJson());
-  }
-
-  return result_list;
 }
 
 boost::json::value ResultTuple::ToJson() const {

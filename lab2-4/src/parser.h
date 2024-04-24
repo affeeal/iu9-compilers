@@ -30,7 +30,8 @@ class Parser final {
   std::unique_ptr<ast::Pattern> PatternUnit();
   template <typename Value>
   std::unique_ptr<ast::Const<Value>> Const();
-  std::unique_ptr<ast::PatternList> PatternList();
+  std::unique_ptr<ast::Pattern> PatternList();
+  std::unique_ptr<ast::PatternBinary> PatternListItems();
   std::unique_ptr<ast::PatternTuple> PatternTuple();
   std::unique_ptr<ast::Result> Result();
   std::unique_ptr<ast::Result> ResultUnit();
@@ -39,7 +40,8 @@ class Parser final {
   std::unique_ptr<ast::Result> Factor();
   std::unique_ptr<ast::Result> Atom();
   std::unique_ptr<ast::Result> FuncArg();
-  std::unique_ptr<ast::ResultList> ResultList();
+  std::unique_ptr<ast::Result> ResultList();
+  std::unique_ptr<ast::ResultBinary> ResultListItems();
   std::unique_ptr<ast::ResultTuple> ResultTuple();
 
   template <typename T>

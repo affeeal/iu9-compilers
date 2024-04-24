@@ -38,20 +38,6 @@ class PatternBinary final : public Pattern {
   boost::json::value ToJson() const override;
 };
 
-// TODO: unsugar to binary operations
-class PatternList final : public Pattern {
-  std::vector<std::unique_ptr<Pattern>> patterns_;
-
- public:
-  using PatternsIterator = decltype(patterns_)::iterator;
-
-  PatternList(const std::move_iterator<PatternsIterator> begin,
-              const std::move_iterator<PatternsIterator> end)
-      : patterns_(begin, end) {}
-
-  boost::json::value ToJson() const override;
-};
-
 class PatternTuple final : public Pattern {
   std::vector<std::unique_ptr<Pattern>> patterns_;
 
@@ -82,20 +68,6 @@ class ResultBinary final : public Result {
   boost::json::value ToJson() const override;
 };
 
-// TODO: unsugar to binary operations?
-class ResultList final : public Result {
-  std::vector<std::unique_ptr<Result>> results_;
-
- public:
-  using ResultsIterator = decltype(results_)::iterator;
-
-  ResultList(const std::move_iterator<ResultsIterator> begin,
-             const std::move_iterator<ResultsIterator> end)
-      : results_(begin, end) {}
-
-  boost::json::value ToJson() const override;
-};
-
 class ResultTuple final : public Result {
   std::vector<std::unique_ptr<Result>> results_;
 
@@ -105,6 +77,13 @@ class ResultTuple final : public Result {
   ResultTuple(const std::move_iterator<ResultsIterator> begin,
               const std::move_iterator<ResultsIterator> end)
       : results_(begin, end) {}
+
+  boost::json::value ToJson() const override;
+};
+
+class EmptyList final : public Pattern, public Result {
+ public:
+  EmptyList() = default;
 
   boost::json::value ToJson() const override;
 };

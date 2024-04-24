@@ -179,29 +179,40 @@ std::unique_ptr<ast::Const<Value>> Parser::Const() {
                                                     DomainTag::kIntConst);
 }
 
-// TODO: unsugar pattern, result lists to pattern binary operations.
-
-// PatternList ::= '{' (Pattern (',' Pattern)*)? '}'.
-std::unique_ptr<ast::PatternList> Parser::PatternList() {
-  auto patterns = std::vector<std::unique_ptr<ast::Pattern>>{};
-
+// PatternList ::= '{' PatternListItems? '}' .
+std::unique_ptr<ast::Pattern> Parser::PatternList() {
   Expect(DomainTag::kCurlyBracketLeft);
+
+  std::unique_ptr<ast::Pattern> pattern;
   if (const auto tag = sym_->get_tag(); tag == DomainTag::kIdent ||
                                         tag == DomainTag::kIntConst ||
                                         tag == DomainTag::kCurlyBracketLeft ||
                                         tag == DomainTag::kParanthesisLeft ||
                                         tag == DomainTag::kSquareBracketLeft) {
-    patterns.push_back(Pattern());
-    while (sym_->get_tag() == DomainTag::kComma) {
-      sym_ = scanner_->NextToken();
-      patterns.push_back(Pattern());
-    }
+    pattern = PatternListItems();
+  } else {
+    pattern = std::make_unique<ast::EmptyList>();
   }
+
   Expect(DomainTag::kCurlyBracketRight);
 
-  return std::make_unique<ast::PatternList>(
-      std::make_move_iterator(patterns.begin()),
-      std::make_move_iterator(patterns.end()));
+  return pattern;
+}
+
+// PatternListItems ::= Pattern (',' PatternListItems)? .
+std::unique_ptr<ast::PatternBinary> Parser::PatternListItems() {
+  auto lhs = Pattern();
+
+  std::unique_ptr<ast::Pattern> rhs;
+  if (sym_->get_tag() == DomainTag::kComma) {
+    sym_ = scanner_->NextToken();
+    rhs = PatternListItems();
+  } else {
+    rhs = std::make_unique<ast::EmptyList>();
+  }
+
+  return std::make_unique<ast::PatternBinary>(std::move(lhs), std::move(rhs),
+                                              DomainTag::kColon);
 }
 
 // PatternTuple ::= '(' (Pattern (',' Pattern)*)? ')'.
@@ -342,27 +353,40 @@ std::unique_ptr<ast::Result> Parser::FuncArg() {
   }
 }
 
-// ResultList ::= '{' (Result (',' Result)*)? '}'.
-std::unique_ptr<ast::ResultList> Parser::ResultList() {
-  auto results = std::vector<std::unique_ptr<ast::Result>>{};
-
+// ResultList ::= '{' ResultListItems? '}' .
+std::unique_ptr<ast::Result> Parser::ResultList() {
   Expect(DomainTag::kCurlyBracketLeft);
-  if (const auto tag = sym_->get_tag(); tag == DomainTag::kIntConst ||
-                                        tag == DomainTag::kIdent ||
-                                        tag == DomainTag::kSquareBracketLeft ||
+
+  std::unique_ptr<ast::Result> result;
+  if (const auto tag = sym_->get_tag(); tag == DomainTag::kIdent ||
+                                        tag == DomainTag::kIntConst ||
                                         tag == DomainTag::kCurlyBracketLeft ||
-                                        tag == DomainTag::kParanthesisLeft) {
-    results.push_back(Result());
-    while (sym_->get_tag() == DomainTag::kComma) {
-      sym_ = scanner_->NextToken();
-      results.push_back(Result());
-    }
+                                        tag == DomainTag::kParanthesisLeft ||
+                                        tag == DomainTag::kSquareBracketLeft) {
+    result = ResultListItems();
+  } else {
+    result = std::make_unique<ast::EmptyList>();
   }
+
   Expect(DomainTag::kCurlyBracketRight);
 
-  return std::make_unique<ast::ResultList>(
-      std::make_move_iterator(results.begin()),
-      std::make_move_iterator(results.end()));
+  return result;
+}
+
+// ResultListItems ::= Result (',' ResultListItems)? .
+std::unique_ptr<ast::ResultBinary> Parser::ResultListItems() {
+  auto lhs = Result();
+
+  std::unique_ptr<ast::Result> rhs;
+  if (sym_->get_tag() == DomainTag::kComma) {
+    sym_ = scanner_->NextToken();
+    rhs = ResultListItems();
+  } else {
+    rhs = std::make_unique<ast::EmptyList>();
+  }
+
+  return std::make_unique<ast::ResultBinary>(std::move(lhs), std::move(rhs),
+                                             DomainTag::kColon);
 }
 
 // ResultTuple ::= '(' (Result (',' Result)*)? ')'.
