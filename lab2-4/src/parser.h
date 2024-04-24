@@ -25,7 +25,7 @@ class Parser final {
   std::unique_ptr<ast::ListType> ListType();
   std::unique_ptr<ast::TupleType> TupleType();
   std::unique_ptr<ast::FuncBody> FuncBody();
-  std::unique_ptr<ast::Statement> Statement();
+  std::unique_ptr<ast::Sentence> Sentence();
   std::unique_ptr<ast::Pattern> Pattern();
   std::unique_ptr<ast::Pattern> PatternUnit();
   template <typename Value>

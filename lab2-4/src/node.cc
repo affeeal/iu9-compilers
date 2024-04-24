@@ -67,17 +67,17 @@ boost::json::value TupleType::ToJson() const {
 boost::json::value FuncBody::ToJson() const {
   auto func_body = boost::json::object{};
 
-  auto& stmts = (func_body["stmts"] = boost::json::array{}).as_array();
-  stmts.reserve(stmts_.size());
+  auto& sents = (func_body["sents"] = boost::json::array{}).as_array();
+  sents.reserve(sents_.size());
 
-  for (auto&& stmt : stmts_) {
-    stmts.push_back(stmt->ToJson());
+  for (auto&& sent : sents_) {
+    sents.push_back(sent->ToJson());
   }
 
   return func_body;
 }
 
-boost::json::value Statement::ToJson() const {
+boost::json::value Sentence::ToJson() const {
   return {
       {"pattern", pattern_->ToJson()},
       {"result", result_->ToJson()},

@@ -7,8 +7,8 @@ ElementaryType ::= 'int'.
 ListType ::= '*' Type.
 TupleType ::= '(' (Type (',' Type)*)? ')'.
 
-FuncBody ::= Statement (';' Statement)*.
-Statement ::= Pattern '=' Result.
+FuncBody ::= Sentence (';' Sentence)*.
+Sentence ::= Pattern '=' Result.
 
 Pattern ::= PatternUnit (':' Pattern)?.
 PatternUnit ::= Ident | Const | PatternList | PatternTuple | '[' Pattern ']'.

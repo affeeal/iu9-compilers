@@ -102,28 +102,27 @@ std::unique_ptr<ast::TupleType> Parser::TupleType() {
       std::make_move_iterator(types.end()));
 }
 
-// FuncBody ::= Statement (';' Statement)*.
+// FuncBody ::= Sentence (';' Sentence)*.
 std::unique_ptr<ast::FuncBody> Parser::FuncBody() {
-  auto stmts = std::vector<std::unique_ptr<ast::Statement>>{};
+  auto sents = std::vector<std::unique_ptr<ast::Sentence>>{};
 
-  stmts.push_back(Statement());
+  sents.push_back(Sentence());
   while (sym_->get_tag() == DomainTag::kSemicolon) {
     sym_ = scanner_->NextToken();
-    stmts.push_back(Statement());
+    sents.push_back(Sentence());
   }
 
-  return std::make_unique<ast::FuncBody>(std::make_move_iterator(stmts.begin()),
-                                         std::make_move_iterator(stmts.end()));
+  return std::make_unique<ast::FuncBody>(std::make_move_iterator(sents.begin()),
+                                         std::make_move_iterator(sents.end()));
 }
 
-// Statement ::= Pattern '=' Result.
-std::unique_ptr<ast::Statement> Parser::Statement() {
+// Sentence ::= Pattern '=' Result.
+std::unique_ptr<ast::Sentence> Parser::Sentence() {
   auto pattern = Pattern();
   Expect(DomainTag::kEqual);
   auto result = Result();
 
-  return std::make_unique<ast::Statement>(std::move(pattern),
-                                          std::move(result));
+  return std::make_unique<ast::Sentence>(std::move(pattern), std::move(result));
 }
 
 // Pattern ::= PatternUnit (':' Pattern)?.
@@ -180,7 +179,7 @@ std::unique_ptr<ast::Const<Value>> Parser::Const() {
                                                     DomainTag::kIntConst);
 }
 
-// TODO: unsugar pattern list to pattern binary operations.
+// TODO: unsugar pattern, result lists to pattern binary operations.
 
 // PatternList ::= '{' (Pattern (',' Pattern)*)? '}'.
 std::unique_ptr<ast::PatternList> Parser::PatternList() {

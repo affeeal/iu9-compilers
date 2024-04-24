@@ -38,7 +38,7 @@ class PatternBinary final : public Pattern {
   boost::json::value ToJson() const override;
 };
 
-// TODO: collapse list to binary operations?
+// TODO: unsugar to binary operations
 class PatternList final : public Pattern {
   std::vector<std::unique_ptr<Pattern>> patterns_;
 
@@ -82,7 +82,7 @@ class ResultBinary final : public Result {
   boost::json::value ToJson() const override;
 };
 
-// TODO: collapse list to binary operations?
+// TODO: unsugar to binary operations?
 class ResultList final : public Result {
   std::vector<std::unique_ptr<Result>> results_;
 
@@ -141,27 +141,26 @@ class FuncCall final : public Result {
   boost::json::value ToJson() const override;
 };
 
-class Statement final : public JsonSerializible {
+class Sentence final : public JsonSerializible {
   std::unique_ptr<Pattern> pattern_;
   std::unique_ptr<Result> result_;
 
  public:
-  Statement(std::unique_ptr<Pattern>&& pattern,
-            std::unique_ptr<Result>&& result)
+  Sentence(std::unique_ptr<Pattern>&& pattern, std::unique_ptr<Result>&& result)
       : pattern_(std::move(pattern)), result_(std::move(result)) {}
 
   boost::json::value ToJson() const override;
 };
 
 class FuncBody final : public JsonSerializible {
-  std::vector<std::unique_ptr<Statement>> stmts_;
+  std::vector<std::unique_ptr<Sentence>> sents_;
 
  public:
-  using StmtsIterator = decltype(stmts_)::iterator;
+  using SentsIterator = decltype(sents_)::iterator;
 
-  FuncBody(const std::move_iterator<StmtsIterator> begin,
-           const std::move_iterator<StmtsIterator> end)
-      : stmts_(begin, end) {}
+  FuncBody(const std::move_iterator<SentsIterator> begin,
+           const std::move_iterator<SentsIterator> end)
+      : sents_(begin, end) {}
 
   boost::json::value ToJson() const override;
 };
