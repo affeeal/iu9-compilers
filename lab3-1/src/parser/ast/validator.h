@@ -20,6 +20,8 @@ class Validator final : public IVisitor {
   std::unordered_set<std::string> involved_nonterminals_;
 
  public:
+  const Index& get_index() const noexcept { return index_; }
+
   void Visit(const Program& program) override;
   void Visit(const Rule& rule) override;
   void Visit(const Term& term) override;
