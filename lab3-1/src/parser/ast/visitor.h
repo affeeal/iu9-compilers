@@ -7,21 +7,16 @@ namespace ast {
 class Program;
 class Rule;
 class Term;
-class Epsilon;
-class Terminal;
-class NonTerminal;
+class Symbol;
 
 class IVisitor {
  public:
-  ~IVisitor() = default;
+  virtual ~IVisitor() = default;
 
- public:
-  virtual void Visit(Program& program) = 0;
-  virtual void Visit(Rule& rule) = 0;
-  virtual void Visit(Term& term) = 0;
-  virtual void Visit(Epsilon& epsilon) = 0;
-  virtual void Visit(Terminal& terminal) = 0;
-  virtual void Visit(NonTerminal& non_terminal) = 0;
+  virtual void Visit(const Program& program) = 0;
+  virtual void Visit(const Rule& rule) = 0;
+  virtual void Visit(const Term& term) = 0;
+  virtual void Visit(const Symbol& symbol) = 0;
 };
 
 }  // namespace ast

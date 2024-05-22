@@ -43,7 +43,7 @@ class Scanner final : private yyFlexLexer, public IScanner {
 
   void AdjustCoords(Fragment& coords) noexcept;
 
-  DomainTag HandleNonTerminal(Attribute& attr) const;
+  DomainTag HandleNonterminal(Attribute& attr) const;
   DomainTag HandleTerminal(Attribute& attr) const;
 
   std::shared_ptr<Compiler> compiler_;

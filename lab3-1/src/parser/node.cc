@@ -2,45 +2,45 @@
 
 namespace parser {
 
-std::string_view ToString(const NonTerminal non_terminal) {
-  switch (non_terminal) {
-    case NonTerminal::kProgram: {
+std::string_view ToString(const Nonterminal nonterminal) {
+  switch (nonterminal) {
+    case Nonterminal::kProgram: {
       return "Program";
     }
-    case NonTerminal::kRules: {
+    case Nonterminal::kRules: {
       return "Rules";
     }
-    case NonTerminal::kRule: {
+    case Nonterminal::kRule: {
       return "Rule";
     }
-    case NonTerminal::kRuleLHS: {
+    case Nonterminal::kRuleLHS: {
       return "RuleLHS";
     }
-    case NonTerminal::kRuleRHS: {
+    case Nonterminal::kRuleRHS: {
       return "RuleRHS";
     }
-    case NonTerminal::kExpr: {
+    case Nonterminal::kExpr: {
       return "Expr";
     }
-    case NonTerminal::kExpr1: {
+    case Nonterminal::kExpr1: {
       return "Expr1";
     }
-    case NonTerminal::kTerm: {
+    case Nonterminal::kTerm: {
       return "Term";
     }
-    case NonTerminal::kTerm1: {
+    case Nonterminal::kTerm1: {
       return "Term1";
     }
-    case NonTerminal::kSymbol: {
+    case Nonterminal::kSymbol: {
       return "Symbol";
     }
-    case NonTerminal::kDummy: {
+    case Nonterminal::kDummy: {
       return "Dummy";
     }
   }
 }
 
-std::ostream& operator<<(std::ostream& os, const NonTerminal nt) {
+std::ostream& operator<<(std::ostream& os, const Nonterminal nt) {
   return os << ToString(nt);
 }
 

@@ -6,6 +6,7 @@
 #include "ast.h"
 #include "parser.h"
 #include "scanner.h"
+#include "validator.h"
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
@@ -24,9 +25,11 @@ int main(int argc, char* argv[]) {
   auto parser = parser::Parser();
 
   try {
-    const auto root = parser.TopDownParse(scanner);
+    const auto dt = parser.TopDownParse(scanner);
     const auto ast =
-        parser::ast::DtToAst(static_cast<parser::dt::InnerNode&>(*root));
+        parser::ast::DtToAst(static_cast<parser::dt::InnerNode&>(*dt));
+    auto validator = parser::ast::Validator();
+    ast->Accept(validator);
   } catch (const std::exception& e) {
     std::cerr << e.what() << std::endl;
     return 1;

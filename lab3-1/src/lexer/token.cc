@@ -4,7 +4,7 @@ namespace lexer {
 
 std::string_view ToString(const DomainTag tag) {
   switch (tag) {
-    case DomainTag::kNonTerminal: {
+    case DomainTag::kNonterminal: {
       return "NONTERMINAL";
     }
     case DomainTag::kTerminal: {

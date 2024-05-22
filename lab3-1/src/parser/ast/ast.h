@@ -1,64 +1,82 @@
 #pragma once
 
 #include "node.h"
+#include "visitor.h"
 
 namespace parser {
 
 namespace ast {
 
-class ISymbol {
+class INode {
  public:
-  virtual ~ISymbol() = default;
+  virtual ~INode() = default;
+
+  virtual void Accept(IVisitor& visitor) const = 0;
 };
 
-class Terminal final : public ISymbol {
-  std::string data_;
+class Symbol final : public INode {
+ public:
+  enum class Type {
+    kTerminal,
+    kNonterminal,
+  };
 
  public:
-  Terminal(const std::string& data) : data_(data) {}
+  Symbol(std::string name, const Type type) noexcept
+      : type_(type), name_(std::move(name)) {}
+
+  const std::string& get_name() const noexcept { return name_; }
+  Type get_type() const noexcept { return type_; }
+
+  void Accept(IVisitor& visitor) const override { visitor.Visit(*this); }
+
+ private:
+  Type type_;
+  std::string name_;
 };
 
-class NonTerminal final : public ISymbol {
-  std::string data_;
+class Term final : public INode {
+  std::vector<Symbol> syms_;
 
  public:
-  NonTerminal(const std::string& data) : data_(data) {}
+  Term(std::vector<Symbol>&& syms) noexcept : syms_(std::move(syms)) {}
+
+  auto SymsCbegin() const noexcept { return syms_.cbegin(); }
+  auto SymsCend() const noexcept { return syms_.cend(); }
+
+  void Accept(IVisitor& visitor) const override { visitor.Visit(*this); }
 };
 
-class ITerm {
- public:
-  virtual ~ITerm() = default;
-};
-
-class Epsilon final : public ITerm {
- public:
-  Epsilon() = default;
-};
-
-class Term final : public ITerm {
-  std::vector<std::unique_ptr<ISymbol>> syms_;
-
- public:
-  Term(std::vector<std::unique_ptr<ISymbol>>&& syms) : syms_(std::move(syms)) {}
-};
-
-class Rule final {
+class Rule final : public INode {
   bool is_axiom_;
-  NonTerminal lhs_;
-  std::vector<std::unique_ptr<ITerm>> rhs_;
+  std::string lhs_;
+  std::vector<std::unique_ptr<Term>> rhs_;
 
  public:
-  Rule(std::vector<std::unique_ptr<ITerm>>&& rhs, const NonTerminal lhs,
-       const bool is_axiom = false)
-      : is_axiom_(is_axiom), lhs_(lhs), rhs_(std::move(rhs)) {}
+  Rule(std::string lhs, std::vector<std::unique_ptr<Term>>&& rhs,
+       const bool is_axiom) noexcept
+      : is_axiom_(is_axiom), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
+
+  const std::string& get_lhs() const noexcept { return lhs_; }
+  bool get_is_axiom() const noexcept { return is_axiom_; }
+
+  auto RhsCbegin() const noexcept { return rhs_.cbegin(); }
+  auto RhsCend() const noexcept { return rhs_.cend(); }
+
+  void Accept(IVisitor& visitor) const override { visitor.Visit(*this); }
 };
 
-class Program final {
+class Program final : public INode {
   std::vector<std::unique_ptr<Rule>> rules_;
 
  public:
-  Program(std::vector<std::unique_ptr<Rule>>&& rules)
+  Program(std::vector<std::unique_ptr<Rule>>&& rules) noexcept
       : rules_(std::move(rules)) {}
+
+  auto RulesCbegin() const noexcept { return rules_.cbegin(); }
+  auto RulesCend() const noexcept { return rules_.cend(); }
+
+  void Accept(IVisitor& visitor) const override { visitor.Visit(*this); }
 };
 
 std::unique_ptr<Program> DtToAst(const dt::InnerNode& program);

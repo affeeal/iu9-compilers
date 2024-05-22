@@ -30,11 +30,11 @@ class AnalyzerTable final {
   AnalyzerTable(const AnalyzerTable&) = delete;
   AnalyzerTable& operator=(const AnalyzerTable&) = delete;
 
-  auto Find(const NonTerminal non_terminal, const lexer::DomainTag tag) const&;
+  auto Find(const Nonterminal nonterminal, const lexer::DomainTag tag) const&;
   auto Cend() const& noexcept { return um_.cend(); }
 
  private:
-  using Key = std::pair<NonTerminal, lexer::DomainTag>;
+  using Key = std::pair<Nonterminal, lexer::DomainTag>;
   using SententionalFormRef = std::reference_wrapper<const SententionalForm>;
 
   AnalyzerTable();

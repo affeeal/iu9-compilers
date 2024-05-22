@@ -5,7 +5,7 @@
 namespace lexer {
 
 enum class DomainTag {
-  kNonTerminal,
+  kNonterminal,
   kTerminal,
   kOpArrow,
   kKwAxiom,
@@ -33,13 +33,13 @@ class Token {
   Fragment coords_;
 };
 
-class NonTerminalToken final : public Token {
+class NonterminalToken final : public Token {
   std::string str_;
 
  public:
   template <typename String>
-  NonTerminalToken(String&& str, const Fragment& coords) noexcept
-      : Token(DomainTag::kNonTerminal, coords),
+  NonterminalToken(String&& str, const Fragment& coords) noexcept
+      : Token(DomainTag::kNonterminal, coords),
         str_(std::forward<String>(str)) {}
 
   const std::string& get_str() const& noexcept { return str_; }

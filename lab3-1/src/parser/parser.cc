@@ -32,64 +32,64 @@ using lexer::DomainTag;
 
 AnalyzerTable::AnalyzerTable()
     : sfs_({
-          {NonTerminal::kRules},                      // 0
-          {NonTerminal::kRule, NonTerminal::kRules},  // 1
+          {Nonterminal::kRules},                      // 0
+          {Nonterminal::kRule, Nonterminal::kRules},  // 1
           {/* ε */},                                  // 2
-          {NonTerminal::kRuleLHS, DomainTag::kOpArrow,
-           NonTerminal::kRuleRHS},                                      // 3
-          {DomainTag::kKwAxiom, DomainTag::kNonTerminal},               // 4
-          {DomainTag::kNonTerminal},                                    // 5
-          {NonTerminal::kExpr, DomainTag::kKwEnd},                      // 6
-          {NonTerminal::kTerm, NonTerminal::kExpr1},                    // 7
-          {DomainTag::kKwOr, NonTerminal::kTerm, NonTerminal::kExpr1},  // 8
-          {NonTerminal::kSymbol, NonTerminal::kTerm1},                  // 9
+          {Nonterminal::kRuleLHS, DomainTag::kOpArrow,
+           Nonterminal::kRuleRHS},                                      // 3
+          {DomainTag::kKwAxiom, DomainTag::kNonterminal},               // 4
+          {DomainTag::kNonterminal},                                    // 5
+          {Nonterminal::kExpr, DomainTag::kKwEnd},                      // 6
+          {Nonterminal::kTerm, Nonterminal::kExpr1},                    // 7
+          {DomainTag::kKwOr, Nonterminal::kTerm, Nonterminal::kExpr1},  // 8
+          {Nonterminal::kSymbol, Nonterminal::kTerm1},                  // 9
           {DomainTag::kTerminal},                                       // 10
           {DomainTag::kKwEpsilon},                                      // 11
       }),
       um_({
-          {{NonTerminal::kProgram, DomainTag::kNonTerminal}, sfs_[0]},
-          {{NonTerminal::kProgram, DomainTag::kKwAxiom}, sfs_[0]},
-          {{NonTerminal::kProgram, DomainTag::kEndOfProgram}, sfs_[0]},
-          {{NonTerminal::kRules, DomainTag::kNonTerminal}, sfs_[1]},
-          {{NonTerminal::kRules, DomainTag::kKwAxiom}, sfs_[1]},
-          {{NonTerminal::kRules, DomainTag::kEndOfProgram}, sfs_[2]},
-          {{NonTerminal::kRule, DomainTag::kNonTerminal}, sfs_[3]},
-          {{NonTerminal::kRule, DomainTag::kKwAxiom}, sfs_[3]},
-          {{NonTerminal::kRuleLHS, DomainTag::kNonTerminal}, sfs_[5]},
-          {{NonTerminal::kRuleLHS, DomainTag::kKwAxiom}, sfs_[4]},
-          {{NonTerminal::kRuleRHS, DomainTag::kNonTerminal}, sfs_[6]},
-          {{NonTerminal::kRuleRHS, DomainTag::kTerminal}, sfs_[6]},
-          {{NonTerminal::kRuleRHS, DomainTag::kKwEpsilon}, sfs_[6]},
-          {{NonTerminal::kExpr, DomainTag::kNonTerminal}, sfs_[7]},
-          {{NonTerminal::kExpr, DomainTag::kTerminal}, sfs_[7]},
-          {{NonTerminal::kExpr, DomainTag::kKwEpsilon}, sfs_[7]},
-          {{NonTerminal::kExpr1, DomainTag::kKwOr}, sfs_[8]},
-          {{NonTerminal::kExpr1, DomainTag::kKwEnd}, sfs_[2]},
-          {{NonTerminal::kTerm, DomainTag::kNonTerminal}, sfs_[9]},
-          {{NonTerminal::kTerm, DomainTag::kTerminal}, sfs_[9]},
-          {{NonTerminal::kTerm, DomainTag::kKwEpsilon}, sfs_[11]},
-          {{NonTerminal::kTerm1, DomainTag::kNonTerminal}, sfs_[9]},
-          {{NonTerminal::kTerm1, DomainTag::kTerminal}, sfs_[9]},
-          {{NonTerminal::kTerm1, DomainTag::kKwOr}, sfs_[2]},
-          {{NonTerminal::kTerm1, DomainTag::kKwEnd}, sfs_[2]},
-          {{NonTerminal::kSymbol, DomainTag::kNonTerminal}, sfs_[5]},
-          {{NonTerminal::kSymbol, DomainTag::kTerminal}, sfs_[10]},
+          {{Nonterminal::kProgram, DomainTag::kNonterminal}, sfs_[0]},
+          {{Nonterminal::kProgram, DomainTag::kKwAxiom}, sfs_[0]},
+          {{Nonterminal::kProgram, DomainTag::kEndOfProgram}, sfs_[0]},
+          {{Nonterminal::kRules, DomainTag::kNonterminal}, sfs_[1]},
+          {{Nonterminal::kRules, DomainTag::kKwAxiom}, sfs_[1]},
+          {{Nonterminal::kRules, DomainTag::kEndOfProgram}, sfs_[2]},
+          {{Nonterminal::kRule, DomainTag::kNonterminal}, sfs_[3]},
+          {{Nonterminal::kRule, DomainTag::kKwAxiom}, sfs_[3]},
+          {{Nonterminal::kRuleLHS, DomainTag::kNonterminal}, sfs_[5]},
+          {{Nonterminal::kRuleLHS, DomainTag::kKwAxiom}, sfs_[4]},
+          {{Nonterminal::kRuleRHS, DomainTag::kNonterminal}, sfs_[6]},
+          {{Nonterminal::kRuleRHS, DomainTag::kTerminal}, sfs_[6]},
+          {{Nonterminal::kRuleRHS, DomainTag::kKwEpsilon}, sfs_[6]},
+          {{Nonterminal::kExpr, DomainTag::kNonterminal}, sfs_[7]},
+          {{Nonterminal::kExpr, DomainTag::kTerminal}, sfs_[7]},
+          {{Nonterminal::kExpr, DomainTag::kKwEpsilon}, sfs_[7]},
+          {{Nonterminal::kExpr1, DomainTag::kKwOr}, sfs_[8]},
+          {{Nonterminal::kExpr1, DomainTag::kKwEnd}, sfs_[2]},
+          {{Nonterminal::kTerm, DomainTag::kNonterminal}, sfs_[9]},
+          {{Nonterminal::kTerm, DomainTag::kTerminal}, sfs_[9]},
+          {{Nonterminal::kTerm, DomainTag::kKwEpsilon}, sfs_[11]},
+          {{Nonterminal::kTerm1, DomainTag::kNonterminal}, sfs_[9]},
+          {{Nonterminal::kTerm1, DomainTag::kTerminal}, sfs_[9]},
+          {{Nonterminal::kTerm1, DomainTag::kKwOr}, sfs_[2]},
+          {{Nonterminal::kTerm1, DomainTag::kKwEnd}, sfs_[2]},
+          {{Nonterminal::kSymbol, DomainTag::kNonterminal}, sfs_[5]},
+          {{Nonterminal::kSymbol, DomainTag::kTerminal}, sfs_[10]},
       }) {}
 
-auto AnalyzerTable::Find(const NonTerminal non_terminal,
+auto AnalyzerTable::Find(const Nonterminal nonterminal,
                          const DomainTag tag) const& {
-  return um_.find({non_terminal, tag});
+  return um_.find({nonterminal, tag});
 }
 
 std::unique_ptr<dt::INode> Parser::TopDownParse(lexer::IScanner& scanner) {
   using StackItem =
       std::pair<dt::Symbol, std::reference_wrapper<dt::InnerNode>>;
 
-  auto dummy = std::make_unique<dt::InnerNode>(NonTerminal::kDummy);
+  auto dummy = std::make_unique<dt::InnerNode>(Nonterminal::kDummy);
 
   auto stack = std::stack<StackItem>{};
   stack.push({{DomainTag::kEndOfProgram}, *dummy});
-  stack.push({{NonTerminal::kProgram}, *dummy});
+  stack.push({{Nonterminal::kProgram}, *dummy});
 
   auto token = scanner.NextToken();
   const auto cend = table_.Cend();
@@ -106,19 +106,19 @@ std::unique_ptr<dt::INode> Parser::TopDownParse(lexer::IScanner& scanner) {
       parent.get().AddChild(std::make_unique<dt::LeafNode>(std::move(token)));
       token = scanner.NextToken();
     } else {
-      const auto non_terminal = std::get<NonTerminal>(symbol);
+      const auto nonterminal = std::get<Nonterminal>(symbol);
 
-      if (auto it = table_.Find(non_terminal, token->tag()); it != cend) {
+      if (auto it = table_.Find(nonterminal, token->tag()); it != cend) {
         stack.pop();
         auto& child = static_cast<dt::InnerNode&>(parent.get().AddChild(
-            std::make_unique<dt::InnerNode>(non_terminal)));
+            std::make_unique<dt::InnerNode>(nonterminal)));
 
         const auto& sf = it->second.get();
         for (auto it = sf.Crbegin(), end = sf.Crend(); it != end; ++it) {
           stack.push({*it, child});
         }
       } else {
-        ThrowParseError(*token, non_terminal);
+        ThrowParseError(*token, nonterminal);
       }
     }
   } while (!stack.empty());

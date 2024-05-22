@@ -26,7 +26,7 @@ KW_END      'end
 %%
 
 {WHITESPACE}+  /* pass */
-{NONTERMINAL}  { return HandleNonTerminal(attr); }
+{NONTERMINAL}  { return HandleNonterminal(attr); }
 {TERMINAL}     { return HandleTerminal(attr); }
 {OP_ARROW}     { return DomainTag::kOpArrow; }
 {KW_AXIOM}     { return DomainTag::kKwAxiom; }
@@ -60,8 +60,8 @@ std::unique_ptr<Token> Scanner::NextToken() {
   const auto tag = Lex(attr, coords);
 
   switch (tag) {
-    case DomainTag::kNonTerminal: {
-      return std::make_unique<NonTerminalToken>(std::move(*attr), coords);
+    case DomainTag::kNonterminal: {
+      return std::make_unique<NonterminalToken>(std::move(*attr), coords);
     }
 
     case DomainTag::kTerminal: {
@@ -92,9 +92,9 @@ void Scanner::AdjustCoords(Fragment& coords) noexcept {
   coords.following = cur_;
 }
 
-DomainTag Scanner::HandleNonTerminal(Attribute& attr) const {
+DomainTag Scanner::HandleNonterminal(Attribute& attr) const {
   attr = std::make_unique<std::string>(yytext);
-  return DomainTag::kNonTerminal;
+  return DomainTag::kNonterminal;
 }
 
 DomainTag Scanner::HandleTerminal(Attribute& attr) const {

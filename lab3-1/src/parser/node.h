@@ -8,7 +8,7 @@
 
 namespace parser {
 
-enum class NonTerminal {
+enum class Nonterminal {
   kProgram,
   kRules,
   kRule,
@@ -22,12 +22,12 @@ enum class NonTerminal {
   kDummy,
 };
 
-std::string_view ToString(const NonTerminal nt);
-std::ostream& operator<<(std::ostream& os, const NonTerminal nt);
+std::string_view ToString(const Nonterminal nt);
+std::ostream& operator<<(std::ostream& os, const Nonterminal nt);
 
 namespace dt {
 
-using Symbol = std::variant<NonTerminal, lexer::DomainTag>;
+using Symbol = std::variant<Nonterminal, lexer::DomainTag>;
 
 class INode {
  public:
@@ -35,18 +35,18 @@ class INode {
 };
 
 class InnerNode final : public INode {
-  NonTerminal nt_;
+  Nonterminal nt_;
   std::vector<std::unique_ptr<INode>> children_;
 
  public:
-  InnerNode(const NonTerminal non_terminal) noexcept : nt_(non_terminal) {}
+  InnerNode(const Nonterminal nonterminal) noexcept : nt_(nonterminal) {}
 
   std::vector<std::unique_ptr<INode>>& Children() noexcept { return children_; }
 
   auto ChildrenCbegin() const noexcept { return children_.cbegin(); }
   auto ChildrenCend() const noexcept { return children_.cend(); }
 
-  NonTerminal get_nt() const noexcept { return nt_; }
+  Nonterminal get_nt() const noexcept { return nt_; }
 
   INode& AddChild(std::unique_ptr<INode>&& node);
 };
