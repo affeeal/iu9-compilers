@@ -11,6 +11,17 @@ namespace parser {
 
 namespace ast {
 
+std::string_view ToString(const Special symbol) {
+  switch (symbol) {
+    case Special::kEpsilon: {
+      return "ε";
+    }
+    case Special::kDollar: {
+      return "$";
+    }
+  }
+}
+
 // Symbol ::= TERMINAL | NONTERMINAL
 Symbol ParseSymbol(const dt::InnerNode& symbol) {
   const auto& leaf =

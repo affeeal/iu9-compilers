@@ -1,25 +1,27 @@
 #pragma once
 
-#include "validator.h"
-#include "visitor.h"
+#include <unordered_map>
+#include <unordered_set>
+
+#include "ast.h"
 
 namespace parser {
 
 namespace ast {
 
-class FirstSetGenerator final : public IVisitor {
-  const Index& index_;
-  bool sets_are_changing_;
-  std::unordered_map<std::string, std::unordered_set<std::string>> first_sets_;
-  std::unordered_set<std::string> return_;
+class FirstFollow final {
+  std::unordered_map<std::string, std::unordered_set<TableSymbol>> first_sets_;
 
  public:
-  FirstSetGenerator(const Index& index) noexcept : index_(index) {}
+  FirstFollow(const Program& program);
 
-  void Visit(const Program& program) override;
-  void Visit(const Rule& rule) override;
-  void Visit(const Term& term) override;
-  void Visit(const Symbol& symbol) override;
+  using SymbolIter = std::vector<Symbol>::const_iterator;
+  std::unordered_set<TableSymbol> GetFirstSet(SymbolIter b, const SymbolIter e);
+
+ private:
+  void BuildFirstSets(const Program& program);
+
+  void PrintFirstSets() const;
 };
 
 }  // namespace ast

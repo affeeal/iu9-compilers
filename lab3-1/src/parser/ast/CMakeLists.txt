@@ -3,4 +3,5 @@ target_sources(${PROJECT_NAME} PRIVATE
   ast.cc
   validator.cc
   first_set_generator.cc
+  follow_set_generator.cc
 )

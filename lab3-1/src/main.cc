@@ -27,14 +27,12 @@ int main(int argc, char* argv[]) {
 
   try {
     const auto dt = parser.TopDownParse(scanner);
-    const auto ast =
+    const auto program =
         parser::ast::DtToAst(static_cast<parser::dt::InnerNode&>(*dt));
     auto validator = parser::ast::Validator();
-    ast->Accept(validator);
+    program->Accept(validator);
 
-    auto first_set_generator =
-        parser::ast::FirstSetGenerator(validator.get_index());
-    ast->Accept(first_set_generator);
+    auto f = parser::ast::FirstFollow(*program);
   } catch (const std::exception& e) {
     std::cerr << e.what() << std::endl;
     return 1;

@@ -1,21 +1,19 @@
 #pragma once
 
-#include <string>
-#include <unordered_set>
-
 #include "ast.h"
-#include "visitor.h"
+#include "validator.h"
 
 namespace parser {
 
 namespace ast {
 
-class Validator final : public IVisitor {
-  Index index_;
-  std::unordered_set<std::string> involved_nonterminals_;
+class FollowSetGenerator final : public IVisitor {
+  std::unordered_map<std::string, std::unordered_set<TableSymbol>> follow_sets_;
+  std::unordered_set<TableSymbol> return_;
+  const Index& index_;
 
  public:
-  const Index& get_index() const noexcept { return index_; }
+  FollowSetGenerator(const Index& index) noexcept : index_(index) {}
 
   void Visit(const Program& program) override;
   void Visit(const Rule& rule) override;

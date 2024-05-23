@@ -1,11 +1,27 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "node.h"
 #include "visitor.h"
 
 namespace parser {
 
 namespace ast {
+
+enum class Special {
+  kEpsilon,
+  kDollar,
+};
+
+std::string_view ToString(const Special symbol);
+
+using TableSymbol = std::variant<std::string, Special>;
+
+struct Index final {
+  const Rule* axiom = nullptr;
+  std::unordered_map<std::string, const Rule*> rules;
+};
 
 class INode {
  public:
@@ -49,19 +65,19 @@ class Term final : public INode {
 
 class Rule final : public INode {
   bool is_axiom_;
-  std::string lhs_;
-  std::vector<std::unique_ptr<Term>> rhs_;
+  std::string name_;
+  std::vector<std::unique_ptr<Term>> terms_;
 
  public:
-  Rule(std::string lhs, std::vector<std::unique_ptr<Term>>&& rhs,
+  Rule(std::string name, std::vector<std::unique_ptr<Term>>&& terms,
        const bool is_axiom) noexcept
-      : is_axiom_(is_axiom), lhs_(std::move(lhs)), rhs_(std::move(rhs)) {}
+      : is_axiom_(is_axiom), name_(std::move(name)), terms_(std::move(terms)) {}
 
-  const std::string& get_lhs() const noexcept { return lhs_; }
+  const std::string& get_name() const noexcept { return name_; }
   bool get_is_axiom() const noexcept { return is_axiom_; }
 
-  auto RhsCbegin() const noexcept { return rhs_.cbegin(); }
-  auto RhsCend() const noexcept { return rhs_.cend(); }
+  auto TermsCbegin() const noexcept { return terms_.cbegin(); }
+  auto TermsCend() const noexcept { return terms_.cend(); }
 
   void Accept(IVisitor& visitor) const override { visitor.Visit(*this); }
 };
