@@ -11,6 +11,8 @@ namespace ast {
 FirstFollow::FirstFollow(const Program& program) {
   BuildFirstSets(program);
   BuildFollowSets(program);
+
+  PrintSets(follow_sets_);
 }
 
 void FirstFollow::BuildFirstSets(const Program& program) {
@@ -39,7 +41,7 @@ void FirstFollow::BuildFirstSets(const Program& program) {
 }
 
 std::unordered_set<TableSymbol> FirstFollow::GetFirstSet(
-    FirstFollow::SymbolIter b, const FirstFollow::SymbolIter e) {
+    SymbolVectorIter b, const SymbolVectorIter e) const {
   if (b == e) {
     return {Special::kEpsilon};
   }
@@ -52,7 +54,13 @@ std::unordered_set<TableSymbol> FirstFollow::GetFirstSet(
     }
 
     // b->get_type() == Symbol::Type::kNonterminal
-    auto first_set = first_sets_[b->get_name()];
+
+    auto first_set = std::unordered_set<TableSymbol>{};
+    if (const auto it = first_sets_.find(b->get_name());
+        it != first_sets_.cend()) {
+      first_set = it->second;
+    }
+
     if (!first_set.contains(Special::kEpsilon)) {
       new_first_set.merge(std::move(first_set));
       break;
@@ -75,11 +83,9 @@ void FirstFollow::PrintSets(auto&& sets) const {
     }
     std::cout << '\n';
   }
-  std::cout << '\n';
 }
 
 void FirstFollow::BuildFollowSets(const Program& program) {
-  // TODO: think of a better name
   auto followed =
       std::unordered_map<std::string, std::unordered_set<std::string>>{};
 
@@ -135,6 +141,12 @@ void FirstFollow::BuildFollowSets(const Program& program) {
       }
     }
   } while (sets_are_filling);
+}
+
+std::pair<TableSymbolSetIter, TableSymbolSetIter> FirstFollow::GetFollowSet(
+    const std::string& name) const {
+  const auto& follow_set = follow_sets_.at(name);
+  return {follow_set.cbegin(), follow_set.cend()};
 }
 
 }  // namespace ast

@@ -9,21 +9,27 @@ namespace parser {
 
 namespace ast {
 
-class FirstFollow final {
-  std::unordered_map<std::string, std::unordered_set<TableSymbol>> first_sets_,
-      follow_sets_;
+using SymbolVectorIter = std::vector<Symbol>::const_iterator;
+using TableSymbolSetIter = std::unordered_set<TableSymbol>::const_iterator;
 
+class FirstFollow final {
  public:
   FirstFollow(const Program& program);
 
-  using SymbolIter = std::vector<Symbol>::const_iterator;
-  std::unordered_set<TableSymbol> GetFirstSet(SymbolIter b, const SymbolIter e);
+  std::unordered_set<TableSymbol> GetFirstSet(SymbolVectorIter b,
+                                              const SymbolVectorIter e) const;
+  std::pair<TableSymbolSetIter, TableSymbolSetIter> GetFollowSet(
+      const std::string& name) const;
 
  private:
   void BuildFirstSets(const Program& program);
   void BuildFollowSets(const Program& program);
 
   void PrintSets(auto&& sets) const;
+
+ private:
+  std::unordered_map<std::string, std::unordered_set<TableSymbol>> first_sets_,
+      follow_sets_;
 };
 
 }  // namespace ast

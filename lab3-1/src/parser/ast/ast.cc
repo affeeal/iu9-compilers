@@ -3,9 +3,15 @@
 #include <algorithm>
 #include <iterator>
 #include <utility>
+#include <unordered_map>
+
+// clang-format off
+#include <boost/functional/hash.hpp>
+// clang-format on
 
 #include "node.h"
 #include "token.h"
+#include "first_follow.h"
 
 namespace parser {
 
@@ -26,8 +32,32 @@ std::ostream& operator<<(std::ostream& os, const TableSymbol& symbol) {
   if (const auto* const special = std::get_if<Special>(&symbol)) {
     return os << ToString(*special);
   }
-
+  
   return os << std::get<std::string>(symbol);
+}
+
+std::unordered_set<std::pair<std::string, TableSymbol>> GenerateTable(
+    const Program& program, const FirstFollow& first_follow) {
+  using Key = std::pair<std::string, TableSymbol>;
+  auto table = std::unordered_map<Key, std::vector<TableSymbol>, boost::hash<Key>>{};
+
+  for (auto b = program.RulesCbegin(), e = program.RulesCend(); b != e; ++b) {
+    const auto& rule = **b;
+
+    for (auto b = rule.TermsCbegin(), e = rule.TermsCend(); b != e; ++b) {
+      const auto& term = **b;
+
+      const auto first_set = first_follow.GetFirstSet(term.SymsCbegin(), term.SymsCend());
+      for (auto&& symbol : first_set) {
+        auto key = std::make_pair(rule.get_name(), symbol);
+        if (table.contains(key)) {
+          throw std::runtime_error("Not LL(1) grammar"); // TODO: recheck 
+        }
+
+        table[std::move(key)] = std::vector{term.SymsCbegin(), term.SymsCend()};
+      }
+    }
+  }
 }
 
 // Symbol ::= TERMINAL | NONTERMINAL

@@ -11,21 +11,21 @@ namespace ast {
 void Validator::Visit(const Program& program) {
   for (auto f = program.RulesCbegin(), l = program.RulesCend(); f != l; ++f) {
     const auto& rule = **f;
-    if (index_.rules.find(rule.get_name()) != index_.rules.cend()) {
+    if (rules.find(rule.get_name()) != rules.cend()) {
       throw std::runtime_error("Nonterminal redefinition: " + rule.get_name());
     }
-    index_.rules[rule.get_name()] = &rule;
+    rules[rule.get_name()] = &rule;
 
     if (rule.get_is_axiom()) {
-      if (index_.axiom) {
+      if (axiom) {
         throw std::runtime_error("Axiom redefinition: " + rule.get_name());
       }
-      index_.axiom = &rule;
+      axiom = &rule;
       involved_nonterminals_.insert(rule.get_name());
     }
   }
 
-  if (!index_.axiom) {
+  if (!axiom) {
     throw std::runtime_error("Axiom is not defined");
   }
 
@@ -61,7 +61,7 @@ void Validator::Visit(const Symbol& symbol) {
     return;
   }
 
-  if (index_.rules.find(symbol.get_name()) == index_.rules.cend()) {
+  if (rules.find(symbol.get_name()) == rules.cend()) {
     throw std::runtime_error("Undefined nonterminal " + symbol.get_name());
   }
   involved_nonterminals_.insert(symbol.get_name());

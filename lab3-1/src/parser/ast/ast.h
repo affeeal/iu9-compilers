@@ -1,6 +1,7 @@
 #pragma once
 
-#include <unordered_map>
+#include <unordered_set>
+#include <utility>
 
 #include "node.h"
 #include "visitor.h"
@@ -8,6 +9,8 @@
 namespace parser {
 
 namespace ast {
+
+class FirstFollow;
 
 enum class Special {
   kEpsilon,
@@ -17,12 +20,8 @@ enum class Special {
 std::string_view ToString(const Special symbol);
 
 using TableSymbol = std::variant<std::string, Special>;
-std::ostream& operator<<(std::ostream& os, const TableSymbol& symbol);
 
-struct Index final {
-  const Rule* axiom = nullptr;
-  std::unordered_map<std::string, const Rule*> rules;
-};
+std::ostream& operator<<(std::ostream& os, const TableSymbol& symbol);
 
 class INode {
  public:
@@ -97,6 +96,9 @@ class Program final : public INode {
 };
 
 std::unique_ptr<Program> DtToAst(const dt::InnerNode& program);
+
+std::unordered_set<std::pair<std::string, TableSymbol>> GenerateTable(
+    const Program& program, const FirstFollow& first_follow);
 
 }  // namespace ast
 
