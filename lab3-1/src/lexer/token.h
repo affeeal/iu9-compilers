@@ -7,7 +7,7 @@ namespace lexer {
 enum class DomainTag {
   kNonterminal,
   kTerminal,
-  kOpArrow,
+  kArrow,
   kKwAxiom,
   kKwEpsilon,
   kKwOr,

@@ -4,7 +4,7 @@
 #include <memory>
 
 #include "ast.h"
-#include "first_set_generator.h"
+#include "first_follow.h"
 #include "parser.h"
 #include "scanner.h"
 #include "validator.h"

@@ -1,0 +1,10 @@
+'axiom Grammar -> Rule Rules 'end
+Rules -> Rule Rules 'or 'epsilon 'end
+Rule -> RuleLHS "ARROW" RuleRHS "KW_END" 'end
+RuleLHS -> "KW_AXIOM" "NONTERMINAL" 'or "NONTERMINAL" 'end
+RuleRHS -> Expr 'end
+Expr -> Term Expr1 'end
+Expr1 -> "KW_OR" Term Expr1 'or 'epsilon 'end
+Term -> Symbol Term1 'or "KW_EPSILON" 'end
+Term1 -> Symbol Term1 'or 'epsilon 'end
+Symbol -> "NONTERMINAL" 'or "TERMINAL" 'end

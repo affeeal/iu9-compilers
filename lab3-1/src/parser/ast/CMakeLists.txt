@@ -2,6 +2,5 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_sources(${PROJECT_NAME} PRIVATE
   ast.cc
   validator.cc
-  first_set_generator.cc
-  follow_set_generator.cc
+  first_follow.cc
 )

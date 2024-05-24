@@ -23,18 +23,19 @@ using Attribute = std::unique_ptr<std::string>;
 
 class IScanner {
  public:
-  virtual std::unique_ptr<Token> NextToken() = 0;
-
   virtual ~IScanner() = default;
+
+  virtual std::unique_ptr<Token> NextToken() = 0;
 };
 
 class Scanner final : private yyFlexLexer, public IScanner {
  public:
   Scanner(std::shared_ptr<Compiler> compiler, std::istream& is = std::cin,
-          std::ostream& os = std::cout);
+          std::ostream& os = std::cout)
+      : yyFlexLexer(is, os), compiler_(std::move(compiler)) {}
 
-  auto CommentsCbegin() const& noexcept;
-  auto CommentsCend() const& noexcept;
+  auto CommentsCbegin() const noexcept { return comments_.cbegin(); }
+  auto CommentsCend() const noexcept { return comments_.cend(); }
 
   std::unique_ptr<Token> NextToken() override;
 
@@ -46,6 +47,7 @@ class Scanner final : private yyFlexLexer, public IScanner {
   DomainTag HandleNonterminal(Attribute& attr) const;
   DomainTag HandleTerminal(Attribute& attr) const;
 
+ private:
   std::shared_ptr<Compiler> compiler_;
   std::vector<Fragment> comments_;
   Position cur_;

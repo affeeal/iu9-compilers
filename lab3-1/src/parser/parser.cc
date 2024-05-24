@@ -35,7 +35,7 @@ AnalyzerTable::AnalyzerTable()
           {Nonterminal::kRules},                      // 0
           {Nonterminal::kRule, Nonterminal::kRules},  // 1
           {/* ε */},                                  // 2
-          {Nonterminal::kRuleLHS, DomainTag::kOpArrow,
+          {Nonterminal::kRuleLHS, DomainTag::kArrow,
            Nonterminal::kRuleRHS},                                      // 3
           {DomainTag::kKwAxiom, DomainTag::kNonterminal},               // 4
           {DomainTag::kNonterminal},                                    // 5

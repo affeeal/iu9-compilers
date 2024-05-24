@@ -22,6 +22,14 @@ std::string_view ToString(const Special symbol) {
   }
 }
 
+std::ostream& operator<<(std::ostream& os, const TableSymbol& symbol) {
+  if (const auto* const special = std::get_if<Special>(&symbol)) {
+    return os << ToString(*special);
+  }
+
+  return os << std::get<std::string>(symbol);
+}
+
 // Symbol ::= TERMINAL | NONTERMINAL
 Symbol ParseSymbol(const dt::InnerNode& symbol) {
   const auto& leaf =
@@ -114,7 +122,7 @@ std::pair<std::string, bool> ParseRuleLHS(const dt::InnerNode& rule_lhs) {
   return {nonterminal->get_str(), false};
 }
 
-// Rule ::= RuleLHS OP_ARROW RuleRHS
+// Rule ::= RuleLHS ARROW RuleRHS
 std::unique_ptr<Rule> ParseRule(const dt::InnerNode& rule) {
   const auto b = rule.ChildrenCbegin();
   auto [lhs, is_axiom] = ParseRuleLHS(static_cast<const dt::InnerNode&>(**b));

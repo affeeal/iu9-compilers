@@ -10,8 +10,8 @@ std::string_view ToString(const DomainTag tag) {
     case DomainTag::kTerminal: {
       return "TERMINAL";
     }
-    case DomainTag::kOpArrow: {
-      return "OP_ARROW";
+    case DomainTag::kArrow: {
+      return "ARROW";
     }
     case DomainTag::kKwAxiom: {
       return "KW_AXIOM";

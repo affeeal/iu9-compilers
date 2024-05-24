@@ -10,7 +10,8 @@ namespace parser {
 namespace ast {
 
 class FirstFollow final {
-  std::unordered_map<std::string, std::unordered_set<TableSymbol>> first_sets_;
+  std::unordered_map<std::string, std::unordered_set<TableSymbol>> first_sets_,
+      follow_sets_;
 
  public:
   FirstFollow(const Program& program);
@@ -20,8 +21,9 @@ class FirstFollow final {
 
  private:
   void BuildFirstSets(const Program& program);
+  void BuildFollowSets(const Program& program);
 
-  void PrintFirstSets() const;
+  void PrintSets(auto&& sets) const;
 };
 
 }  // namespace ast

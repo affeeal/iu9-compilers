@@ -17,6 +17,7 @@ enum class Special {
 std::string_view ToString(const Special symbol);
 
 using TableSymbol = std::variant<std::string, Special>;
+std::ostream& operator<<(std::ostream& os, const TableSymbol& symbol);
 
 struct Index final {
   const Rule* axiom = nullptr;
