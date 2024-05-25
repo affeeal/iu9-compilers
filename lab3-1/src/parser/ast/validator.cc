@@ -1,3 +1,4 @@
+/*
 #include "validator.h"
 
 #include <algorithm>
@@ -70,3 +71,4 @@ void Validator::Visit(const Symbol& symbol) {
 }  // namespace ast
 
 }  // namespace parser
+   // */

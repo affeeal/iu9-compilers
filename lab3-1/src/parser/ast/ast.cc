@@ -3,188 +3,175 @@
 #include <algorithm>
 #include <iterator>
 #include <utility>
-#include <unordered_map>
 
 // clang-format off
 #include <boost/functional/hash.hpp>
 // clang-format on
 
-#include "node.h"
-#include "token.h"
-#include "first_follow.h"
+#include "symbol_table.h"
 
 namespace parser {
 
 namespace ast {
 
-std::string_view ToString(const Special symbol) {
-  switch (symbol) {
-    case Special::kEpsilon: {
-      return "ε";
-    }
-    case Special::kDollar: {
-      return "$";
-    }
-  }
-}
-
-std::ostream& operator<<(std::ostream& os, const TableSymbol& symbol) {
-  if (const auto* const special = std::get_if<Special>(&symbol)) {
-    return os << ToString(*special);
-  }
-  
-  return os << std::get<std::string>(symbol);
-}
-
-std::unordered_set<std::pair<std::string, TableSymbol>> GenerateTable(
-    const Program& program, const FirstFollow& first_follow) {
-  using Key = std::pair<std::string, TableSymbol>;
-  auto table = std::unordered_map<Key, std::vector<TableSymbol>, boost::hash<Key>>{};
-
-  for (auto b = program.RulesCbegin(), e = program.RulesCend(); b != e; ++b) {
-    const auto& rule = **b;
-
-    for (auto b = rule.TermsCbegin(), e = rule.TermsCend(); b != e; ++b) {
-      const auto& term = **b;
-
-      const auto first_set = first_follow.GetFirstSet(term.SymsCbegin(), term.SymsCend());
-      for (auto&& symbol : first_set) {
-        auto key = std::make_pair(rule.get_name(), symbol);
-        if (table.contains(key)) {
-          throw std::runtime_error("Not LL(1) grammar"); // TODO: recheck 
-        }
-
-        table[std::move(key)] = std::vector{term.SymsCbegin(), term.SymsCend()};
-      }
-    }
-  }
-}
-
 // Symbol ::= TERMINAL | NONTERMINAL
-Symbol ParseSymbol(const dt::InnerNode& symbol) {
+const ISymbol* ParseSymbol(SymbolTable& symbol_table,
+                           const dt::InnerNode& symbol) {
   const auto& leaf =
       static_cast<const dt::LeafNode&>(**symbol.ChildrenCbegin());
   if (const auto* const terminal =
           dynamic_cast<const lexer::TerminalToken*>(leaf.get_token())) {
-    return Symbol{terminal->get_str(), Symbol::Type::kTerminal};
+    return symbol_table.GetTerminal(terminal->get_str());
   }
 
-  const auto* const nonterminal =
-      static_cast<const lexer::NonterminalToken*>(leaf.get_token());
-  return Symbol{nonterminal->get_str(), Symbol::Type::kNonterminal};
+  const auto& nonterminal =
+      static_cast<const lexer::NonterminalToken&>(*leaf.get_token());
+  return symbol_table.GetNonterminal(nonterminal.get_str());
 }
 
 // Term1 ::= Symbol Term1 | ε
-std::vector<Symbol> ParseTerm1(const dt::InnerNode& term1) {
+std::vector<const ISymbol*> ParseTerm1(SymbolTable& symbol_table,
+                                       const dt::InnerNode& term1) {
   const auto b = term1.ChildrenCbegin();
   if (b == term1.ChildrenCend()) {
     return {};
   }
 
-  auto symbol = ParseSymbol(static_cast<const dt::InnerNode&>(**b));
-  auto term1_rhs = ParseTerm1(static_cast<const dt::InnerNode&>(**(b + 1)));
+  const auto& symbol = static_cast<const dt::InnerNode&>(**b);
+  const auto* const ast_symbol = ParseSymbol(symbol_table, symbol);
 
-  term1_rhs.push_back(std::move(symbol));
-  std::rotate(term1_rhs.rbegin(), term1_rhs.rbegin() + 1, term1_rhs.rend());
-  return term1_rhs;
+  const auto& term1_rhs = static_cast<const dt::InnerNode&>(**(b + 1));
+  auto ast_term1 = ParseTerm1(symbol_table, term1_rhs);
+
+  ast_term1.push_back(ast_symbol);
+  std::rotate(ast_term1.rbegin(), ast_term1.rbegin() + 1, ast_term1.rend());
+  return ast_term1;
 }
 
 // Term ::= Symbol Term1 | KW_EPSILON
-std::unique_ptr<Term> ParseTerm(const dt::InnerNode& term) {
+std::unique_ptr<Term> ParseTerm(SymbolTable& symbol_table,
+                                const dt::InnerNode& term) {
   const auto b = term.ChildrenCbegin();
   if (term.ChildrenCend() - b == 1) {
-    return std::make_unique<Term>(std::vector<Symbol>{});
+    auto symbols = std::vector<const ISymbol*>{symbol_table.GetEpsilon()};
+    return std::make_unique<Term>(std::move(symbols));
   }
 
-  auto symbol = ParseSymbol(static_cast<const dt::InnerNode&>(**b));
-  auto term1 = ParseTerm1(static_cast<const dt::InnerNode&>(**(b + 1)));
+  const auto& symbol = static_cast<const dt::InnerNode&>(**b);
+  const auto* const ast_symbol = ParseSymbol(symbol_table, symbol);
 
-  term1.push_back(std::move(symbol));
-  std::rotate(term1.rbegin(), term1.rbegin() + 1, term1.rend());
-  return std::make_unique<Term>(std::move(term1));
+  const auto& term1 = static_cast<const dt::InnerNode&>(**(b + 1));
+  auto ast_term1 = ParseTerm1(symbol_table, term1);
+
+  ast_term1.push_back(ast_symbol);
+  std::rotate(ast_term1.rbegin(), ast_term1.rbegin() + 1, ast_term1.rend());
+  return std::make_unique<Term>(std::move(ast_term1));
 }
 
 // Expr1 ::= KW_OR Term Expr1 | ε
-std::vector<std::unique_ptr<Term>> ParseExpr1(const dt::InnerNode& expr1) {
+std::vector<std::unique_ptr<Term>> ParseExpr1(SymbolTable& symbol_table,
+                                              const dt::InnerNode& expr1) {
   const auto b = expr1.ChildrenCbegin();
   if (b == expr1.ChildrenCend()) {
     return {};
   }
 
-  auto term = ParseTerm(static_cast<const dt::InnerNode&>(**(b + 1)));
-  auto expr1_rhs = ParseExpr1(static_cast<const dt::InnerNode&>(**(b + 2)));
+  const auto& term = static_cast<const dt::InnerNode&>(**(b + 1));
+  auto ast_term = ParseTerm(symbol_table, term);
 
-  expr1_rhs.push_back(std::move(term));
-  std::rotate(expr1_rhs.rbegin(), expr1_rhs.rbegin() + 1, expr1_rhs.rend());
-  return expr1_rhs;
+  const auto& expr1_rhs = static_cast<const dt::InnerNode&>(**(b + 2));
+  auto ast_expr1 = ParseExpr1(symbol_table, expr1_rhs);
+
+  ast_expr1.push_back(std::move(ast_term));
+  std::rotate(ast_expr1.rbegin(), ast_expr1.rbegin() + 1, ast_expr1.rend());
+  return ast_expr1;
 }
 
 // Expr ::= Term Expr1
-std::vector<std::unique_ptr<Term>> ParseExpr(const dt::InnerNode& expr) {
+std::vector<std::unique_ptr<Term>> ParseExpr(SymbolTable& symbol_table,
+                                             const dt::InnerNode& expr) {
   const auto b = expr.ChildrenCbegin();
-  auto term = ParseTerm(static_cast<const dt::InnerNode&>(**b));
-  auto expr1 = ParseExpr1(static_cast<const dt::InnerNode&>(**(b + 1)));
 
-  expr1.push_back(std::move(term));
-  std::rotate(expr1.rbegin(), expr1.rbegin() + 1, expr1.rend());
-  return expr1;
+  const auto& term = static_cast<const dt::InnerNode&>(**b);
+  auto ast_term = ParseTerm(symbol_table, term);
+
+  const auto& expr1 = static_cast<const dt::InnerNode&>(**(b + 1));
+  auto ast_expr1 = ParseExpr1(symbol_table, expr1);
+
+  ast_expr1.push_back(std::move(ast_term));
+  std::rotate(ast_expr1.rbegin(), ast_expr1.rbegin() + 1, ast_expr1.rend());
+  return ast_expr1;
 }
 
 // RuleRHS ::= Expr KW_END
-std::vector<std::unique_ptr<Term>> ParseRuleRHS(const dt::InnerNode& rule_rhs) {
-  const auto b = rule_rhs.ChildrenCbegin();
-  return ParseExpr(static_cast<const dt::InnerNode&>(**b));
+std::vector<std::unique_ptr<Term>> ParseRuleRHS(SymbolTable& symbol_table,
+                                                const dt::InnerNode& rule_rhs) {
+  const auto& expr =
+      static_cast<const dt::InnerNode&>(**rule_rhs.ChildrenCbegin());
+  return ParseExpr(symbol_table, expr);
 }
 
 // RuleLHS ::= KW_AXIOM NONTERMINAL | NONTERMINAL
-std::pair<std::string, bool> ParseRuleLHS(const dt::InnerNode& rule_lhs) {
-  const auto b = rule_lhs.ChildrenCbegin();
+std::pair<const NonterminalSymbol*, bool> ParseRuleLHS(
+    SymbolTable& symbol_table, const dt::InnerNode& rule_lhs) {
+  auto b = rule_lhs.ChildrenCbegin();
+  auto is_axiom = false;
   if (rule_lhs.ChildrenCend() - b == 2) {
-    const auto& leaf = static_cast<const dt::LeafNode&>(**(b + 1));
-    const auto* const nonterminal =
-        static_cast<const lexer::NonterminalToken*>(leaf.get_token());
-    return {nonterminal->get_str(), true};
+    b += 1;
+    is_axiom = true;
   }
 
   const auto& leaf = static_cast<const dt::LeafNode&>(**b);
-  const auto* const nonterminal =
+  const auto* const token =
       static_cast<const lexer::NonterminalToken*>(leaf.get_token());
-  return {nonterminal->get_str(), false};
+  return {symbol_table.GetNonterminal(token->get_str()), is_axiom};
 }
 
 // Rule ::= RuleLHS ARROW RuleRHS
-std::unique_ptr<Rule> ParseRule(const dt::InnerNode& rule) {
+std::unique_ptr<Rule> ParseRule(SymbolTable& symbol_table,
+                                const dt::InnerNode& rule) {
   const auto b = rule.ChildrenCbegin();
-  auto [lhs, is_axiom] = ParseRuleLHS(static_cast<const dt::InnerNode&>(**b));
-  auto rhs = ParseRuleRHS(static_cast<const dt::InnerNode&>(**(b + 2)));
 
-  return std::make_unique<Rule>(std::move(lhs), std::move(rhs), is_axiom);
+  const auto& rule_lhs = static_cast<const dt::InnerNode&>(**b);
+  const auto [lhs, is_axiom] = ParseRuleLHS(symbol_table, rule_lhs);
+
+  const auto& rule_rhs = static_cast<const dt::InnerNode&>(**(b + 2));
+  auto rhs = ParseRuleRHS(symbol_table, rule_rhs);
+
+  return std::make_unique<Rule>(std::move(rhs), lhs, is_axiom);
 }
 
 // Rules ::= Rule Rules | ε
-std::vector<std::unique_ptr<Rule>> ParseRules(const dt::InnerNode& rules) {
+std::vector<std::unique_ptr<Rule>> ParseRules(SymbolTable& symbol_table,
+                                              const dt::InnerNode& rules) {
   const auto b = rules.ChildrenCbegin();
   if (b == rules.ChildrenCend()) {
-    return {};
+    return {};  // TODO: fix to contain at least one rule
   }
 
-  auto rule = ParseRule(static_cast<const dt::InnerNode&>(**b));
-  auto rules_rhs = ParseRules(static_cast<const dt::InnerNode&>(**(b + 1)));
+  const auto& rule = static_cast<const dt::InnerNode&>(**b);
+  auto ast_rule = ParseRule(symbol_table, rule);
 
-  rules_rhs.push_back(std::move(rule));
-  std::rotate(rules_rhs.rbegin(), rules_rhs.rbegin() + 1, rules_rhs.rend());
-  return rules_rhs;
+  const auto& rules_rhs = static_cast<const dt::InnerNode&>(**(b + 1));
+  auto ast_rules = ParseRules(symbol_table, rules_rhs);
+
+  ast_rules.push_back(std::move(ast_rule));
+  std::rotate(ast_rules.rbegin(), ast_rules.rbegin() + 1, ast_rules.rend());
+  return ast_rules;
 }
 
 // Program ::= Rules
-std::unique_ptr<Program> ParseProgram(const dt::InnerNode& program) {
-  const auto b = program.ChildrenCbegin();
-  auto rules = ParseRules(static_cast<const dt::InnerNode&>(**b));
-  return std::make_unique<Program>(std::move(rules));
+std::unique_ptr<Program> ParseProgram(SymbolTable& symbol_table,
+                                      const dt::InnerNode& program) {
+  const auto& rules =
+      static_cast<const dt::InnerNode&>(**program.ChildrenCbegin());
+  auto ast_rules = ParseRules(symbol_table, rules);
+  return std::make_unique<Program>(std::move(ast_rules));
 }
 
-std::unique_ptr<Program> DtToAst(const dt::InnerNode& program) {
-  return ParseProgram(program);
+std::unique_ptr<Program> DtToAst(SymbolTable& symbol_table,
+                                 const dt::InnerNode& program) {
+  return ParseProgram(symbol_table, program);
 }
 
 }  // namespace ast

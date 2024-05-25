@@ -4,7 +4,6 @@
 #include <memory>
 
 #include "ast.h"
-#include "first_follow.h"
 #include "parser.h"
 #include "scanner.h"
 #include "validator.h"
@@ -27,12 +26,6 @@ int main(int argc, char* argv[]) {
 
   try {
     const auto dt = parser.TopDownParse(scanner);
-    const auto program =
-        parser::ast::DtToAst(static_cast<parser::dt::InnerNode&>(*dt));
-    auto validator = parser::ast::Validator();
-    program->Accept(validator);
-
-    auto f = parser::ast::FirstFollow(*program);
   } catch (const std::exception& e) {
     std::cerr << e.what() << std::endl;
     return 1;

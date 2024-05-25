@@ -1,3 +1,4 @@
+/*
 #include "first_follow.h"
 
 #include <iostream>
@@ -43,7 +44,7 @@ void FirstFollow::BuildFirstSets(const Program& program) {
 std::unordered_set<TableSymbol> FirstFollow::GetFirstSet(
     SymbolVectorIter b, const SymbolVectorIter e) const {
   if (b == e) {
-    return {Special::kEpsilon};
+    return {SpecialSymbol::kEpsilon};
   }
 
   auto new_first_set = std::unordered_set<TableSymbol>{};
@@ -61,13 +62,13 @@ std::unordered_set<TableSymbol> FirstFollow::GetFirstSet(
       first_set = it->second;
     }
 
-    if (!first_set.contains(Special::kEpsilon)) {
+    if (!first_set.contains(SpecialSymbol::kEpsilon)) {
       new_first_set.merge(std::move(first_set));
       break;
     }
 
     if (b != e_prev) {
-      first_set.erase(Special::kEpsilon);
+      first_set.erase(SpecialSymbol::kEpsilon);
     }
     new_first_set.merge(std::move(first_set));
   }
@@ -93,7 +94,7 @@ void FirstFollow::BuildFollowSets(const Program& program) {
     const auto& rule = **b;
 
     if (rule.get_is_axiom()) {
-      follow_sets_[rule.get_name()].insert(Special::kDollar);
+      follow_sets_[rule.get_name()].insert(SpecialSymbol::kDollar);
     }
 
     for (auto b = rule.TermsCbegin(), e = rule.TermsCend(); b != e; ++b) {
@@ -110,7 +111,7 @@ void FirstFollow::BuildFollowSets(const Program& program) {
         }
 
         auto first_set = GetFirstSet(b + 1, e);
-        if (first_set.erase(Special::kEpsilon) &&
+        if (first_set.erase(SpecialSymbol::kEpsilon) &&
             symbol.get_name() != rule.get_name()) {
           followed[symbol.get_name()].insert(rule.get_name());
         }
@@ -152,3 +153,4 @@ std::pair<TableSymbolSetIter, TableSymbolSetIter> FirstFollow::GetFollowSet(
 }  // namespace ast
 
 }  // namespace parser
+   // */

@@ -1,88 +1,69 @@
 #pragma once
 
-#include <unordered_set>
+#include <memory>
+#include <string>
+#include <string_view>
 #include <utility>
+#include <vector>
 
 #include "node.h"
-#include "visitor.h"
 
 namespace parser {
 
 namespace ast {
 
-class FirstFollow;
-
-enum class Special {
-  kEpsilon,
-  kDollar,
+class ISymbol {
+ public:
+  virtual ~ISymbol() = default;
 };
 
-std::string_view ToString(const Special symbol);
+class SpecialSymbol final : public ISymbol {};  // epsilon or dollar
 
-using TableSymbol = std::variant<std::string, Special>;
-
-std::ostream& operator<<(std::ostream& os, const TableSymbol& symbol);
-
-class INode {
- public:
-  virtual ~INode() = default;
-
-  virtual void Accept(IVisitor& visitor) const = 0;
-};
-
-class Symbol final : public INode {
- public:
-  enum class Type {
-    kTerminal,
-    kNonterminal,
-  };
-
- public:
-  Symbol(std::string name, const Type type) noexcept
-      : type_(type), name_(std::move(name)) {}
-
-  const std::string& get_name() const noexcept { return name_; }
-  Type get_type() const noexcept { return type_; }
-
-  void Accept(IVisitor& visitor) const override { visitor.Visit(*this); }
-
- private:
-  Type type_;
+class NonterminalSymbol final : public ISymbol {
   std::string name_;
-};
-
-class Term final : public INode {
-  std::vector<Symbol> syms_;
 
  public:
-  Term(std::vector<Symbol>&& syms) noexcept : syms_(std::move(syms)) {}
+  NonterminalSymbol(std::string name) noexcept : name_(std::move(name)) {}
+
+  std::string_view get_name() const noexcept { return name_; }
+};
+
+class TerminalSymbol final : public ISymbol {
+  std::string name_;
+
+ public:
+  TerminalSymbol(std::string name) noexcept : name_(std::move(name)) {}
+
+  std::string_view get_name() const noexcept { return name_; }
+};
+
+class Term final {
+  std::vector<const ISymbol*> syms_;
+
+ public:
+  Term(std::vector<const ISymbol*>&& syms) noexcept : syms_(std::move(syms)) {}
 
   auto SymsCbegin() const noexcept { return syms_.cbegin(); }
   auto SymsCend() const noexcept { return syms_.cend(); }
-
-  void Accept(IVisitor& visitor) const override { visitor.Visit(*this); }
 };
 
-class Rule final : public INode {
+class Rule final {
   bool is_axiom_;
-  std::string name_;
-  std::vector<std::unique_ptr<Term>> terms_;
+  const NonterminalSymbol* lhs_;
+  std::vector<std::unique_ptr<Term>> rhs_;
 
  public:
-  Rule(std::string name, std::vector<std::unique_ptr<Term>>&& terms,
-       const bool is_axiom) noexcept
-      : is_axiom_(is_axiom), name_(std::move(name)), terms_(std::move(terms)) {}
+  Rule(std::vector<std::unique_ptr<Term>>&& rhs,
+       const NonterminalSymbol* const lhs, const bool is_axiom) noexcept
+      : is_axiom_(is_axiom), lhs_(lhs), rhs_(std::move(rhs)) {}
 
-  const std::string& get_name() const noexcept { return name_; }
   bool get_is_axiom() const noexcept { return is_axiom_; }
-
-  auto TermsCbegin() const noexcept { return terms_.cbegin(); }
-  auto TermsCend() const noexcept { return terms_.cend(); }
-
-  void Accept(IVisitor& visitor) const override { visitor.Visit(*this); }
+  const NonterminalSymbol* get_lhs() const noexcept { return lhs_; }
+  auto TermsCbegin() const noexcept { return rhs_.cbegin(); }
+  auto TermsCend() const noexcept { return rhs_.cend(); }
 };
 
-class Program final : public INode {
+class Program final {
   std::vector<std::unique_ptr<Rule>> rules_;
 
  public:
@@ -91,14 +72,11 @@ class Program final : public INode {
 
   auto RulesCbegin() const noexcept { return rules_.cbegin(); }
   auto RulesCend() const noexcept { return rules_.cend(); }
-
-  void Accept(IVisitor& visitor) const override { visitor.Visit(*this); }
 };
 
 std::unique_ptr<Program> DtToAst(const dt::InnerNode& program);
 
-std::unordered_set<std::pair<std::string, TableSymbol>> GenerateTable(
-    const Program& program, const FirstFollow& first_follow);
+void ValidateAst(const Program& program); // TODO
 
 }  // namespace ast
 

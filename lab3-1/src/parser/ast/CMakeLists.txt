@@ -3,4 +3,5 @@ target_sources(${PROJECT_NAME} PRIVATE
   ast.cc
   validator.cc
   first_follow.cc
+  symbol_table.cc
 )
