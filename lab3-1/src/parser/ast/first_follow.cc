@@ -12,9 +12,7 @@ FirstFollow::FirstFollow(std::shared_ptr<const SymbolTable> symbol_table,
                          const Program& program)
     : symbol_table_(std::move(symbol_table)) {
   BuildFirstSets(program);
-  // BuildFollowSets(program);
-
-  PrintSets(first_sets_);
+  BuildFollowSets(program);
 }
 
 void FirstFollow::BuildFirstSets(const Program& program) {
@@ -43,7 +41,8 @@ void FirstFollow::BuildFirstSets(const Program& program) {
 
 std::unordered_set<const ISymbol*> FirstFollow::GetFirstSet(
     ISymbolVecIter b, const ISymbolVecIter e) const {
-  if (e - b == 1 && *b == symbol_table_->GetEpsilon()) {
+  assert(e - b > 0);
+  if (*b == symbol_table_->GetEpsilon()) {
     return {symbol_table_->GetEpsilon()};
   }
   auto new_first_set = std::unordered_set<const ISymbol*>{};
@@ -76,57 +75,39 @@ std::unordered_set<const ISymbol*> FirstFollow::GetFirstSet(
   return new_first_set;
 }
 
-void FirstFollow::PrintSets(auto&& sets) const {
-  for (auto&& [nonterminal, set] : sets) {
-    std::cout << nonterminal->get_name() << ": ";
-    for (auto&& symbol : set) {
-      if (const auto* const terminal = dynamic_cast<const Terminal*>(symbol)) {
-        std::cout << terminal->get_name();
-      } else if (symbol == symbol_table_->GetEpsilon()) {
-        std::cout << "epsilon";
-      }
-      std::cout << ' ';
-    }
-    std::cout << '\n';
-  }
-}
-
-/*
 void FirstFollow::BuildFollowSets(const Program& program) {
-  auto followed =
-      std::unordered_map<std::string, std::unordered_set<std::string>>{};
-
+  auto followed_sets =
+      std::unordered_map<const Nonterminal*,
+                         std::unordered_set<const Nonterminal*>>{};
   for (auto b = program.RulesCbegin(), e = program.RulesCend(); b != e; ++b) {
     const auto& rule = **b;
 
     if (rule.get_is_axiom()) {
-      follow_sets_[rule.get_name()].insert(SpecialSymbol::kDollar);
+      follow_sets_[rule.get_lhs()].insert(symbol_table_->GetDollar());
     }
 
     for (auto b = rule.TermsCbegin(), e = rule.TermsCend(); b != e; ++b) {
       const auto& term = **b;
-      if (term.SymsCbegin() == term.SymsCend()) {
-        continue;
-      }
 
-      const auto e_prev = term.SymsCend() - 1;
-      for (auto b = term.SymsCbegin(), e = term.SymsCend(); b != e_prev; ++b) {
-        const auto& symbol = *b;
-        if (symbol.get_type() == Symbol::Type::kTerminal) {
+      for (auto b = term.SymsCbegin(), e = term.SymsCend(), e_prev = e - 1;
+           b != e_prev; ++b) {
+        const auto* const nonterminal = dynamic_cast<const Nonterminal*>(*b);
+        if (!nonterminal) {
           continue;
         }
 
         auto first_set = GetFirstSet(b + 1, e);
-        if (first_set.erase(SpecialSymbol::kEpsilon) &&
-            symbol.get_name() != rule.get_name()) {
-          followed[symbol.get_name()].insert(rule.get_name());
+        if (first_set.erase(symbol_table_->GetEpsilon()) &&
+            nonterminal != rule.get_lhs()) {
+          followed_sets[nonterminal].insert(rule.get_lhs());
         }
-        follow_sets_[symbol.get_name()].merge(std::move(first_set));
+        follow_sets_[nonterminal].merge(std::move(first_set));
       }
 
-      if (e_prev->get_type() == Symbol::Type::kNonterminal &&
-          e_prev->get_name() != rule.get_name()) {
-        followed[e_prev->get_name()].insert(rule.get_name());
+      const auto* const nonterminal =
+          dynamic_cast<const Nonterminal*>(*(term.SymsCend() - 1));
+      if (nonterminal && nonterminal != rule.get_lhs()) {
+        followed_sets[nonterminal].insert(rule.get_lhs());
       }
     }
   }
@@ -135,12 +116,12 @@ void FirstFollow::BuildFollowSets(const Program& program) {
   do {
     sets_are_filling = false;
 
-    for (auto&& [follower, names] : followed) {
+    for (auto&& [follower, followed_set] : followed_sets) {
       auto& follow_set = follow_sets_[follower];
       const auto initial_size = follow_set.size();
 
-      for (auto&& name : names) {
-        follow_set.merge(std::unordered_set{follow_sets_[name]});
+      for (auto&& nonterminal : followed_set) {
+        follow_set.merge(std::unordered_set{follow_sets_[nonterminal]});
       }
 
       if (follow_set.size() != initial_size) {
@@ -150,12 +131,11 @@ void FirstFollow::BuildFollowSets(const Program& program) {
   } while (sets_are_filling);
 }
 
-std::pair<TableSymbolSetIter, TableSymbolSetIter> FirstFollow::GetFollowSet(
-    const std::string& name) const {
-  const auto& follow_set = follow_sets_.at(name);
+std::pair<ISymbolSetIter, ISymbolSetIter> FirstFollow::GetFollowSet(
+    const Nonterminal* const nonterminal) const {
+  const auto& follow_set = follow_sets_.at(nonterminal);
   return {follow_set.cbegin(), follow_set.cend()};
 }
-*/
 
 }  // namespace ast
 

@@ -11,6 +11,7 @@ namespace parser {
 namespace ast {
 
 using ISymbolVecIter = std::vector<const ISymbol*>::const_iterator;
+using ISymbolSetIter = std::unordered_set<const ISymbol*>::const_iterator;
 
 class FirstFollow final {
  public:
@@ -19,14 +20,12 @@ class FirstFollow final {
 
   std::unordered_set<const ISymbol*> GetFirstSet(ISymbolVecIter b,
                                                  const ISymbolVecIter e) const;
-  // std::pair<TableSymbolSetIter, TableSymbolSetIter> GetFollowSet(
-  //     const std::string& name) const;
+  std::pair<ISymbolSetIter, ISymbolSetIter> GetFollowSet(
+      const Nonterminal* const nonterminal) const;
 
  private:
   void BuildFirstSets(const Program& program);
-  // void BuildFollowSets(const Program& program);
-
-  void PrintSets(auto&& sets) const;
+  void BuildFollowSets(const Program& program);
 
  private:
   std::shared_ptr<const SymbolTable> symbol_table_;

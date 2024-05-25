@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cassert>
 #include <memory>
 #include <string>
 #include <utility>
@@ -42,7 +43,9 @@ class Term final {
   std::vector<const ISymbol*> syms_;
 
  public:
-  Term(std::vector<const ISymbol*>&& syms) noexcept : syms_(std::move(syms)) {}
+  Term(std::vector<const ISymbol*>&& syms) noexcept : syms_(std::move(syms)) {
+    assert(syms_.size() >= 1);
+  }
 
   auto SymsCbegin() const noexcept { return syms_.cbegin(); }
   auto SymsCend() const noexcept { return syms_.cend(); }
@@ -56,7 +59,9 @@ class Rule final {
  public:
   Rule(std::vector<std::unique_ptr<Term>>&& rhs, const Nonterminal* const lhs,
        const bool is_axiom) noexcept
-      : is_axiom_(is_axiom), lhs_(lhs), rhs_(std::move(rhs)) {}
+      : is_axiom_(is_axiom), lhs_(lhs), rhs_(std::move(rhs)) {
+    assert(rhs_.size() >= 1);
+  }
 
   bool get_is_axiom() const noexcept { return is_axiom_; }
   const Nonterminal* get_lhs() const noexcept { return lhs_; }
@@ -69,7 +74,9 @@ class Program final {
 
  public:
   Program(std::vector<std::unique_ptr<Rule>>&& rules) noexcept
-      : rules_(std::move(rules)) {}
+      : rules_(std::move(rules)) {
+    assert(rules_.size() >= 1);
+  }
 
   auto RulesCbegin() const noexcept { return rules_.cbegin(); }
   auto RulesCend() const noexcept { return rules_.cend(); }
