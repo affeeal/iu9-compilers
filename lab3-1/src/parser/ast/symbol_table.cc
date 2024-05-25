@@ -6,7 +6,8 @@ namespace parser {
 
 namespace ast {
 
-const NonterminalSymbol* SymbolTable::FindNonterminal(const std::string& name) const {
+const NonterminalSymbol* SymbolTable::FindNonterminal(
+    const std::string& name) const {
   if (const auto it = nonterminals_.find(name); it != nonterminals_.cend()) {
     return it->second.get();
   }

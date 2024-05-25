@@ -2,6 +2,8 @@
 
 namespace parser {
 
+namespace dt {
+
 std::string_view ToString(const Nonterminal nonterminal) {
   switch (nonterminal) {
     case Nonterminal::kProgram: {
@@ -43,8 +45,6 @@ std::string_view ToString(const Nonterminal nonterminal) {
 std::ostream& operator<<(std::ostream& os, const Nonterminal nt) {
   return os << ToString(nt);
 }
-
-namespace dt {
 
 INode& InnerNode::AddChild(std::unique_ptr<INode>&& node) {
   children_.push_back(std::move(node));

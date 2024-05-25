@@ -6,7 +6,7 @@
 #include "ast.h"
 #include "parser.h"
 #include "scanner.h"
-#include "validator.h"
+#include "symbol_table.h"
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
@@ -26,6 +26,12 @@ int main(int argc, char* argv[]) {
 
   try {
     const auto dt = parser.TopDownParse(scanner);
+
+    auto symbol_table = parser::ast::SymbolTable{};
+    const auto& node = static_cast<const parser::dt::InnerNode&>(*dt);
+    const auto program = parser::ast::DtToAst(symbol_table, node);
+
+    parser::ast::Validate(*program);
   } catch (const std::exception& e) {
     std::cerr << e.what() << std::endl;
     return 1;

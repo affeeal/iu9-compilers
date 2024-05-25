@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <iterator>
+#include <unordered_set>
 #include <utility>
 
 // clang-format off
@@ -172,6 +173,69 @@ std::unique_ptr<Program> ParseProgram(SymbolTable& symbol_table,
 std::unique_ptr<Program> DtToAst(SymbolTable& symbol_table,
                                  const dt::InnerNode& program) {
   return ParseProgram(symbol_table, program);
+}
+
+void Validate(const Program& program) {
+  const Rule* axiom = nullptr;
+  std::unordered_set<const NonterminalSymbol*> defined_nonterminals,
+      involved_nonterminals;
+
+  for (auto b = program.RulesCbegin(), e = program.RulesCend(); b != e; ++b) {
+    const auto& rule = **b;
+    if (const auto [_, is_inserted] =
+            defined_nonterminals.insert(rule.get_lhs());
+        !is_inserted) {
+      throw std::runtime_error("Nonterminal redefinition: " +
+                               rule.get_lhs()->get_name());
+    }
+
+    if (rule.get_is_axiom()) {
+      if (axiom) {
+        throw std::runtime_error("Axiom redefinition: " +
+                                 rule.get_lhs()->get_name());
+      }
+      axiom = &rule;
+      involved_nonterminals.insert(rule.get_lhs());
+    }
+  }
+
+  if (!axiom) {
+    throw std::runtime_error("Axiom is not defined");
+  }
+
+  for (auto b = program.RulesCbegin(), e = program.RulesCend(); b != e; ++b) {
+    const auto& rule = **b;
+
+    for (auto b = rule.TermsCbegin(), e = rule.TermsCend(); b != e; ++b) {
+      const auto& term = **b;
+
+      for (auto b = term.SymsCbegin(), e = term.SymsCend(); b != e; ++b) {
+        const auto* const nonterminal =
+            dynamic_cast<const NonterminalSymbol*>(*b);
+        if (!nonterminal) {
+          continue;
+        }
+
+        if (!defined_nonterminals.contains(nonterminal)) {
+          throw std::runtime_error("Undefined nonterminal " +
+                                   nonterminal->get_name());
+        }
+        involved_nonterminals.insert(nonterminal);
+      }
+    }
+  }
+
+  const auto is_involved =
+      [&involved_nonterminals](const std::unique_ptr<Rule>& rule) {
+        return involved_nonterminals.contains(rule->get_lhs());
+      };
+
+  if (const auto it = std::find_if_not(program.RulesCbegin(),
+                                       program.RulesCend(), is_involved);
+      it != program.RulesCend()) {
+    throw std::runtime_error("Unused nonterminal " +
+                             it->get()->get_lhs()->get_name());
+  }
 }
 
 }  // namespace ast

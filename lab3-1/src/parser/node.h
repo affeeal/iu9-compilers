@@ -8,6 +8,8 @@
 
 namespace parser {
 
+namespace dt {
+
 enum class Nonterminal {
   kProgram,
   kRules,
@@ -24,8 +26,6 @@ enum class Nonterminal {
 
 std::string_view ToString(const Nonterminal nt);
 std::ostream& operator<<(std::ostream& os, const Nonterminal nt);
-
-namespace dt {
 
 using Symbol = std::variant<Nonterminal, lexer::DomainTag>;
 

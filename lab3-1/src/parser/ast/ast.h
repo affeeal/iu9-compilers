@@ -2,7 +2,6 @@
 
 #include <memory>
 #include <string>
-#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -11,6 +10,8 @@
 namespace parser {
 
 namespace ast {
+
+class SymbolTable;
 
 class ISymbol {
  public:
@@ -25,7 +26,7 @@ class NonterminalSymbol final : public ISymbol {
  public:
   NonterminalSymbol(std::string name) noexcept : name_(std::move(name)) {}
 
-  std::string_view get_name() const noexcept { return name_; }
+  const std::string& get_name() const noexcept { return name_; }
 };
 
 class TerminalSymbol final : public ISymbol {
@@ -34,7 +35,7 @@ class TerminalSymbol final : public ISymbol {
  public:
   TerminalSymbol(std::string name) noexcept : name_(std::move(name)) {}
 
-  std::string_view get_name() const noexcept { return name_; }
+  const std::string& get_name() const noexcept { return name_; }
 };
 
 class Term final {
@@ -74,9 +75,10 @@ class Program final {
   auto RulesCend() const noexcept { return rules_.cend(); }
 };
 
-std::unique_ptr<Program> DtToAst(const dt::InnerNode& program);
+std::unique_ptr<Program> DtToAst(SymbolTable& symbol_table,
+                                 const dt::InnerNode& program);
 
-void ValidateAst(const Program& program); // TODO
+void Validate(const Program& program);
 
 }  // namespace ast
 
