@@ -18,22 +18,22 @@ class ISymbol {
   virtual ~ISymbol() = default;
 };
 
-class SpecialSymbol final : public ISymbol {};  // epsilon or dollar
+class Special final : public ISymbol {};  // epsilon or dollar
 
-class NonterminalSymbol final : public ISymbol {
+class Nonterminal final : public ISymbol {
   std::string name_;
 
  public:
-  NonterminalSymbol(std::string name) noexcept : name_(std::move(name)) {}
+  Nonterminal(std::string name) noexcept : name_(std::move(name)) {}
 
   const std::string& get_name() const noexcept { return name_; }
 };
 
-class TerminalSymbol final : public ISymbol {
+class Terminal final : public ISymbol {
   std::string name_;
 
  public:
-  TerminalSymbol(std::string name) noexcept : name_(std::move(name)) {}
+  Terminal(std::string name) noexcept : name_(std::move(name)) {}
 
   const std::string& get_name() const noexcept { return name_; }
 };
@@ -50,16 +50,16 @@ class Term final {
 
 class Rule final {
   bool is_axiom_;
-  const NonterminalSymbol* lhs_;
+  const Nonterminal* lhs_;
   std::vector<std::unique_ptr<Term>> rhs_;
 
  public:
-  Rule(std::vector<std::unique_ptr<Term>>&& rhs,
-       const NonterminalSymbol* const lhs, const bool is_axiom) noexcept
+  Rule(std::vector<std::unique_ptr<Term>>&& rhs, const Nonterminal* const lhs,
+       const bool is_axiom) noexcept
       : is_axiom_(is_axiom), lhs_(lhs), rhs_(std::move(rhs)) {}
 
   bool get_is_axiom() const noexcept { return is_axiom_; }
-  const NonterminalSymbol* get_lhs() const noexcept { return lhs_; }
+  const Nonterminal* get_lhs() const noexcept { return lhs_; }
   auto TermsCbegin() const noexcept { return rhs_.cbegin(); }
   auto TermsCend() const noexcept { return rhs_.cend(); }
 };

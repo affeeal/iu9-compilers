@@ -113,7 +113,7 @@ std::vector<std::unique_ptr<Term>> ParseRuleRHS(SymbolTable& symbol_table,
 }
 
 // RuleLHS ::= KW_AXIOM NONTERMINAL | NONTERMINAL
-std::pair<const NonterminalSymbol*, bool> ParseRuleLHS(
+std::pair<const Nonterminal*, bool> ParseRuleLHS(
     SymbolTable& symbol_table, const dt::InnerNode& rule_lhs) {
   auto b = rule_lhs.ChildrenCbegin();
   auto is_axiom = false;
@@ -177,7 +177,7 @@ std::unique_ptr<Program> DtToAst(SymbolTable& symbol_table,
 
 void Validate(const Program& program) {
   const Rule* axiom = nullptr;
-  std::unordered_set<const NonterminalSymbol*> defined_nonterminals,
+  std::unordered_set<const Nonterminal*> defined_nonterminals,
       involved_nonterminals;
 
   for (auto b = program.RulesCbegin(), e = program.RulesCend(); b != e; ++b) {
@@ -210,8 +210,7 @@ void Validate(const Program& program) {
       const auto& term = **b;
 
       for (auto b = term.SymsCbegin(), e = term.SymsCend(); b != e; ++b) {
-        const auto* const nonterminal =
-            dynamic_cast<const NonterminalSymbol*>(*b);
+        const auto* const nonterminal = dynamic_cast<const Nonterminal*>(*b);
         if (!nonterminal) {
           continue;
         }

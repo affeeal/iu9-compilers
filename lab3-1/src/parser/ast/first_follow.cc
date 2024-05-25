@@ -1,4 +1,3 @@
-/*
 #include "first_follow.h"
 
 #include <iostream>
@@ -9,30 +8,31 @@ namespace parser {
 
 namespace ast {
 
-FirstFollow::FirstFollow(const Program& program) {
+FirstFollow::FirstFollow(std::shared_ptr<const SymbolTable> symbol_table,
+                         const Program& program)
+    : symbol_table_(std::move(symbol_table)) {
   BuildFirstSets(program);
-  BuildFollowSets(program);
+  // BuildFollowSets(program);
 
-  PrintSets(follow_sets_);
+  PrintSets(first_sets_);
 }
 
 void FirstFollow::BuildFirstSets(const Program& program) {
   bool sets_are_filling;
-
   do {
     sets_are_filling = false;
 
     for (auto b = program.RulesCbegin(), e = program.RulesCend(); b != e; ++b) {
       const auto& rule = **b;
 
-      auto new_first_set = std::unordered_set<TableSymbol>{};
+      auto new_first_set = std::unordered_set<const ISymbol*>{};
       for (auto b = rule.TermsCbegin(), e = rule.TermsCend(); b != e; ++b) {
         const auto& term = **b;
 
         new_first_set.merge(GetFirstSet(term.SymsCbegin(), term.SymsCend()));
       }
 
-      auto& first_set = first_sets_[rule.get_name()];
+      auto& first_set = first_sets_[rule.get_lhs()];
       if (first_set.size() != new_first_set.size()) {
         sets_are_filling = true;
         first_set = std::move(new_first_set);
@@ -41,34 +41,34 @@ void FirstFollow::BuildFirstSets(const Program& program) {
   } while (sets_are_filling);
 }
 
-std::unordered_set<TableSymbol> FirstFollow::GetFirstSet(
-    SymbolVectorIter b, const SymbolVectorIter e) const {
-  if (b == e) {
-    return {SpecialSymbol::kEpsilon};
+std::unordered_set<const ISymbol*> FirstFollow::GetFirstSet(
+    ISymbolVecIter b, const ISymbolVecIter e) const {
+  if (e - b == 1 && *b == symbol_table_->GetEpsilon()) {
+    return {symbol_table_->GetEpsilon()};
   }
+  auto new_first_set = std::unordered_set<const ISymbol*>{};
 
-  auto new_first_set = std::unordered_set<TableSymbol>{};
-  for (const auto e_prev = e - 1; b != e; ++b) {
-    if (b->get_type() == Symbol::Type::kTerminal) {
-      new_first_set.insert(b->get_name());
+  const auto e_prev = e - 1;
+  for (; b != e; ++b) {
+    if (const auto* const terminal = dynamic_cast<const Terminal*>(*b)) {
+      new_first_set.insert(terminal);
       break;
     }
+    const auto* const nonterminal = static_cast<const Nonterminal*>(*b);
 
-    // b->get_type() == Symbol::Type::kNonterminal
-
-    auto first_set = std::unordered_set<TableSymbol>{};
-    if (const auto it = first_sets_.find(b->get_name());
+    auto first_set = std::unordered_set<const ISymbol*>{};
+    if (const auto it = first_sets_.find(nonterminal);
         it != first_sets_.cend()) {
       first_set = it->second;
     }
 
-    if (!first_set.contains(SpecialSymbol::kEpsilon)) {
+    if (!first_set.contains(symbol_table_->GetEpsilon())) {
       new_first_set.merge(std::move(first_set));
       break;
     }
 
     if (b != e_prev) {
-      first_set.erase(SpecialSymbol::kEpsilon);
+      first_set.erase(symbol_table_->GetEpsilon());
     }
     new_first_set.merge(std::move(first_set));
   }
@@ -77,15 +77,21 @@ std::unordered_set<TableSymbol> FirstFollow::GetFirstSet(
 }
 
 void FirstFollow::PrintSets(auto&& sets) const {
-  for (auto&& [name, set] : sets) {
-    std::cout << name << ": ";
+  for (auto&& [nonterminal, set] : sets) {
+    std::cout << nonterminal->get_name() << ": ";
     for (auto&& symbol : set) {
-      std::cout << symbol << ' ';
+      if (const auto* const terminal = dynamic_cast<const Terminal*>(symbol)) {
+        std::cout << terminal->get_name();
+      } else if (symbol == symbol_table_->GetEpsilon()) {
+        std::cout << "epsilon";
+      }
+      std::cout << ' ';
     }
     std::cout << '\n';
   }
 }
 
+/*
 void FirstFollow::BuildFollowSets(const Program& program) {
   auto followed =
       std::unordered_map<std::string, std::unordered_set<std::string>>{};
@@ -149,8 +155,8 @@ std::pair<TableSymbolSetIter, TableSymbolSetIter> FirstFollow::GetFollowSet(
   const auto& follow_set = follow_sets_.at(name);
   return {follow_set.cbegin(), follow_set.cend()};
 }
+*/
 
 }  // namespace ast
 
 }  // namespace parser
-   // */
