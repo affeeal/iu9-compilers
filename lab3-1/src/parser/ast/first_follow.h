@@ -16,6 +16,8 @@ class FirstFollow final {
  public:
   FirstFollow(std::shared_ptr<const Program> program);
 
+  const Program& get_program() const noexcept { return *program_; }
+
   std::unordered_set<const ISymbol*> GetFirstSet(ISymbolVecIter b,
                                                  const ISymbolVecIter e) const;
   std::pair<ISymbolSetIter, ISymbolSetIter> GetFollowSet(

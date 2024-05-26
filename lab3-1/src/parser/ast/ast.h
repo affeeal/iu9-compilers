@@ -7,6 +7,10 @@
 #include <utility>
 #include <vector>
 
+// clang-format off
+#include <boost/functional/hash.hpp>
+// clang-format on
+
 #include "node.h"
 
 namespace parser {
@@ -92,8 +96,8 @@ std::shared_ptr<const Program> DtToAst(const dt::InnerNode& program);
 void Validate(const Program& program);
 
 using TableKey = std::pair<const Nonterminal*, const ISymbol*>;
-std::unordered_map<TableKey, std::vector<const ISymbol*>> BuildTable(
-    const FirstFollow& first_follow);
+std::unordered_map<TableKey, std::vector<const ISymbol*>, boost::hash<TableKey>>
+BuildTable(const FirstFollow& first_follow);
 
 }  // namespace ast
 

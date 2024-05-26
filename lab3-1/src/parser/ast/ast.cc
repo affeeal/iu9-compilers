@@ -2,13 +2,10 @@
 
 #include <algorithm>
 #include <iterator>
+#include <unordered_map>
 #include <unordered_set>
 #include <utility>
 #include <vector>
-
-// clang-format off
-#include <boost/functional/hash.hpp>
-// clang-format on
 
 #include "first_follow.h"
 #include "symbol_table.h"
@@ -249,9 +246,44 @@ void Validate(const Program& program) {
   }
 }
 
-std::unordered_map<TableKey, std::vector<const ISymbol*>> BuildTable(
-    const FirstFollow& first_follow) {
-  // TODO
+std::unordered_map<TableKey, std::vector<const ISymbol*>, boost::hash<TableKey>>
+BuildTable(const FirstFollow& first_follow) {
+  auto table = std::unordered_map<TableKey, std::vector<const ISymbol*>,
+                                  boost::hash<TableKey>>{};
+  const auto& program = first_follow.get_program();
+  const auto& symbol_table = program.get_symbol_table();
+
+  for (auto b = program.RulesCbegin(), e = program.RulesCend(); b != e; ++b) {
+    const auto& rule = **b;
+
+    for (auto b = rule.TermsCbegin(), e = rule.TermsCend(); b != e; ++b) {
+      const auto& term = **b;
+
+      const auto first_set =
+          first_follow.GetFirstSet(term.SymsCbegin(), term.SymsCend());
+      for (auto&& symbol : first_set) {
+        const auto [_, is_inserted] = table.insert(
+            {{rule.get_lhs(), symbol}, {term.SymsCbegin(), term.SymsCend()}});
+        // TODO: remove duplication (?), recheck
+        if (!is_inserted) {
+          throw std::runtime_error("Not LL(1) grammar");
+        }
+      }
+
+      if (first_set.contains(symbol_table.GetEpsilon())) {
+        auto [b, e] = first_follow.GetFollowSet(rule.get_lhs());
+        for (; b != e; ++b) {
+          const auto [_, is_inserted] = table.insert(
+              {{rule.get_lhs(), *b}, {term.SymsCbegin(), term.SymsCend()}});
+          if (!is_inserted) {
+            throw std::runtime_error("Not LL(1) grammar");
+          }
+        }
+      }
+    }
+  }
+
+  return table;
 }
 
 }  // namespace ast

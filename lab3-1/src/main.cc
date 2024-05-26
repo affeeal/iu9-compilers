@@ -8,7 +8,7 @@
 #include "parser.h"
 #include "scanner.h"
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) try {
   if (argc != 2) {
     std::cerr << "Usage: " << argv[0] << " <filename>\n";
     return 1;
@@ -24,17 +24,14 @@ int main(int argc, char* argv[]) {
   auto scanner = lexer::Scanner(compiler, file);
   auto parser = parser::Parser();
 
-  try {
-    const auto dt = parser.TopDownParse(scanner);
-    const auto& program_node = static_cast<const parser::dt::InnerNode&>(*dt);
+  const auto dt = parser.TopDownParse(scanner);
+  const auto& program_node = static_cast<const parser::dt::InnerNode&>(*dt);
+  const auto program = parser::ast::DtToAst(program_node);
 
-    const auto program = parser::ast::DtToAst(program_node);
-
-    parser::ast::Validate(*program);
-
-    auto first_follow = parser::ast::FirstFollow(program);
-  } catch (const std::exception& e) {
-    std::cerr << e.what() << std::endl;
-    return 1;
-  }
+  parser::ast::Validate(*program);
+  auto first_follow = parser::ast::FirstFollow(program);
+  auto table = parser::ast::BuildTable(first_follow);
+} catch (const std::exception& e) {
+  std::cerr << e.what() << std::endl;
+  return 1;
 }
