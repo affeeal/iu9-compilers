@@ -7,7 +7,6 @@
 #include "first_follow.h"
 #include "parser.h"
 #include "scanner.h"
-#include "symbol_table.h"
 
 int main(int argc, char* argv[]) {
   if (argc != 2) {
@@ -27,14 +26,13 @@ int main(int argc, char* argv[]) {
 
   try {
     const auto dt = parser.TopDownParse(scanner);
+    const auto& program_node = static_cast<const parser::dt::InnerNode&>(*dt);
 
-    auto symbol_table = std::make_shared<parser::ast::SymbolTable>();
-    const auto& node = static_cast<const parser::dt::InnerNode&>(*dt);
-    const auto program = parser::ast::DtToAst(*symbol_table, node);
+    const auto program = parser::ast::DtToAst(program_node);
 
     parser::ast::Validate(*program);
 
-    auto first_follow = parser::ast::FirstFollow(symbol_table, *program);
+    auto first_follow = parser::ast::FirstFollow(program);
   } catch (const std::exception& e) {
     std::cerr << e.what() << std::endl;
     return 1;

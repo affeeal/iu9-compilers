@@ -3,6 +3,7 @@
 #include <cassert>
 #include <memory>
 #include <string>
+#include <unordered_map>
 #include <utility>
 #include <vector>
 
@@ -12,6 +13,7 @@ namespace parser {
 
 namespace ast {
 
+class FirstFollow;
 class SymbolTable;
 
 class ISymbol {
@@ -44,7 +46,7 @@ class Term final {
 
  public:
   Term(std::vector<const ISymbol*>&& syms) noexcept : syms_(std::move(syms)) {
-    assert(syms_.size() >= 1);
+    assert(syms_.size() > 0);
   }
 
   auto SymsCbegin() const noexcept { return syms_.cbegin(); }
@@ -54,13 +56,13 @@ class Term final {
 class Rule final {
   bool is_axiom_;
   const Nonterminal* lhs_;
-  std::vector<std::unique_ptr<Term>> rhs_;
+  std::vector<std::unique_ptr<const Term>> rhs_;
 
  public:
-  Rule(std::vector<std::unique_ptr<Term>>&& rhs, const Nonterminal* const lhs,
-       const bool is_axiom) noexcept
+  Rule(std::vector<std::unique_ptr<const Term>>&& rhs,
+       const Nonterminal* const lhs, const bool is_axiom) noexcept
       : is_axiom_(is_axiom), lhs_(lhs), rhs_(std::move(rhs)) {
-    assert(rhs_.size() >= 1);
+    assert(rhs_.size() > 0);
   }
 
   bool get_is_axiom() const noexcept { return is_axiom_; }
@@ -70,22 +72,28 @@ class Rule final {
 };
 
 class Program final {
-  std::vector<std::unique_ptr<Rule>> rules_;
+  std::vector<std::unique_ptr<const Rule>> rules_;
+  std::unique_ptr<const SymbolTable> symbol_table_;
 
  public:
-  Program(std::vector<std::unique_ptr<Rule>>&& rules) noexcept
-      : rules_(std::move(rules)) {
-    assert(rules_.size() >= 1);
-  }
+  Program(std::vector<std::unique_ptr<const Rule>>&& rules,
+          std::unique_ptr<const SymbolTable>&& symbol_table) noexcept;
 
   auto RulesCbegin() const noexcept { return rules_.cbegin(); }
   auto RulesCend() const noexcept { return rules_.cend(); }
+
+  const SymbolTable& get_symbol_table() const noexcept {
+    return *symbol_table_;
+  }
 };
 
-std::unique_ptr<Program> DtToAst(SymbolTable& symbol_table,
-                                 const dt::InnerNode& program);
+std::shared_ptr<const Program> DtToAst(const dt::InnerNode& program);
 
 void Validate(const Program& program);
+
+using TableKey = std::pair<const Nonterminal*, const ISymbol*>;
+std::unordered_map<TableKey, std::vector<const ISymbol*>> BuildTable(
+    const FirstFollow& first_follow);
 
 }  // namespace ast
 

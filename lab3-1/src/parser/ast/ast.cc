@@ -4,22 +4,31 @@
 #include <iterator>
 #include <unordered_set>
 #include <utility>
+#include <vector>
 
 // clang-format off
 #include <boost/functional/hash.hpp>
 // clang-format on
 
+#include "first_follow.h"
 #include "symbol_table.h"
 
 namespace parser {
 
 namespace ast {
 
+Program::Program(std::vector<std::unique_ptr<const Rule>>&& rules,
+                 std::unique_ptr<const SymbolTable>&& symbol_table) noexcept
+    : rules_(std::move(rules)), symbol_table_(std::move(symbol_table)) {
+  assert(rules_.size() > 0);
+}
+
 // Symbol ::= TERMINAL | NONTERMINAL
 const ISymbol* ParseSymbol(SymbolTable& symbol_table,
                            const dt::InnerNode& symbol) {
   const auto& leaf =
       static_cast<const dt::LeafNode&>(**symbol.ChildrenCbegin());
+
   if (const auto* const terminal =
           dynamic_cast<const lexer::TerminalToken*>(leaf.get_token())) {
     return symbol_table.GetTerminal(terminal->get_str());
@@ -50,12 +59,12 @@ std::vector<const ISymbol*> ParseTerm1(SymbolTable& symbol_table,
 }
 
 // Term ::= Symbol Term1 | KW_EPSILON
-std::unique_ptr<Term> ParseTerm(SymbolTable& symbol_table,
-                                const dt::InnerNode& term) {
+std::unique_ptr<const Term> ParseTerm(SymbolTable& symbol_table,
+                                      const dt::InnerNode& term) {
   const auto b = term.ChildrenCbegin();
   if (term.ChildrenCend() - b == 1) {
     auto symbols = std::vector<const ISymbol*>{symbol_table.GetEpsilon()};
-    return std::make_unique<Term>(std::move(symbols));
+    return std::make_unique<const Term>(std::move(symbols));
   }
 
   const auto& symbol = static_cast<const dt::InnerNode&>(**b);
@@ -66,12 +75,12 @@ std::unique_ptr<Term> ParseTerm(SymbolTable& symbol_table,
 
   ast_term1.push_back(ast_symbol);
   std::rotate(ast_term1.rbegin(), ast_term1.rbegin() + 1, ast_term1.rend());
-  return std::make_unique<Term>(std::move(ast_term1));
+  return std::make_unique<const Term>(std::move(ast_term1));
 }
 
 // Expr1 ::= KW_OR Term Expr1 | ε
-std::vector<std::unique_ptr<Term>> ParseExpr1(SymbolTable& symbol_table,
-                                              const dt::InnerNode& expr1) {
+std::vector<std::unique_ptr<const Term>> ParseExpr1(
+    SymbolTable& symbol_table, const dt::InnerNode& expr1) {
   const auto b = expr1.ChildrenCbegin();
   if (b == expr1.ChildrenCend()) {
     return {};
@@ -89,8 +98,8 @@ std::vector<std::unique_ptr<Term>> ParseExpr1(SymbolTable& symbol_table,
 }
 
 // Expr ::= Term Expr1
-std::vector<std::unique_ptr<Term>> ParseExpr(SymbolTable& symbol_table,
-                                             const dt::InnerNode& expr) {
+std::vector<std::unique_ptr<const Term>> ParseExpr(SymbolTable& symbol_table,
+                                                   const dt::InnerNode& expr) {
   const auto b = expr.ChildrenCbegin();
 
   const auto& term = static_cast<const dt::InnerNode&>(**b);
@@ -105,8 +114,8 @@ std::vector<std::unique_ptr<Term>> ParseExpr(SymbolTable& symbol_table,
 }
 
 // RuleRHS ::= Expr KW_END
-std::vector<std::unique_ptr<Term>> ParseRuleRHS(SymbolTable& symbol_table,
-                                                const dt::InnerNode& rule_rhs) {
+std::vector<std::unique_ptr<const Term>> ParseRuleRHS(
+    SymbolTable& symbol_table, const dt::InnerNode& rule_rhs) {
   const auto& expr =
       static_cast<const dt::InnerNode&>(**rule_rhs.ChildrenCbegin());
   return ParseExpr(symbol_table, expr);
@@ -129,8 +138,8 @@ std::pair<const Nonterminal*, bool> ParseRuleLHS(
 }
 
 // Rule ::= RuleLHS ARROW RuleRHS
-std::unique_ptr<Rule> ParseRule(SymbolTable& symbol_table,
-                                const dt::InnerNode& rule) {
+std::unique_ptr<const Rule> ParseRule(SymbolTable& symbol_table,
+                                      const dt::InnerNode& rule) {
   const auto b = rule.ChildrenCbegin();
 
   const auto& rule_lhs = static_cast<const dt::InnerNode&>(**b);
@@ -139,12 +148,12 @@ std::unique_ptr<Rule> ParseRule(SymbolTable& symbol_table,
   const auto& rule_rhs = static_cast<const dt::InnerNode&>(**(b + 2));
   auto rhs = ParseRuleRHS(symbol_table, rule_rhs);
 
-  return std::make_unique<Rule>(std::move(rhs), lhs, is_axiom);
+  return std::make_unique<const Rule>(std::move(rhs), lhs, is_axiom);
 }
 
 // Rules ::= Rule Rules | ε
-std::vector<std::unique_ptr<Rule>> ParseRules(SymbolTable& symbol_table,
-                                              const dt::InnerNode& rules) {
+std::vector<std::unique_ptr<const Rule>> ParseRules(
+    SymbolTable& symbol_table, const dt::InnerNode& rules) {
   const auto b = rules.ChildrenCbegin();
   if (b == rules.ChildrenCend()) {
     return {};  // TODO: fix to contain at least one rule
@@ -162,17 +171,20 @@ std::vector<std::unique_ptr<Rule>> ParseRules(SymbolTable& symbol_table,
 }
 
 // Program ::= Rules
-std::unique_ptr<Program> ParseProgram(SymbolTable& symbol_table,
-                                      const dt::InnerNode& program) {
+std::unique_ptr<const Program> ParseProgram(const dt::InnerNode& program) {
+  auto symbol_table = SymbolTable{};
+
   const auto& rules =
       static_cast<const dt::InnerNode&>(**program.ChildrenCbegin());
   auto ast_rules = ParseRules(symbol_table, rules);
-  return std::make_unique<Program>(std::move(ast_rules));
+
+  return std::make_unique<const Program>(
+      std::move(ast_rules),
+      std::make_unique<const SymbolTable>(std::move(symbol_table)));
 }
 
-std::unique_ptr<Program> DtToAst(SymbolTable& symbol_table,
-                                 const dt::InnerNode& program) {
-  return ParseProgram(symbol_table, program);
+std::shared_ptr<const Program> DtToAst(const dt::InnerNode& program) {
+  return ParseProgram(program);
 }
 
 void Validate(const Program& program) {
@@ -225,7 +237,7 @@ void Validate(const Program& program) {
   }
 
   const auto is_involved =
-      [&involved_nonterminals](const std::unique_ptr<Rule>& rule) {
+      [&involved_nonterminals](const std::unique_ptr<const Rule>& rule) {
         return involved_nonterminals.contains(rule->get_lhs());
       };
 
@@ -235,6 +247,11 @@ void Validate(const Program& program) {
     throw std::runtime_error("Unused nonterminal " +
                              it->get()->get_lhs()->get_name());
   }
+}
+
+std::unordered_map<TableKey, std::vector<const ISymbol*>> BuildTable(
+    const FirstFollow& first_follow) {
+  // TODO
 }
 
 }  // namespace ast
