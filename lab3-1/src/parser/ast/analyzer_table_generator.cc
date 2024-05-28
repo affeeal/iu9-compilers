@@ -1,6 +1,16 @@
 #include "analyzer_table_generator.h"
 
+#include <fstream>
+#include <iomanip>
 #include <iostream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
+
+// clang-format off
+#include <boost/format.hpp>
+#include <boost/algorithm/string/join.hpp>
+// clang-format on
 
 #include "ast.h"
 #include "first_follow.h"
@@ -8,6 +18,36 @@
 namespace parser {
 
 namespace ast {
+
+namespace {
+
+std::string Slurp(std::ifstream& in) {
+  std::ostringstream oss;
+  oss << in.rdbuf();
+  return oss.str();
+}
+
+std::string GetSymbolTypeDefinition(const Symbol::Type type) {
+  switch (type) {
+    case Symbol::Type::kNonterminal: {
+      return "Symbol::Type::kNonterminal";
+    }
+    case Symbol::Type::kTerminal: {
+      return "Symbol::Type::kTerminal";
+    }
+    case Symbol::Type::kSpecial: {
+      return "Symbol::Type::kSpecial";
+    }
+  }
+}
+
+std::string GetSymbolDefinition(const Symbol& symbol) {
+  return boost::str(boost::format("{%1%, %2%}") %
+                    std::quoted(symbol.get_name()) %
+                    GetSymbolTypeDefinition(symbol.get_type()));
+}
+
+}  // namespace
 
 AnalyzerTableGenerator::AnalyzerTableGenerator(const FirstFollow& first_follow)
     : program_(first_follow.get_program()) {
@@ -20,7 +60,7 @@ AnalyzerTableGenerator::AnalyzerTableGenerator(const FirstFollow& first_follow)
 
       auto first_set =
           first_follow.GetFirstSet(term.SymbolsCbegin(), term.SymbolsCend());
-      const auto erased = first_set.erase(kEpsilon);
+      const auto is_epsilon_erased = first_set.erase(kEpsilon);
 
       for (auto&& symbol : first_set) {
         const auto [_, is_inserted] =
@@ -32,7 +72,7 @@ AnalyzerTableGenerator::AnalyzerTableGenerator(const FirstFollow& first_follow)
         }
       }
 
-      if (!erased) {
+      if (!is_epsilon_erased) {
         continue;
       }
 
@@ -48,16 +88,43 @@ AnalyzerTableGenerator::AnalyzerTableGenerator(const FirstFollow& first_follow)
   }
 }
 
-void AnalyzerTableGenerator::PrintTable() const {
+void AnalyzerTableGenerator::GenerateTable(
+    const std::string& template_filename,
+    const std::string& table_filename) const {
+  auto template_file = std::ifstream(template_filename);
+  if (!template_file.is_open()) {
+    throw std::runtime_error("Failed to open file " + template_filename);
+  }
+
+  auto table_file = std::ofstream(table_filename);
+  if (!table_file.is_open()) {
+    throw std::runtime_error("Failed to create file " + table_filename);
+  }
+
+  auto records = std::vector<std::string>{};
+  records.reserve(table_.size());
   for (auto&& [key, value] : table_) {
     const auto [nonterminal, symbol] = key;
-    std::cout << '[' << nonterminal.get_name() << ' ' << symbol.get_name()
-              << "]: ";
-    for (auto [b, e] = value; b != e; ++b) {
-      std::cout << b->get_name() << ' ';
+    auto [b, e] = value;
+
+    auto symbols = std::vector<std::string>{};
+    symbols.reserve(e - b);
+    for (; b != e; ++b) {
+      symbols.push_back(GetSymbolDefinition(*b));
     }
-    std::cout << '\n';
+
+    auto record = boost::str(boost::format("{{%1%, %2%}, {%3%}}") %
+                             GetSymbolDefinition(nonterminal) %
+                             GetSymbolDefinition(symbol) %
+                             boost::algorithm::join(symbols, ", "));
+    records.push_back(std::move(record));
   }
+  const auto table_definition = boost::str(
+      boost::format("{%1%}") % boost::algorithm::join(records, ", "));
+
+  auto fmter = boost::format(Slurp(template_file));
+  fmter % GetSymbolDefinition(program_->get_axiom()) % table_definition;
+  table_file << fmter.str();
 }
 
 }  // namespace ast

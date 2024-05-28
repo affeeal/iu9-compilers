@@ -70,14 +70,14 @@ Symbol DtToAst::ParseRuleLHS(const dt::InnerNode& rule_lhs) {
       nonterminal->ThrowError("axiom redefinition");
     }
     axiom_ = std::make_unique<Symbol>(nonterminal->get_str(),
-                                      Symbol::Type::kNonTerminal);
+                                      Symbol::Type::kNonterminal);
     return *axiom_;
   }
 
   const auto& leaf = static_cast<const dt::LeafNode&>(**b);
   const auto* const nonterminal =
       static_cast<const lexer::NonterminalToken*>(leaf.get_token());
-  return {nonterminal->get_str(), Symbol::Type::kNonTerminal};
+  return {nonterminal->get_str(), Symbol::Type::kNonterminal};
 }
 
 // RuleRHS ::= Expr KW_END
@@ -171,7 +171,7 @@ Symbol DtToAst::ParseSymbol(const dt::InnerNode& symbol) {
 
   const auto& nonterminal =
       static_cast<const lexer::NonterminalToken&>(*leaf.get_token());
-  return {nonterminal.get_str(), Symbol::Type::kNonTerminal};
+  return {nonterminal.get_str(), Symbol::Type::kNonterminal};
 }
 
 }  // namespace ast

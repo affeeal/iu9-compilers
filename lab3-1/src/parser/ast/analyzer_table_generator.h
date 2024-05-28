@@ -18,7 +18,8 @@ class AnalyzerTableGenerator final {
 
   AnalyzerTableGenerator(const FirstFollow& first_follow);
 
-  void PrintTable() const;
+  void GenerateTable(const std::string& template_filename,
+                     const std::string& table_filename) const;
 
  private:
   boost::unordered_map<Key, Value> table_;

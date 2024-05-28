@@ -36,7 +36,7 @@ void Program::Validate() const {
       const auto& term = **b;
 
       for (auto b = term.SymbolsCbegin(), e = term.SymbolsCend(); b != e; ++b) {
-        if (b->get_type() != Symbol::Type::kNonTerminal) {
+        if (b->get_type() != Symbol::Type::kNonterminal) {
           continue;
         }
 

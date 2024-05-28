@@ -88,7 +88,7 @@ void FirstFollow::BuildFollowSets() {
 
       const auto e_prev = term.SymbolsCend() - 1;
       for (auto b = term.SymbolsCbegin(), e = e_prev + 1; b != e_prev; ++b) {
-        if (b->get_type() != Symbol::Type::kNonTerminal) {
+        if (b->get_type() != Symbol::Type::kNonterminal) {
           continue;
         }
 
@@ -99,7 +99,7 @@ void FirstFollow::BuildFollowSets() {
         follow_sets_[*b].merge(std::move(first_set));
       }
 
-      if (e_prev->get_type() == Symbol::Type::kNonTerminal &&
+      if (e_prev->get_type() == Symbol::Type::kNonterminal &&
           *e_prev != rule.get_lhs()) {
         followed_sets[*e_prev].insert(rule.get_lhs());
       }

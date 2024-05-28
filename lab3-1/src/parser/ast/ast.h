@@ -20,7 +20,7 @@ class Symbol final {
  public:
   enum class Type {
     kTerminal,
-    kNonTerminal,
+    kNonterminal,
     kSpecial,
   };
 
