@@ -3,6 +3,5 @@ target_sources(${PROJECT_NAME} PRIVATE
   ast.cc
   dt_to_ast.cc
   first_follow.cc
-  symbol_table.cc
   analyzer_table_generator.cc
 )

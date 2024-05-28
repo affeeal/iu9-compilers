@@ -1,40 +1,32 @@
 #include "ast.h"
 
 #include <algorithm>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
-#include "first_follow.h"
-#include "symbol_table.h"
+// clang-format off
+#include <boost/unordered_set.hpp>
+// clang-format on
 
 namespace parser {
 
 namespace ast {
 
-Program::Program(std::vector<std::unique_ptr<const Rule>>&& rules,
-                 std::shared_ptr<const SymbolTable> symbol_table,
-                 const Nonterminal* const axiom) noexcept
-    : rules_(std::move(rules)),
-      symbol_table_(std::move(symbol_table)),
-      axiom_(axiom) {
-  Validate();
+std::size_t hash_value(const Symbol& symbol) {
+  std::size_t seed = 0;
+  boost::hash_combine(seed, symbol.get_type());
+  boost::hash_combine(seed, symbol.get_name());
+  return seed;
 }
 
 void Program::Validate() const {
-  assert(axiom_);
-  assert(rules_.size() > 0);
-
-  std::unordered_set<const Nonterminal*> defined_nonterminals,
-      involved_nonterminals;
+  boost::unordered_set<Symbol> defined_nonterminals, involved_nonterminals;
   involved_nonterminals.insert(axiom_);
 
   for (auto&& rule : rules_) {
-    if (const auto [_, is_inserted] =
-            defined_nonterminals.insert(rule->get_lhs());
-        !is_inserted) {
-      throw std::runtime_error("nonterminal " + rule->get_lhs()->get_name() +
+    const auto [_, is_inserted] = defined_nonterminals.insert(rule->get_lhs());
+    if (!is_inserted) {
+      throw std::runtime_error("nonterminal " + rule->get_lhs().get_name() +
                                " redefinition");
     }
   }
@@ -43,23 +35,21 @@ void Program::Validate() const {
     for (auto b = rule->TermsCbegin(), e = rule->TermsCend(); b != e; ++b) {
       const auto& term = **b;
 
-      for (auto b = term.SymsCbegin(), e = term.SymsCend(); b != e; ++b) {
-        const auto* const nonterminal = dynamic_cast<const Nonterminal*>(*b);
-        if (!nonterminal) {
+      for (auto b = term.SymbolsCbegin(), e = term.SymbolsCend(); b != e; ++b) {
+        if (b->get_type() != Symbol::Type::kNonTerminal) {
           continue;
         }
 
-        if (!defined_nonterminals.contains(nonterminal)) {
-          throw std::runtime_error("undefined nonterminal " +
-                                   nonterminal->get_name());
+        if (!defined_nonterminals.contains(*b)) {
+          throw std::runtime_error("undefined nonterminal " + b->get_name());
         }
-        involved_nonterminals.insert(nonterminal);
+        involved_nonterminals.insert(*b);
       }
     }
   }
 
   const auto is_involved =
-      [&involved_nonterminals](const std::unique_ptr<const Rule>& rule) {
+      [&involved_nonterminals](const std::unique_ptr<Rule>& rule) {
         return involved_nonterminals.contains(rule->get_lhs());
       };
 
@@ -67,7 +57,7 @@ void Program::Validate() const {
           std::find_if_not(rules_.cbegin(), rules_.cend(), is_involved);
       it != rules_.cend()) {
     throw std::runtime_error("unused nonterminal " +
-                             it->get()->get_lhs()->get_name());
+                             it->get()->get_lhs().get_name());
   }
 }
 

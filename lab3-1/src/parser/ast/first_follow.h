@@ -1,7 +1,9 @@
 #pragma once
 
-#include <unordered_map>
-#include <unordered_set>
+// clang-format off
+#include <boost/unordered_set.hpp>
+#include <boost/unordered_map.hpp>
+// clang-format on
 
 #include "ast.h"
 
@@ -13,12 +15,14 @@ class FirstFollow final {
  public:
   FirstFollow(std::shared_ptr<const Program> program);
 
-  std::shared_ptr<const Program> get_program() const noexcept { return program_; }
+  std::shared_ptr<const Program> get_program() const noexcept {
+    return program_;
+  }
 
-  std::unordered_set<const ISymbol*> GetFirstSet(ISymbolVecIter b,
-                                                 const ISymbolVecIter e) const;
-  std::pair<ISymbolSetIter, ISymbolSetIter> GetFollowSet(
-      const Nonterminal* const nonterminal) const;
+  boost::unordered_set<Symbol> GetFirstSet(SymbolVecIter b,
+                                           const SymbolVecIter e) const;
+  std::pair<SymbolSetIter, SymbolSetIter> GetFollowSet(
+      const Symbol& nonterminal) const;
 
  private:
   void BuildFirstSets();
@@ -28,8 +32,8 @@ class FirstFollow final {
 
  private:
   std::shared_ptr<const Program> program_;
-  std::unordered_map<const Nonterminal*, std::unordered_set<const ISymbol*>>
-      first_sets_, follow_sets_;
+  boost::unordered_map<Symbol, boost::unordered_set<Symbol>> first_sets_,
+      follow_sets_;
 };
 
 }  // namespace ast

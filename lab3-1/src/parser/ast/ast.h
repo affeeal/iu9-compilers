@@ -3,92 +3,87 @@
 #include <cassert>
 #include <memory>
 #include <string>
-#include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
+
+// clang-format off
+#include <boost/unordered_set.hpp>
+// clang-format on
 
 namespace parser {
 
 namespace ast {
 
 class FirstFollow;
-class SymbolTable;
 
-class ISymbol {
+class Symbol final {
  public:
-  virtual ~ISymbol() = default;
-
-  virtual const std::string& GetName() const = 0;
-};
-
-using ISymbolVecIter = std::vector<const ISymbol*>::const_iterator;
-using ISymbolSetIter = std::unordered_set<const ISymbol*>::const_iterator;
-
-class Special final : public ISymbol {
-
-};  // epsilon or dollar
-
-class Nonterminal final : public ISymbol {
-  std::string name_;
+  enum class Type {
+    kTerminal,
+    kNonTerminal,
+    kSpecial,
+  };
 
  public:
-  Nonterminal(std::string name) noexcept : name_(std::move(name)) {}
+  Symbol(std::string name, const Type type) noexcept
+      : name_(std::move(name)), type_(type) {}
+
+  bool operator==(const Symbol&) const = default;
 
   const std::string& get_name() const noexcept { return name_; }
-};
+  Type get_type() const noexcept { return type_; }
 
-class Terminal final : public ISymbol {
+ private:
   std::string name_;
-
- public:
-  Terminal(std::string name) noexcept : name_(std::move(name)) {}
-
-  const std::string& get_name() const noexcept { return name_; }
+  Type type_;
 };
+
+const auto kEpsilon = Symbol{"ε", Symbol::Type::kSpecial};
+const auto kDollar = Symbol{"$", Symbol::Type::kSpecial};
+
+std::size_t hash_value(const Symbol& symbol);
+
+using SymbolVecIter = std::vector<Symbol>::const_iterator;
+using SymbolSetIter = boost::unordered_set<Symbol>::const_iterator;
 
 class Term final {
-  std::vector<const ISymbol*> syms_;
+  std::vector<Symbol> symbols_;
 
  public:
-  Term(std::vector<const ISymbol*>&& syms) noexcept : syms_(std::move(syms)) {}
+  Term(std::vector<Symbol>&& symbols) noexcept : symbols_(std::move(symbols)) {}
 
-  auto SymsCbegin() const noexcept { return syms_.cbegin(); }
-  auto SymsCend() const noexcept { return syms_.cend(); }
+  auto SymbolsCbegin() const noexcept { return symbols_.cbegin(); }
+  auto SymbolsCend() const noexcept { return symbols_.cend(); }
 };
 
 class Rule final {
-  const Nonterminal* lhs_;
-  std::vector<std::unique_ptr<const Term>> rhs_;
+  Symbol lhs_;
+  std::vector<std::unique_ptr<Term>> rhs_;
 
  public:
-  Rule(std::vector<std::unique_ptr<const Term>>&& rhs,
-       const Nonterminal* const lhs) noexcept
-      : lhs_(lhs), rhs_(std::move(rhs)) {
+  Rule(Symbol&& lhs, std::vector<std::unique_ptr<Term>>&& rhs) noexcept
+      : lhs_(std::move(lhs)), rhs_(std::move(rhs)) {
     assert(rhs_.size() > 0);
   }
 
-  const Nonterminal* get_lhs() const noexcept { return lhs_; }
+  const Symbol& get_lhs() const noexcept { return lhs_; }
   auto TermsCbegin() const noexcept { return rhs_.cbegin(); }
   auto TermsCend() const noexcept { return rhs_.cend(); }
 };
 
 class Program final {
-  std::vector<std::unique_ptr<const Rule>> rules_;
-  std::shared_ptr<const SymbolTable> symbol_table_;
-  const Nonterminal* axiom_;
+  Symbol axiom_;
+  std::vector<std::unique_ptr<Rule>> rules_;
 
  public:
-  Program(std::vector<std::unique_ptr<const Rule>>&& rules,
-          std::shared_ptr<const SymbolTable> symbol_table,
-          const Nonterminal* const axiom) noexcept;
+  Program(Symbol&& axiom, std::vector<std::unique_ptr<Rule>>&& rules) noexcept
+      : axiom_(std::move(axiom)), rules_(std::move(rules)) {
+    Validate();
+  }
 
+  const Symbol& get_axiom() const noexcept { return axiom_; }
   auto RulesCbegin() const noexcept { return rules_.cbegin(); }
   auto RulesCend() const noexcept { return rules_.cend(); }
-  std::shared_ptr<const SymbolTable> get_symbol_table() const noexcept {
-    return symbol_table_;
-  }
-  const Nonterminal* get_axiom() const noexcept { return axiom_; }
 
  private:
   void Validate() const;
