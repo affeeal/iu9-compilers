@@ -1,6 +1,6 @@
 #pragma once
 
-#include <ostream>
+#include <string>
 
 namespace lexer {
 
@@ -9,10 +9,8 @@ struct Position final {
   std::size_t pos = 1;
   std::size_t index = 0;
 
-  void Dump(std::ostream& os) const;
+  std::string ToString() const;
 };
-
-std::ostream& operator<<(std::ostream& os, const Position& position);
 
 }  // namespace lexer
 

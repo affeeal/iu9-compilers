@@ -17,7 +17,8 @@ concept Printable = requires(std::ostream& os, T&& t) {
 template <Printable T>
 void ThrowParseError(const lexer::Token& token, T&& t) {
   std::ostringstream err;
-  err << token.coords() << ": expected " << t << ", got " << token.tag();
+  err << token.coords().ToString() << ": expected " << t << ", got "
+      << token.tag();
   throw std::runtime_error(err.str());
 }
 

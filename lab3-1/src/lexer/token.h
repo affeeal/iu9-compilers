@@ -25,6 +25,8 @@ class Token {
   DomainTag tag() const noexcept { return tag_; }
   const Fragment& coords() const noexcept { return coords_; }
 
+  [[noreturn]] void ThrowError(const std::string& msg) const;
+
  protected:
   Token(const DomainTag tag, const Fragment& coords) noexcept
       : tag_(tag), coords_(coords) {}

@@ -1,6 +1,12 @@
 #include "token.h"
 
+#include <stdexcept>
+
 namespace lexer {
+
+void Token::ThrowError(const std::string& msg) const {
+  throw std::runtime_error(coords_.ToString() + ": " + msg);
+}
 
 std::string_view ToString(const DomainTag tag) {
   switch (tag) {

@@ -13,7 +13,6 @@
 #include <FlexLexer.h>
 #endif
 
-#include "compiler.h"
 #include "fragment.h"
 #include "token.h"
 
@@ -30,9 +29,8 @@ class IScanner {
 
 class Scanner final : private yyFlexLexer, public IScanner {
  public:
-  Scanner(std::shared_ptr<Compiler> compiler, std::istream& is = std::cin,
-          std::ostream& os = std::cout)
-      : yyFlexLexer(is, os), compiler_(std::move(compiler)) {}
+  Scanner(std::istream& is = std::cin, std::ostream& os = std::cout)
+      : yyFlexLexer(is, os) {}
 
   auto CommentsCbegin() const noexcept { return comments_.cbegin(); }
   auto CommentsCend() const noexcept { return comments_.cend(); }
@@ -48,7 +46,6 @@ class Scanner final : private yyFlexLexer, public IScanner {
   DomainTag HandleTerminal(Attribute& attr) const;
 
  private:
-  std::shared_ptr<Compiler> compiler_;
   std::vector<Fragment> comments_;
   Position cur_;
 };

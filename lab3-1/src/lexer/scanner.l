@@ -6,7 +6,6 @@
 #define YY_USER_ACTION AdjustCoords(coords);
 
 using lexer::DomainTag;
-using lexer::MessageType;
 %}
 
 %option c++ noyywrap

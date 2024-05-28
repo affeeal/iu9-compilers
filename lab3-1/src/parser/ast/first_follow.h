@@ -9,14 +9,11 @@ namespace parser {
 
 namespace ast {
 
-using ISymbolVecIter = std::vector<const ISymbol*>::const_iterator;
-using ISymbolSetIter = std::unordered_set<const ISymbol*>::const_iterator;
-
 class FirstFollow final {
  public:
   FirstFollow(std::shared_ptr<const Program> program);
 
-  const Program& get_program() const noexcept { return *program_; }
+  std::shared_ptr<const Program> get_program() const noexcept { return program_; }
 
   std::unordered_set<const ISymbol*> GetFirstSet(ISymbolVecIter b,
                                                  const ISymbolVecIter e) const;
@@ -26,6 +23,8 @@ class FirstFollow final {
  private:
   void BuildFirstSets();
   void BuildFollowSets();
+
+  void PrintSets(auto&& sets) const;
 
  private:
   std::shared_ptr<const Program> program_;

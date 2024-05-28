@@ -3,7 +3,9 @@
 #include <iostream>
 #include <memory>
 
+#include "analyzer_table_generator.h"
 #include "ast.h"
+#include "dt_to_ast.h"
 #include "first_follow.h"
 #include "parser.h"
 #include "scanner.h"
@@ -20,17 +22,18 @@ int main(int argc, char* argv[]) try {
     return 1;
   }
 
-  auto compiler = std::make_shared<lexer::Compiler>();
-  auto scanner = lexer::Scanner(compiler, file);
+  auto scanner = lexer::Scanner(file);
   auto parser = parser::Parser();
 
   const auto dt = parser.TopDownParse(scanner);
   const auto& program_node = static_cast<const parser::dt::InnerNode&>(*dt);
-  const auto program = parser::ast::DtToAst(program_node);
 
-  parser::ast::Validate(*program);
-  auto first_follow = parser::ast::FirstFollow(program);
-  auto table = parser::ast::BuildTable(first_follow);
+  auto dt_to_ast = parser::ast::DtToAst{};
+  const auto program = dt_to_ast.Convert(program_node);
+
+  const auto first_follow = parser::ast::FirstFollow(program);
+  const auto generator = parser::ast::AnalyzerTableGenerator(first_follow);
+  generator.PrintTable();
 } catch (const std::exception& e) {
   std::cerr << e.what() << std::endl;
   return 1;

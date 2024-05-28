@@ -4,14 +4,9 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
-
-// clang-format off
-#include <boost/functional/hash.hpp>
-// clang-format on
-
-#include "node.h"
 
 namespace parser {
 
@@ -23,9 +18,16 @@ class SymbolTable;
 class ISymbol {
  public:
   virtual ~ISymbol() = default;
+
+  virtual const std::string& GetName() const = 0;
 };
 
-class Special final : public ISymbol {};  // epsilon or dollar
+using ISymbolVecIter = std::vector<const ISymbol*>::const_iterator;
+using ISymbolSetIter = std::unordered_set<const ISymbol*>::const_iterator;
+
+class Special final : public ISymbol {
+
+};  // epsilon or dollar
 
 class Nonterminal final : public ISymbol {
   std::string name_;
@@ -49,27 +51,23 @@ class Term final {
   std::vector<const ISymbol*> syms_;
 
  public:
-  Term(std::vector<const ISymbol*>&& syms) noexcept : syms_(std::move(syms)) {
-    assert(syms_.size() > 0);
-  }
+  Term(std::vector<const ISymbol*>&& syms) noexcept : syms_(std::move(syms)) {}
 
   auto SymsCbegin() const noexcept { return syms_.cbegin(); }
   auto SymsCend() const noexcept { return syms_.cend(); }
 };
 
 class Rule final {
-  bool is_axiom_;
   const Nonterminal* lhs_;
   std::vector<std::unique_ptr<const Term>> rhs_;
 
  public:
   Rule(std::vector<std::unique_ptr<const Term>>&& rhs,
-       const Nonterminal* const lhs, const bool is_axiom) noexcept
-      : is_axiom_(is_axiom), lhs_(lhs), rhs_(std::move(rhs)) {
+       const Nonterminal* const lhs) noexcept
+      : lhs_(lhs), rhs_(std::move(rhs)) {
     assert(rhs_.size() > 0);
   }
 
-  bool get_is_axiom() const noexcept { return is_axiom_; }
   const Nonterminal* get_lhs() const noexcept { return lhs_; }
   auto TermsCbegin() const noexcept { return rhs_.cbegin(); }
   auto TermsCend() const noexcept { return rhs_.cend(); }
@@ -77,27 +75,24 @@ class Rule final {
 
 class Program final {
   std::vector<std::unique_ptr<const Rule>> rules_;
-  std::unique_ptr<const SymbolTable> symbol_table_;
+  std::shared_ptr<const SymbolTable> symbol_table_;
+  const Nonterminal* axiom_;
 
  public:
   Program(std::vector<std::unique_ptr<const Rule>>&& rules,
-          std::unique_ptr<const SymbolTable>&& symbol_table) noexcept;
+          std::shared_ptr<const SymbolTable> symbol_table,
+          const Nonterminal* const axiom) noexcept;
 
   auto RulesCbegin() const noexcept { return rules_.cbegin(); }
   auto RulesCend() const noexcept { return rules_.cend(); }
-
-  const SymbolTable& get_symbol_table() const noexcept {
-    return *symbol_table_;
+  std::shared_ptr<const SymbolTable> get_symbol_table() const noexcept {
+    return symbol_table_;
   }
+  const Nonterminal* get_axiom() const noexcept { return axiom_; }
+
+ private:
+  void Validate() const;
 };
-
-std::shared_ptr<const Program> DtToAst(const dt::InnerNode& program);
-
-void Validate(const Program& program);
-
-using TableKey = std::pair<const Nonterminal*, const ISymbol*>;
-std::unordered_map<TableKey, std::vector<const ISymbol*>, boost::hash<TableKey>>
-BuildTable(const FirstFollow& first_follow);
 
 }  // namespace ast
 
