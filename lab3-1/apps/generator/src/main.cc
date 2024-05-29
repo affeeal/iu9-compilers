@@ -8,7 +8,6 @@
 // clang-format on
 
 #include "analyzer_table_generator.h"
-#include "ast.h"
 #include "dt_to_ast.h"
 #include "first_follow.h"
 #include "parser.h"
@@ -64,7 +63,7 @@ int main(int ac, char* av[]) try {
   if (const auto it = vm.find(kTableOption); it != vm.cend()) {
     table_filename = it->second.as<std::string>();
   } else {
-    table_filename = "build/analyzer_table.cc";
+    table_filename = "src/build/analyzer_table.cc";
   }
 
   std::ifstream file(grammar_filename);
@@ -77,13 +76,13 @@ int main(int ac, char* av[]) try {
   auto parser = parser::Parser();
 
   const auto dt = parser.TopDownParse(scanner);
-  const auto& program_node = static_cast<const parser::dt::InnerNode&>(*dt);
+  const auto& program_node = static_cast<const parser::InnerNode&>(*dt);
 
-  auto dt_to_ast = parser::ast::DtToAst{};
+  auto dt_to_ast = semantics::DtToAst{};
   const auto program = dt_to_ast.Convert(program_node);
 
-  const auto first_follow = parser::ast::FirstFollow(program);
-  const auto generator = parser::ast::AnalyzerTableGenerator(first_follow);
+  const auto first_follow = semantics::FirstFollow(program);
+  const auto generator = semantics::AnalyzerTableGenerator(first_follow);
   generator.GenerateTable(template_filename, table_filename);
 } catch (const std::exception& e) {
   std::cerr << e.what() << std::endl;

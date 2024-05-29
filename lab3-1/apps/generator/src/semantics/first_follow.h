@@ -7,9 +7,7 @@
 
 #include "ast.h"
 
-namespace parser {
-
-namespace ast {
+namespace semantics {
 
 class FirstFollow final {
  public:
@@ -19,10 +17,10 @@ class FirstFollow final {
     return program_;
   }
 
-  boost::unordered_set<Symbol> GetFirstSet(SymbolVecIter b,
-                                           const SymbolVecIter e) const;
-  std::pair<SymbolSetIter, SymbolSetIter> GetFollowSet(
-      const Symbol& nonterminal) const;
+  boost::unordered_set<parser::Symbol> GetFirstSet(
+      parser::SymbolVecIter b, const parser::SymbolVecIter e) const;
+  std::pair<parser::SymbolSetIter, parser::SymbolSetIter> GetFollowSet(
+      const parser::Symbol& nonterminal) const;
 
  private:
   void BuildFirstSets();
@@ -32,10 +30,8 @@ class FirstFollow final {
 
  private:
   std::shared_ptr<const Program> program_;
-  boost::unordered_map<Symbol, boost::unordered_set<Symbol>> first_sets_,
-      follow_sets_;
+  boost::unordered_map<parser::Symbol, boost::unordered_set<parser::Symbol>>
+      first_sets_, follow_sets_;
 };
 
-}  // namespace ast
-
-}  // namespace parser
+}  // namespace semantics

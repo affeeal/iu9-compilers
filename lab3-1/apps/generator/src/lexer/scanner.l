@@ -31,7 +31,8 @@ KW_END      'end
 {KW_OR}        { return DomainTag::kKwOr; }
 {KW_END}       { return DomainTag::kKwEnd; }
 {COMMENT}      { comments_.emplace_back(coords.starting, coords.following); }
-.              { throw std::runtime_error("TODO"); }
+.              { throw std::runtime_error(
+                     "unexpected symbol " + std::string{yytext}); }
 
 %%
 

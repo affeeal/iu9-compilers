@@ -1,10 +1,8 @@
 #include "analyzer_table.h"
 
-#include "ast.h"
+#include "symbol.h"
 
 namespace parser {
-
-namespace ast {
 
 AnalyzerTable::AnalyzerTable()
     : axiom_({"Program", Symbol::Type::kNonterminal}),
@@ -110,15 +108,13 @@ AnalyzerTable::AnalyzerTable()
                {{"Rules", Symbol::Type::kNonterminal}}}}) {}
 
 std::optional<std::pair<SymbolVecIter, SymbolVecIter>> AnalyzerTable::Find(
-    const Symbol& nonterminal, const Symbol& symbol) const {
-  if (const auto it = table_.find({nonterminal, symbol}); it != table_.cend()) {
+    const Symbol& nonterminal, const Symbol& terminal) const {
+  if (const auto it = table_.find({nonterminal, terminal});
+      it != table_.cend()) {
     const auto& symbols = it->second;
     return std::make_pair(symbols.cbegin(), symbols.cend());
   }
-
   return std::nullopt;
 }
-
-}  // namespace ast
 
 }  // namespace parser

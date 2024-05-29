@@ -4,9 +4,7 @@
 
 #include "ast.h"
 
-namespace parser {
-
-namespace ast {
+namespace semantics {
 
 FirstFollow::FirstFollow(std::shared_ptr<const Program> program)
     : program_(std::move(program)) {
@@ -23,7 +21,7 @@ void FirstFollow::BuildFirstSets() {
          ++b) {
       const auto& rule = **b;
 
-      auto new_first_set = boost::unordered_set<Symbol>{};
+      auto new_first_set = boost::unordered_set<parser::Symbol>{};
       for (auto b = rule.TermsCbegin(), e = rule.TermsCend(); b != e; ++b) {
         const auto& term = **b;
 
@@ -40,31 +38,31 @@ void FirstFollow::BuildFirstSets() {
   } while (sets_are_filling);
 }
 
-boost::unordered_set<Symbol> FirstFollow::GetFirstSet(
-    SymbolVecIter b, const SymbolVecIter e) const {
+boost::unordered_set<parser::Symbol> FirstFollow::GetFirstSet(
+    parser::SymbolVecIter b, const parser::SymbolVecIter e) const {
   if (b == e) {
-    return {kEpsilon};
+    return {parser::kEpsilon};
   }
-  auto new_first_set = boost::unordered_set<Symbol>{};
+  auto new_first_set = boost::unordered_set<parser::Symbol>{};
 
   for (const auto e_prev = e - 1; b != e; ++b) {
-    if (b->get_type() == Symbol::Type::kTerminal) {
+    if (b->get_type() == parser::Symbol::Type::kTerminal) {
       new_first_set.insert(*b);
       break;
     }
 
-    auto first_set = boost::unordered_set<Symbol>{};
+    auto first_set = boost::unordered_set<parser::Symbol>{};
     if (const auto it = first_sets_.find(*b); it != first_sets_.cend()) {
       first_set = it->second;
     }
 
-    if (!first_set.contains(kEpsilon)) {
+    if (!first_set.contains(parser::kEpsilon)) {
       new_first_set.merge(std::move(first_set));
       break;
     }
 
     if (b != e_prev) {
-      first_set.erase(kEpsilon);
+      first_set.erase(parser::kEpsilon);
     }
     new_first_set.merge(std::move(first_set));
   }
@@ -73,9 +71,10 @@ boost::unordered_set<Symbol> FirstFollow::GetFirstSet(
 }
 
 void FirstFollow::BuildFollowSets() {
-  follow_sets_[program_->get_axiom()].insert(kEndOfProgram);
+  follow_sets_[program_->get_axiom()].insert(parser::kEndOfProgram);
   auto followed_sets =
-      boost::unordered_map<Symbol, boost::unordered_set<Symbol>>{};
+      boost::unordered_map<parser::Symbol,
+                           boost::unordered_set<parser::Symbol>>{};
   for (auto b = program_->RulesCbegin(), e = program_->RulesCend(); b != e;
        ++b) {
     const auto& rule = **b;
@@ -88,18 +87,18 @@ void FirstFollow::BuildFollowSets() {
 
       const auto e_prev = term.SymbolsCend() - 1;
       for (auto b = term.SymbolsCbegin(), e = e_prev + 1; b != e_prev; ++b) {
-        if (b->get_type() != Symbol::Type::kNonterminal) {
+        if (b->get_type() != parser::Symbol::Type::kNonterminal) {
           continue;
         }
 
         auto first_set = GetFirstSet(b + 1, e);
-        if (first_set.erase(kEpsilon) && *b != rule.get_lhs()) {
+        if (first_set.erase(parser::kEpsilon) && *b != rule.get_lhs()) {
           followed_sets[*b].insert(rule.get_lhs());
         }
         follow_sets_[*b].merge(std::move(first_set));
       }
 
-      if (e_prev->get_type() == Symbol::Type::kNonterminal &&
+      if (e_prev->get_type() == parser::Symbol::Type::kNonterminal &&
           *e_prev != rule.get_lhs()) {
         followed_sets[*e_prev].insert(rule.get_lhs());
       }
@@ -125,8 +124,8 @@ void FirstFollow::BuildFollowSets() {
   } while (sets_are_filling);
 }
 
-std::pair<SymbolSetIter, SymbolSetIter> FirstFollow::GetFollowSet(
-    const Symbol& nonterminal) const {
+std::pair<parser::SymbolSetIter, parser::SymbolSetIter>
+FirstFollow::GetFollowSet(const parser::Symbol& nonterminal) const {
   const auto& follow_set = follow_sets_.at(nonterminal);
   return {follow_set.cbegin(), follow_set.cend()};
 }
@@ -141,6 +140,4 @@ void FirstFollow::PrintSets(auto&& sets) const {
   }
 }
 
-}  // namespace ast
-
-}  // namespace parser
+}  // namespace semantics

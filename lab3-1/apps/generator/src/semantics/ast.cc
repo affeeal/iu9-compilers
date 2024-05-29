@@ -1,26 +1,17 @@
 #include "ast.h"
 
 #include <algorithm>
-#include <utility>
 #include <vector>
 
 // clang-format off
 #include <boost/unordered_set.hpp>
 // clang-format on
 
-namespace parser {
-
-namespace ast {
-
-std::size_t hash_value(const Symbol& symbol) {
-  std::size_t seed = 0;
-  boost::hash_combine(seed, symbol.get_type());
-  boost::hash_combine(seed, symbol.get_name());
-  return seed;
-}
+namespace semantics {
 
 void Program::Validate() const {
-  boost::unordered_set<Symbol> defined_nonterminals, involved_nonterminals;
+  boost::unordered_set<parser::Symbol> defined_nonterminals,
+      involved_nonterminals;
   involved_nonterminals.insert(axiom_);
 
   for (auto&& rule : rules_) {
@@ -36,7 +27,7 @@ void Program::Validate() const {
       const auto& term = **b;
 
       for (auto b = term.SymbolsCbegin(), e = term.SymbolsCend(); b != e; ++b) {
-        if (b->get_type() != Symbol::Type::kNonterminal) {
+        if (b->get_type() != parser::Symbol::Type::kNonterminal) {
           continue;
         }
 
@@ -61,6 +52,4 @@ void Program::Validate() const {
   }
 }
 
-}  // namespace ast
-
-}  // namespace parser
+}  // namespace semantics

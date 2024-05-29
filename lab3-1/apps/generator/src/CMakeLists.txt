@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22.1)
-project(lab3-1)
+project(generator)
 
 find_package(FLEX REQUIRED)
 find_package(Boost COMPONENTS program_options REQUIRED)
@@ -14,3 +14,4 @@ target_link_libraries(${PROJECT_NAME} PRIVATE Boost::program_options)
 
 add_subdirectory(lexer)
 add_subdirectory(parser)
+add_subdirectory(semantics)

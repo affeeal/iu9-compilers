@@ -7,14 +7,12 @@
 #include "ast.h"
 #include "first_follow.h"
 
-namespace parser {
-
-namespace ast {
+namespace semantics {
 
 class AnalyzerTableGenerator final {
  public:
-  using Key = std::pair<Symbol, Symbol>;
-  using Value = std::pair<SymbolVecIter, SymbolVecIter>;
+  using Key = std::pair<parser::Symbol, parser::Symbol>;
+  using Value = std::pair<parser::SymbolVecIter, parser::SymbolVecIter>;
 
   AnalyzerTableGenerator(const FirstFollow& first_follow);
 
@@ -26,6 +24,4 @@ class AnalyzerTableGenerator final {
   std::shared_ptr<const Program> program_;
 };
 
-}  // namespace ast
-
-}  // namespace parser
+}  // namespace semantics

@@ -15,9 +15,7 @@
 #include "ast.h"
 #include "first_follow.h"
 
-namespace parser {
-
-namespace ast {
+namespace semantics {
 
 namespace {
 
@@ -27,21 +25,21 @@ std::string Slurp(std::ifstream& in) {
   return oss.str();
 }
 
-std::string GetSymbolTypeDefinition(const Symbol::Type type) {
+std::string GetSymbolTypeDefinition(const parser::Symbol::Type type) {
   switch (type) {
-    case Symbol::Type::kNonterminal: {
+    case parser::Symbol::Type::kNonterminal: {
       return "Symbol::Type::kNonterminal";
     }
-    case Symbol::Type::kTerminal: {
+    case parser::Symbol::Type::kTerminal: {
       return "Symbol::Type::kTerminal";
     }
-    case Symbol::Type::kSpecial: {
+    case parser::Symbol::Type::kSpecial: {
       return "Symbol::Type::kSpecial";
     }
   }
 }
 
-std::string GetSymbolDefinition(const Symbol& symbol) {
+std::string GetSymbolDefinition(const parser::Symbol& symbol) {
   return boost::str(boost::format("{%1%, %2%}") %
                     std::quoted(symbol.get_name()) %
                     GetSymbolTypeDefinition(symbol.get_type()));
@@ -60,7 +58,7 @@ AnalyzerTableGenerator::AnalyzerTableGenerator(const FirstFollow& first_follow)
 
       auto first_set =
           first_follow.GetFirstSet(term.SymbolsCbegin(), term.SymbolsCend());
-      const auto is_epsilon_erased = first_set.erase(kEpsilon);
+      const auto is_epsilon_erased = first_set.erase(parser::kEpsilon);
 
       for (auto&& symbol : first_set) {
         const auto [_, is_inserted] =
@@ -127,6 +125,4 @@ void AnalyzerTableGenerator::GenerateTable(
   table_file << fmter.str();
 }
 
-}  // namespace ast
-
-}  // namespace parser
+}  // namespace semantics

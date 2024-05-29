@@ -2,9 +2,8 @@
 
 #include <stack>
 
-#include "ast.h"
-#include "ast/analyzer_table.h"
-#include "node.h"
+#include "analyzer_table.h"
+#include "symbol.h"
 #include "token.h"
 
 namespace parser {
@@ -20,13 +19,18 @@ void ThrowParseError(const lexer::Token& token, const std::string& name) {
 
 }  // namespace
 
-std::unique_ptr<dt::INode> Parser::TopDownParse(lexer::IScanner& scanner) {
-  const auto table = ast::AnalyzerTable();
+INode& InnerNode::AddChild(std::unique_ptr<INode>&& node) {
+  children_.push_back(std::move(node));
+  return *children_.back();
+}
 
-  auto dummy = std::make_unique<dt::InnerNode>();
+std::unique_ptr<INode> Parser::TopDownParse(lexer::IScanner& scanner) {
+  const auto table = AnalyzerTable();
 
-  auto stack = std::stack<std::pair<ast::Symbol, dt::InnerNode*>>{};
-  stack.push({ast::kEndOfProgram, dummy.get()});
+  auto dummy = std::make_unique<InnerNode>();
+
+  auto stack = std::stack<std::pair<Symbol, InnerNode*>>{};
+  stack.push({kEndOfProgram, dummy.get()});
   stack.push({{table.get_axiom()}, dummy.get()});
 
   auto token = scanner.NextToken();
@@ -34,19 +38,19 @@ std::unique_ptr<dt::INode> Parser::TopDownParse(lexer::IScanner& scanner) {
   do {
     const auto [symbol, parent] = stack.top();
     switch (symbol.get_type()) {
-      case ast::Symbol::Type::kTerminal: {
+      case Symbol::Type::kTerminal: {
         if (symbol.get_name() != lexer::ToString(token->get_tag())) {
           ThrowParseError(*token, symbol.get_name());
         }
 
         stack.pop();
-        parent->AddChild(std::make_unique<dt::LeafNode>(std::move(token)));
+        parent->AddChild(std::make_unique<LeafNode>(std::move(token)));
         token = scanner.NextToken();
         break;
       }
-      case ast::Symbol::Type::kNonterminal: {
-        const auto terminal = ast::Symbol{lexer::ToString(token->get_tag()),
-                                          ast::Symbol::Type::kTerminal};
+      case Symbol::Type::kNonterminal: {
+        const auto terminal =
+            Symbol{lexer::ToString(token->get_tag()), Symbol::Type::kTerminal};
         const auto opt = table.Find(symbol, terminal);
         if (!opt.has_value()) {
           ThrowParseError(*token, symbol.get_name());
@@ -54,8 +58,8 @@ std::unique_ptr<dt::INode> Parser::TopDownParse(lexer::IScanner& scanner) {
         const auto [b, e] = opt.value();
 
         stack.pop();
-        auto& child = static_cast<dt::InnerNode&>(
-            parent->AddChild(std::make_unique<dt::InnerNode>()));
+        auto& child = static_cast<InnerNode&>(
+            parent->AddChild(std::make_unique<InnerNode>()));
         for (auto rb = std::make_reverse_iterator(e),
                   re = std::make_reverse_iterator(b);
              rb != re; ++rb) {
