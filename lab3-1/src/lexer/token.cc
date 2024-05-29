@@ -8,7 +8,7 @@ void Token::ThrowError(const std::string& msg) const {
   throw std::runtime_error(coords_.ToString() + ": " + msg);
 }
 
-std::string_view ToString(const DomainTag tag) {
+std::string ToString(const DomainTag tag) {
   switch (tag) {
     case DomainTag::kNonterminal: {
       return "NONTERMINAL";
@@ -32,7 +32,7 @@ std::string_view ToString(const DomainTag tag) {
       return "KW_END";
     }
     case DomainTag::kEndOfProgram: {
-      return "END_OF_PROGRAM";
+      return "$";
     }
   }
 }

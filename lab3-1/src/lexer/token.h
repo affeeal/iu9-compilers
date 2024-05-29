@@ -15,15 +15,15 @@ enum class DomainTag {
   kEndOfProgram,
 };
 
-std::string_view ToString(const DomainTag tag);
+std::string ToString(const DomainTag tag);
 std::ostream& operator<<(std::ostream& os, const DomainTag tag);
 
 class Token {
  public:
   virtual ~Token() = default;
 
-  DomainTag tag() const noexcept { return tag_; }
-  const Fragment& coords() const noexcept { return coords_; }
+  DomainTag get_tag() const noexcept { return tag_; }
+  const Fragment& get_coords() const noexcept { return coords_; }
 
   [[noreturn]] void ThrowError(const std::string& msg) const;
 

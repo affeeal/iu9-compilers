@@ -64,7 +64,7 @@ int main(int ac, char* av[]) try {
   if (const auto it = vm.find(kTableOption); it != vm.cend()) {
     table_filename = it->second.as<std::string>();
   } else {
-    table_filename = "analyzer_table.cc";
+    table_filename = "build/analyzer_table.cc";
   }
 
   std::ifstream file(grammar_filename);

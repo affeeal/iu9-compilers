@@ -4,4 +4,5 @@ target_sources(${PROJECT_NAME} PRIVATE
   dt_to_ast.cc
   first_follow.cc
   analyzer_table_generator.cc
+  analyzer_table.cc
 )
