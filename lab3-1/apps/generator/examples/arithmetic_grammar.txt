@@ -1,0 +1,8 @@
+# ключевые слова
+# начинаются с кавычки
+
+F  -> "n" 'or "(" E ")" 'end
+T  -> F T1 'end
+T1 -> "*" F T1 'or 'epsilon 'end
+'axiom E  -> T E1 'end
+E1 -> "+" T E1 'or 'epsilon 'end

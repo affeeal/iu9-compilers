@@ -1,0 +1,9 @@
+WHITESPACE  ::= [ \t\n\r]+
+COMMENT     ::= #.*
+NONTERMINAL ::= [a-zA-Z][a-zA-Z0-9]*
+TERMINAL    ::= \"[^\n"]+\"
+ARROW       ::= ->
+KW_AXIOM    ::= 'axiom
+KW_EPSILON  ::= 'epsilon
+KW_OR       ::= 'or
+KW_END      ::= 'end
