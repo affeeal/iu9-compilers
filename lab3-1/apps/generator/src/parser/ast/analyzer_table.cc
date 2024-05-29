@@ -103,10 +103,10 @@ AnalyzerTable::AnalyzerTable()
                 {"KW_EPSILON", Symbol::Type::kTerminal}},
                {{"KW_EPSILON", Symbol::Type::kTerminal}}},
               {{{"Rules", Symbol::Type::kNonterminal},
-                {"$", Symbol::Type::kTerminal}},
+                {"END_OF_PROGRAM", Symbol::Type::kTerminal}},
                {}},
               {{{"Program", Symbol::Type::kNonterminal},
-                {"$", Symbol::Type::kTerminal}},
+                {"END_OF_PROGRAM", Symbol::Type::kTerminal}},
                {{"Rules", Symbol::Type::kNonterminal}}}}) {}
 
 std::optional<std::pair<SymbolVecIter, SymbolVecIter>> AnalyzerTable::Find(

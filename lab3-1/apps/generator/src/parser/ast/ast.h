@@ -39,7 +39,7 @@ class Symbol final {
 };
 
 const auto kEpsilon = Symbol{"ε", Symbol::Type::kSpecial};
-const auto kDollar = Symbol{"$", Symbol::Type::kTerminal};
+const auto kEndOfProgram = Symbol{"END_OF_PROGRAM", Symbol::Type::kTerminal};
 
 std::size_t hash_value(const Symbol& symbol);
 

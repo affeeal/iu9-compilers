@@ -69,7 +69,7 @@ int main(int ac, char* av[]) try {
 
   std::ifstream file(grammar_filename);
   if (!file.is_open()) {
-    std::cerr << "Cannot open file " << grammar_filename << "\n";
+    std::cerr << "Failed to open file " << grammar_filename << "\n";
     return 1;
   }
 

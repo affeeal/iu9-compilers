@@ -11,4 +11,6 @@ struct Fragment final {
   std::string ToString() const;
 };
 
+std::ostream& operator<<(std::ostream& os, const Fragment& fragment);
+
 }  // namespace lexer

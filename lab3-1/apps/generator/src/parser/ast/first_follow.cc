@@ -73,7 +73,7 @@ boost::unordered_set<Symbol> FirstFollow::GetFirstSet(
 }
 
 void FirstFollow::BuildFollowSets() {
-  follow_sets_[program_->get_axiom()].insert(kDollar);
+  follow_sets_[program_->get_axiom()].insert(kEndOfProgram);
   auto followed_sets =
       boost::unordered_map<Symbol, boost::unordered_set<Symbol>>{};
   for (auto b = program_->RulesCbegin(), e = program_->RulesCend(); b != e;

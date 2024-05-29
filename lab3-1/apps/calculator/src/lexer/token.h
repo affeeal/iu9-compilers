@@ -1,17 +1,17 @@
 #pragma once
 
+#include <cstdint>
+
 #include "fragment.h"
 
 namespace lexer {
 
 enum class DomainTag {
-  kNonterminal,
-  kTerminal,
-  kArrow,
-  kKwAxiom,
-  kKwEpsilon,
-  kKwOr,
-  kKwEnd,
+  kNumber,
+  kPlus,
+  kStar,
+  kLeftParenthesis,
+  kRightParenthesis,
   kEndOfProgram,
 };
 
@@ -35,27 +35,14 @@ class Token {
   Fragment coords_;
 };
 
-class NonterminalToken final : public Token {
-  std::string str_;
+class NumberToken final : public Token {
+  std::uint64_t value_;
 
  public:
-  template <typename String>
-  NonterminalToken(String&& str, const Fragment& coords) noexcept
-      : Token(DomainTag::kNonterminal, coords),
-        str_(std::forward<String>(str)) {}
+  NumberToken(const std::uint64_t value, const Fragment& coords) noexcept
+      : Token(DomainTag::kNumber, coords), value_(value) {}
 
-  const std::string& get_str() const& noexcept { return str_; }
-};
-
-class TerminalToken final : public Token {
-  std::string str_;
-
- public:
-  template <typename String>
-  TerminalToken(String&& str, const Fragment& coords) noexcept
-      : Token(DomainTag::kTerminal, coords), str_(std::forward<String>(str)) {}
-
-  const std::string& get_str() const& noexcept { return str_; }
+  std::uint64_t get_value() const noexcept { return value_; }
 };
 
 class SpecToken final : public Token {

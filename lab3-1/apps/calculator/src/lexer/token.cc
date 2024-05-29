@@ -10,29 +10,23 @@ void Token::ThrowError(const std::string& msg) const {
 
 std::string ToString(const DomainTag tag) {
   switch (tag) {
-    case DomainTag::kNonterminal: {
-      return "NONTERMINAL";
+    case DomainTag::kNumber: {
+      return "n";
     }
-    case DomainTag::kTerminal: {
-      return "TERMINAL";
+    case DomainTag::kPlus: {
+      return "+";
     }
-    case DomainTag::kArrow: {
-      return "ARROW";
+    case DomainTag::kStar: {
+      return "*";
     }
-    case DomainTag::kKwAxiom: {
-      return "KW_AXIOM";
+    case DomainTag::kLeftParenthesis: {
+      return "(";
     }
-    case DomainTag::kKwEpsilon: {
-      return "KW_EPSILON";
-    }
-    case DomainTag::kKwOr: {
-      return "KW_OR";
-    }
-    case DomainTag::kKwEnd: {
-      return "KW_END";
+    case DomainTag::kRightParenthesis: {
+      return ")";
     }
     case DomainTag::kEndOfProgram: {
-      return "$";
+      return "END_OF_PROGRAM";
     }
   }
 }
