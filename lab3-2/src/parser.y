@@ -20,7 +20,8 @@
 %define parse.lac full
 
 %parse-param {frontend::Scanner& scanner}
-%parse-param {frontend::Driver& driver}
+
+%param {frontend::Driver& driver}
 
 %code requires {
 
@@ -46,8 +47,8 @@ class Scanner;
 
 }
 
-%token <std::string>   IDENT  "identifier";
-%token <std::uint64_t> NUMBER "number";
+%token <std::size_t> IDENT  "identifier";
+%token <std::size_t> NUMBER "number";
 
 %token
   CASE "case"
@@ -56,6 +57,7 @@ class Scanner;
   IS   "is"
   OF   "of"
 
+  EQUALS      "="
   COMMA       ","
   SEMICOLON   ";"
   COLON_COLON "::"
@@ -81,8 +83,103 @@ class Scanner;
   STAR  "*"
   SLASH "/"
 
+%nterm <std::vector<std::unique_ptr<frontend::Func>>> funcs
+%nterm <std::unique_ptr<frontend::Func>> func
+%nterm <std::unique_ptr<frontend::FuncType>> func_type
+%nterm <std::unique_ptr<frontend::FuncBody>> func_body
+%nterm <std::unique_ptr<frontend::IType>> type
+%nterm <std::unique_ptr<frontend::ElementaryType>> elementary_type
+%nterm <std::unique_ptr<frontend::ListType>> list_type
+%nterm <std::unique_ptr<frontend::TupleType>> tuple_type
+%nterm <std::vector<std::unique_ptr<frontend::IType>>> tuple_type_content
+%nterm <std::vector<std::unique_ptr<frontend::IType>>> tuple_type_items
+
 %%
 
+program:
+  funcs
+  {
+    driver.set_program(std::make_unique<frontend::Program>($1));
+  }
+
+funcs:
+  funcs func
+  {
+    $$ = $1;
+    $$.push_back($2);
+  }
+| %empty
+  {
+  }
+
+func:
+  IDENT func_type IS func_body END
+  {
+    $$ = std::make_unique<frontend::Func>($2, $4, $1);
+  }
+
+func_type:
+  type "::" type
+  {
+    $$ = std::make_unique<frontend::FuncType>($1, $3);
+  }
+
+type:
+  elementary_type
+  {
+    $$ = $1;
+  }
+| list_type
+  {
+    $$ = $1;
+  }
+| tuple_type
+  {
+    $$ = $1;
+  }
+
+elementary_type:
+  INT
+  {
+    $$ = std::make_unique<frontend::ElementaryType>(
+        frontend::ElementaryType::Kind::kInt);
+  }
+
+list_type:
+  STAR type
+  {
+    $$ = std::make_unique<frontend::ListType>($2);
+  }
+
+tuple_type:
+  "(" tuple_type_content ")"
+  {
+    $$ = std::make_unique<frontend::TupleType>($2);
+  }
+
+tuple_type_content:
+  tuple_type_items
+| %empty
+  {
+  }
+
+tuple_type_items:
+  type
+  {
+    $$.push_back($1);
+  }
+| tuple_type_items "," type
+  {
+    $$ = $1;
+    $$.push_back($3);
+  }
+
+func_body:
+  %empty
+  {
+    $$ = nullptr; // TODO
+  }
+  
 %%
 
 void frontend::Parser::error(const location_type& loc, const std::string& msg) {

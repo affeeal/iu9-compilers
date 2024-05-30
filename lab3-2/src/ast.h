@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-namespace semantics {
+namespace frontend {
 
 class Func;
 class FuncType;
@@ -234,8 +234,8 @@ class CaseInst final : public IResult {
 
  public:
   CaseInst(std::vector<std::unique_ptr<Statement>> statements) noexcept
-    : statements_(std::move(statements)) {}
-  
+      : statements_(std::move(statements)) {}
+
   std::size_t get_ident_code() const noexcept { return ident_code_; }
   auto StatementsCbegin() const noexcept { return statements_.cbegin(); }
   auto StatementsCend() const noexcept { return statements_.cend(); }
@@ -256,12 +256,12 @@ class IConst : public IPattern, public IResult {
 };
 
 class IntConst final : public IConst {
-  std::uint64_t value_;
+  std::size_t value_;
 
  public:
-  IntConst(const std::uint64_t value) noexcept : value_(value) {}
+  IntConst(const std::size_t value) noexcept : value_(value) {}
 
-  std::uint64_t get_value() const noexcept { return value_; }
+  std::size_t get_value() const noexcept { return value_; }
 };
 
-}  // namespace semantics
+}  // namespace frontend
