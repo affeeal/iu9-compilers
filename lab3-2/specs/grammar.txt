@@ -1,0 +1,57 @@
+Program →  Funcs
+Funcs →  ε | Funcs Func
+Func →  IDENT FuncType IS FuncBody END
+
+FuncType →  Type :: Type
+Type →  ElementaryType | ListType | TupleType
+ElementaryType →  INT
+ListType →  * Type
+TupleType →  ( TupleTypeContent )
+TupleTypeContent →  ε | TupleTypeItems
+TupleTypeItems →  Type | TupleTypeItems , Type
+
+FuncBody →  Statements
+Statements →  Statement | Statements ; Statement
+Statement →  Pattern = Result
+
+Pattern →  Ident
+         | Const
+         | PatternList
+         | PatternTuple
+         | [ Pattern ]
+         | Pattern ConsOp Pattern
+
+PatternList →  { PatternListContent }
+PatternListContent →  ε | PatternListItems
+PatternListItems = Pattern | PatternListItems , Pattern
+
+PatternTuple →  ( PatternTupleContent )
+PatternTupleContent →  ε | PatternTupleItems
+PatternTupleItems →  Pattern | PatternTupleItems , Pattern
+
+Result →  CaseExpr | ConsExpr
+CaseExpr →  CASE IDENT OF Statements END
+ConsExpr →  ConsTerm | ConsExpr ConsOp ConsExpr
+ConsTerm →  ArithmExpr | ResultList | ResultTuple
+ArithmExpr →  ArithmTerm
+            | [ ArithmExpr ]
+            | ArithmExpr AddOp ArithmExpr
+            | ArithmExpr MulOp ArithmExpr
+ArithmTerm →  Ident | Const | FuncCall
+FuncCall → IDENT FuncArg
+FuncArg →  ArithmTerm | ResultList | ResultTuple | [ ConsExpr ]
+
+ResultList →  { ResultListContent }
+ResultListContent →  ε | ResultListItems
+ResultListItems →  ConsExpr | ResultListItems , ConsExpr
+
+ResultTuple →  ( ResultTupleContent )
+ResultTupleContent →  ε | ResultTupleItems
+ResultTupleItems →  ConsExpr | ResultTupleItems , ConsExpr
+
+Ident →  IDENT
+Const →  INT_CONST
+
+ConsOp →  :
+AddOp →  + | -
+MulOp →  * | /
