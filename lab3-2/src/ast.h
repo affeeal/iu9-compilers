@@ -14,6 +14,14 @@ class Statement;
 class IPattern;
 class IResult;
 
+enum class Op {
+  kCons,
+  kAdd,
+  kSub,
+  kMul,
+  kDiv,
+};
+
 class Program final {
   std::vector<std::unique_ptr<Func>> funcs_;
 
@@ -145,10 +153,8 @@ class PatternTuple final : public IPattern {
 };
 
 class PatternBinary final : public IPattern {
- public:
-  enum class Op {
-    kCons,
-  };
+  std::unique_ptr<IPattern> lhs_, rhs_;
+  Op op_;
 
  public:
   PatternBinary(std::unique_ptr<IPattern>&& lhs,
@@ -158,10 +164,6 @@ class PatternBinary final : public IPattern {
   const IPattern& get_lhs() const noexcept { return *lhs_; }
   const IPattern& get_rhs() const noexcept { return *rhs_; }
   Op get_op() const noexcept { return op_; }
-
- private:
-  std::unique_ptr<IPattern> lhs_, rhs_;
-  Op op_;
 };
 
 class IResult {
@@ -192,14 +194,8 @@ class ResultTuple final : public IResult {
 };
 
 class ResultBinary final : public IResult {
- public:
-  enum class Op {
-    kCons,
-    kAdd,
-    kMul,
-    kSub,
-    kDiv,
-  };
+  std::unique_ptr<IResult> lhs_, rhs_;
+  Op op_;
 
  public:
   ResultBinary(std::unique_ptr<IResult>&& lhs, std::unique_ptr<IResult>&& rhs,
@@ -209,10 +205,6 @@ class ResultBinary final : public IResult {
   const IResult& get_lhs() const noexcept { return *lhs_; }
   const IResult& get_rhs() const noexcept { return *rhs_; }
   Op get_op() const noexcept { return op_; }
-
- private:
-  std::unique_ptr<IResult> lhs_, rhs_;
-  Op op_;
 };
 
 class FuncCall final : public IResult {

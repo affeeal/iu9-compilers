@@ -11,8 +11,7 @@ int main(int argc, char* argv[]) try {
 
   auto driver = frontend::Driver{};
   driver.Parse(argv[1]);
-
-  // TODO
+  const auto* const program = driver.get_program();
 } catch (const std::exception& e) {
   std::cerr << e.what() << std::endl;
 }

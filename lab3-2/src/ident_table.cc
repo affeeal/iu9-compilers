@@ -1,6 +1,7 @@
 #include "ident_table.h"
 
 #include <cassert>
+#include <iostream>
 
 namespace frontend {
 

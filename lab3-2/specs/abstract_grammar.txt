@@ -14,44 +14,44 @@ FuncBody →  Statements
 Statements →  Statement | Statements ; Statement
 Statement →  Pattern = Result
 
-Pattern →  IDENT
+Pattern →  Ident
          | Const
          | PatternList
          | PatternTuple
          | [ Pattern ]
-         | Pattern PatternBinaryOp Pattern
-PatternBinaryOp →  :
-Const →  INT_CONST
+         | Pattern ConsOp Pattern
 
 PatternList →  { PatternListContent }
 PatternListContent →  ε | PatternListItems
-PatternListItems = PatternListItem | PatternListItems , PatternListItem
-PatternListItem = Pattern
+PatternListItems = Pattern | PatternListItems , Pattern
 
 PatternTuple →  ( PatternTupleContent )
 PatternTupleContent →  ε | PatternTupleItems
-PatternTupleItems →  PatternTupleItem | PatternTupleItems , PatternTupleItem
-PatternTupleItem →  Pattern
+PatternTupleItems →  Pattern | PatternTupleItems , Pattern
 
-Result →  IDENT
+Result →  Ident
         | Const
         | ResultList
         | ResultTuple
         | [ Result ]
-        | Result ResultBinaryOp Result
+        | Result ConsOp Result
+        | Result AddOp Result
+        | Result MulOp Result
         | FuncCall
         | CaseInst
-ResultBinaryOp →  : | + | - | * | /
-FuncCall →  IDENT FuncArg
-FuncArg →  Result
+FuncCall →  IDENT Result
 CaseInst →  CASE IDENT OF Statements END
 
 ResultList →  { ResultListContent }
 ResultListContent →  ε | ResultListItems
-ResultListItems →  ResultListItem | ResultListItems , ResultListItem
-ResultListItem →  Result
+ResultListItems →  Result | ResultListItems , Result
 
 ResultTuple →  ( ResultTupleContent )
 ResultTupleContent →  ε | ResultTupleItems
-ResultTupleItems →  ResultTupleItem | ResultTupleItems , ResultTupleItem
-ResultTupeItem →  Result
+ResultTupleItems →  Result | ResultTupleItems , Result
+
+Ident →  IDENT
+Const →  INT_CONST
+ConsOp →  :
+AddOp →  + | -
+MulOp →  * | /

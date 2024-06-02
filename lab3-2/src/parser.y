@@ -47,8 +47,10 @@ class Scanner;
 
 }
 
-%token <std::size_t> IDENT  "identifier";
-%token <std::size_t> NUMBER "number";
+%token
+  <std::size_t>
+    IDENT "identifier"
+    NUMBER "number"
 
 %token
   CASE "case"
@@ -83,31 +85,52 @@ class Scanner;
   STAR  "*"
   SLASH "/"
 
+%precedence
+  FUNC_CALL
+
 %nterm
-  <std::vector<std::unique_ptr<Func>>> funcs
   <std::unique_ptr<Func>> func
+  <std::vector<std::unique_ptr<Func>>> funcs
   <std::unique_ptr<FuncType>> func_type
   <std::unique_ptr<FuncBody>> func_body
+  
   <std::unique_ptr<IType>> type
+  <std::vector<std::unique_ptr<IType>>>
+    tuple_type_content
+    tuple_type_items
   <std::unique_ptr<ElementaryType>> elementary_type
   <std::unique_ptr<ListType>> list_type
   <std::unique_ptr<TupleType>> tuple_type
-  <std::vector<std::unique_ptr<IType>>> tuple_type_content
-  <std::vector<std::unique_ptr<IType>>> tuple_type_items
-  <std::vector<std::unique_ptr<Statement>>> statements
+
   <std::unique_ptr<Statement>> statement
+  <std::vector<std::unique_ptr<Statement>>> statements
+  
   <std::unique_ptr<IPattern>> pattern
-  <std::unique_ptr<IResult>> result
-  <std::unique_ptr<IConst>> const
   <std::unique_ptr<PatternList>> pattern_list
-  <std::vector<std::unique_ptr<IPattern>>> pattern_list_content
-  <std::vector<std::unique_ptr<IPattern>>> pattern_list_items
-  <std::unique_ptr<IPattern>> pattern_list_item
   <std::unique_ptr<PatternTuple>> pattern_tuple
-  <std::vector<std::unique_ptr<IPattern>>> pattern_tuple_content
-  <std::vector<std::unique_ptr<IPattern>>> pattern_tuple_items
-  <std::unique_ptr<IPattern>> pattern_tuple_item
-  <PatternBinary::Op> pattern_binary_op
+  <std::vector<std::unique_ptr<IPattern>>>
+    pattern_list_content
+    pattern_list_items
+    pattern_tuple_content
+    pattern_tuple_items
+
+  <std::unique_ptr<IResult>> result
+  <std::unique_ptr<ResultList>> result_list
+  <std::unique_ptr<ResultTuple>> result_tuple
+  <std::unique_ptr<FuncCall>> func_call
+  <std::unique_ptr<CaseInst>> case_inst
+  <std::vector<std::unique_ptr<IResult>>>
+    result_list_content
+    result_list_items
+    result_tuple_content
+    result_tuple_items
+
+  <std::unique_ptr<Ident>> ident
+  <std::unique_ptr<IConst>> const
+  <Op>
+    cons_op
+    add_op
+    mul_op
 
 %%
 
@@ -212,9 +235,9 @@ statement:
   }
 
 pattern:
-  IDENT
+  ident
   {
-    $$ = std::make_unique<Ident>($1);
+    $$ = $1;
   }
 | const
   {
@@ -232,15 +255,9 @@ pattern:
   {
     $$ = $2;
   }
-| pattern pattern_binary_op pattern %prec CONS_OP
+| pattern cons_op pattern %prec CONS_OP
   {
     $$ = std::make_unique<PatternBinary>($1, $3, $2);
-  }
-
-const:
-  NUMBER
-  {
-    $$ = std::make_unique<IntConst>($1);
   }
 
 pattern_list:
@@ -256,18 +273,15 @@ pattern_list_content:
 | pattern_list_items
 
 pattern_list_items:
-  pattern_list_item
+  pattern
   {
     $$.push_back($1);
   }
-| pattern_list_items "," pattern_list_item
+| pattern_list_items "," pattern
   {
     $$ = $1;
     $$.push_back($3);
   }
-
-pattern_list_item:
-  pattern
 
 pattern_tuple:
   "(" pattern_tuple_content ")"
@@ -282,31 +296,154 @@ pattern_tuple_content:
 | pattern_tuple_items
 
 pattern_tuple_items:
-  pattern_tuple_item
+  pattern
   {
     $$.push_back($1);
   }
-| pattern_tuple_items "," pattern_tuple_item
+| pattern_tuple_items "," pattern
   {
     $$ = $1;
     $$.push_back($3);
   }
 
-pattern_tuple_item:
-  pattern
-
-pattern_binary_op:
-  COLON
-  {
-    $$ = PatternBinary::Op::kCons;
-  }
-  
 result:
+  ident
+  {
+    $$ = $1;
+  }
+| func_call
+  {
+    $$ = $1;
+  }
+| const
+  {
+    $$ = $1;
+  }
+| result_list
+  {
+    $$ = $1;
+  }
+| result_tuple
+  {
+    $$ = $1;
+  }
+| "[" result "]"
+  {
+    $$ = $2;
+  }
+| result cons_op result %prec CONS_OP
+  {
+    $$ = std::make_unique<ResultBinary>($1, $3, $2);
+  }
+| result add_op result %prec ADD_OP
+  {
+    $$ = std::make_unique<ResultBinary>($1, $3, $2);
+  }
+| result mul_op result %prec MUL_OP
+  {
+    $$ = std::make_unique<ResultBinary>($1, $3, $2);
+  }
+| case_inst
+  {
+    $$ = $1;
+  }
+
+result_list:
+  "{" result_list_content "}"
+  {
+    $$ = std::make_unique<ResultList>($2);
+  }
+
+result_list_content:
   %empty
   {
-    $$ = nullptr; // TODO
   }
-  
+| result_list_items
+
+result_list_items:
+  result
+  {
+    $$.push_back($1);
+  }
+| result_list_items "," result
+  {
+    $$ = $1;
+    $$.push_back($3);
+  }
+
+result_tuple:
+  "(" result_tuple_content ")"
+  {
+    $$ = std::make_unique<ResultTuple>($2);
+  }
+
+result_tuple_content:
+  %empty
+  {
+  }
+| result_tuple_items
+
+result_tuple_items:
+  result
+  {
+    $$.push_back($1);
+  }
+| result_tuple_items "," result
+  {
+    $$ = $1;
+    $$.push_back($3);
+  }
+
+func_call:
+  IDENT result %prec FUNC_CALL
+  {
+    $$ = std::make_unique<FuncCall>($2, $1);
+  }
+
+case_inst:
+  CASE IDENT OF statements END
+  {
+    $$ = std::make_unique<CaseInst>($4);
+  }
+
+ident:
+  IDENT
+  {
+    $$ = std::make_unique<Ident>($1);
+  }
+
+const:
+  NUMBER
+  {
+    $$ = std::make_unique<IntConst>($1);
+  }
+
+cons_op:
+  COLON
+  {
+    $$ = Op::kCons;
+  }
+
+add_op:
+  PLUS
+  {
+    $$ = Op::kAdd;
+  }
+| MINUS
+  {
+    $$ = Op::kSub;
+  }
+
+mul_op:
+  STAR
+  {
+    $$ = Op::kMul;
+  }
+| SLASH
+  {
+    $$ = Op::kDiv;
+  }
+
 %%
 
 void frontend::Parser::error(const location_type& loc, const std::string& msg) {
