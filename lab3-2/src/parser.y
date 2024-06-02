@@ -143,7 +143,7 @@ class Scanner;
 program:
   funcs
   {
-    driver.set_program(std::make_unique<Program>($1));
+    driver.set_program(std::make_shared<Program>($1));
   }
 
 funcs:

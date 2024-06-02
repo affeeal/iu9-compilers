@@ -1,5 +1,7 @@
 #pragma once
 
+#include <memory>
+
 #include "ast.h"
 #include "ident_table.h"
 #include "scanner.h"
@@ -8,8 +10,8 @@ namespace fmt {
 
 class Driver final {
   bool trace_scanning_, trace_parsing_;
-  std::unique_ptr<Program> program_;
-  IdentTable ident_table_;
+  std::shared_ptr<Program> program_;
+  std::shared_ptr<IdentTable> table_ = std::make_shared<IdentTable>();
 
  public:
   void Parse(const std::string& filename);
@@ -21,14 +23,17 @@ class Driver final {
     trace_parsing_ = is_active;
   }
 
-  void set_program(std::unique_ptr<Program>&& program) noexcept {
+  void set_program(std::shared_ptr<Program>&& program) noexcept {
     program_ = std::move(program);
   }
-  Program* get_program() noexcept { return program_.get(); }
-  const Program* get_program() const noexcept { return program_.get(); }
+  std::shared_ptr<const Program> get_program() const noexcept {
+    return program_;
+  }
 
-  IdentTable& get_ident_table() noexcept { return ident_table_; }
-  const IdentTable& get_ident_table() const noexcept { return ident_table_; }
+  std::shared_ptr<IdentTable> get_ident_table() noexcept { return table_; }
+  std::shared_ptr<const IdentTable> get_ident_table() const noexcept {
+    return table_;
+  }
 };
 
 }  // namespace fmt

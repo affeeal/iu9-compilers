@@ -48,8 +48,8 @@ NUMBER  [0-9]+
 "is"      { return Parser::make_IS(loc_); }
 "of"      { return Parser::make_OF(loc_); }
 {IDENT}   {
-            auto& ident_table = driver.get_ident_table();
-            return Parser::make_IDENT(ident_table.GetCode(yytext), loc_);
+            auto ident_table = driver.get_ident_table();
+            return Parser::make_IDENT(ident_table->GetCode(yytext), loc_);
           }
 {NUMBER}  {
             try {

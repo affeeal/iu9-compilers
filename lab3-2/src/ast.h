@@ -98,6 +98,8 @@ class ElementaryType final : public IType {
   Kind kind_;
 };
 
+std::ostream& operator<<(std::ostream& os, const ElementaryType::Kind kind);
+
 class ListType final : public IType {
   std::unique_ptr<IType> type_;
 

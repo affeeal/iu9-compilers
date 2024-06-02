@@ -1,11 +1,28 @@
 #pragma once
 
+#include <memory>
+#include <ostream>
+#include <sstream>
+
+#include "ident_table.h"
 #include "visitor.h"
 
 namespace fmt {
 
+// The object is supposed to be disposable.
 class Formatter final : public IVisitor {
+  std::shared_ptr<const IdentTable> ident_table_;
+  std::ostringstream oss_;
+  std::string current_indent_ = "";
+
+  static constexpr std::string_view kIndent = "  ";
+
  public:
+  Formatter(std::shared_ptr<const IdentTable>&& ident_table) noexcept
+      : ident_table_(std::move(ident_table)) {}
+
+  std::string ToString() const;
+
   void Visit(const Program& program) override;
   void Visit(const Func& func) override;
   void Visit(const FuncType& func_type) override;
@@ -24,6 +41,11 @@ class Formatter final : public IVisitor {
   void Visit(const CaseExpr& case_expr) override;
   void Visit(const Ident& ident) override;
   void Visit(const IntConst& int_const) override;
+
+ private:
+  std::ostream& BeginOfLine();
+  void IndentIncreaseLn();
+  void IndentDecreaseLn();
 };
 
 }  // namespace fmt
