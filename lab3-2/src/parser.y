@@ -114,11 +114,17 @@ class Scanner;
     pattern_tuple_content
     pattern_tuple_items
 
-  <std::unique_ptr<IResult>> result
+  <std::unique_ptr<IResult>>
+    result
+    cons_expr
+    cons_term
+    arithm_expr
+    arithm_term
+    func_arg
   <std::unique_ptr<ResultList>> result_list
   <std::unique_ptr<ResultTuple>> result_tuple
   <std::unique_ptr<FuncCall>> func_call
-  <std::unique_ptr<CaseInst>> case_inst
+  <std::unique_ptr<CaseExpr>> case_expr
   <std::vector<std::unique_ptr<IResult>>>
     result_list_content
     result_list_items
@@ -307,18 +313,27 @@ pattern_tuple_items:
   }
 
 result:
-  ident
+  case_expr
   {
     $$ = $1;
   }
-| func_call
+| cons_expr
+
+case_expr:
+  CASE IDENT OF statements END
   {
-    $$ = $1;
+    $$ = std::make_unique<CaseExpr>($4, $2);
   }
-| const
+
+cons_expr:
+  cons_term
+| cons_expr cons_op cons_expr %prec CONS_OP
   {
-    $$ = $1;
+    $$ = std::make_unique<ResultBinary>($1, $3, $2);
   }
+
+cons_term:
+  arithm_expr
 | result_list
   {
     $$ = $1;
@@ -327,25 +342,55 @@ result:
   {
     $$ = $1;
   }
-| "[" result "]"
+
+arithm_expr:
+  arithm_term
+| "[" arithm_expr "]"
   {
     $$ = $2;
   }
-| result cons_op result %prec CONS_OP
+| arithm_expr add_op arithm_expr %prec ADD_OP
   {
     $$ = std::make_unique<ResultBinary>($1, $3, $2);
   }
-| result add_op result %prec ADD_OP
+| arithm_expr mul_op arithm_expr %prec MUL_OP
   {
     $$ = std::make_unique<ResultBinary>($1, $3, $2);
   }
-| result mul_op result %prec MUL_OP
-  {
-    $$ = std::make_unique<ResultBinary>($1, $3, $2);
-  }
-| case_inst
+
+arithm_term:
+  ident
   {
     $$ = $1;
+  }
+| const
+  {
+    $$ = $1;
+  }
+| func_call
+  {
+    $$ = $1;
+  }
+
+func_call:
+  IDENT func_arg
+  {
+    $$ = std::make_unique<FuncCall>($2, $1);
+  }
+
+func_arg:
+  arithm_term
+| result_list
+  {
+    $$ = $1;
+  }
+| result_tuple
+  {
+    $$ = $1;
+  }
+| "[" cons_expr "]"
+  {
+    $$ = $2;
   }
 
 result_list:
@@ -361,11 +406,11 @@ result_list_content:
 | result_list_items
 
 result_list_items:
-  result
+  cons_expr
   {
     $$.push_back($1);
   }
-| result_list_items "," result
+| result_list_items "," cons_expr
   {
     $$ = $1;
     $$.push_back($3);
@@ -384,26 +429,14 @@ result_tuple_content:
 | result_tuple_items
 
 result_tuple_items:
-  result
+  cons_expr
   {
     $$.push_back($1);
   }
-| result_tuple_items "," result
+| result_tuple_items "," cons_expr
   {
     $$ = $1;
     $$.push_back($3);
-  }
-
-func_call:
-  IDENT result %prec FUNC_CALL
-  {
-    $$ = std::make_unique<FuncCall>($2, $1);
-  }
-
-case_inst:
-  CASE IDENT OF statements END
-  {
-    $$ = std::make_unique<CaseInst>($4);
   }
 
 ident:

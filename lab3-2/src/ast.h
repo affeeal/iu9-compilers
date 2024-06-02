@@ -220,13 +220,14 @@ class FuncCall final : public IResult {
   const IResult& get_arg() const noexcept { return *arg_; }
 };
 
-class CaseInst final : public IResult {
+class CaseExpr final : public IResult {
   std::size_t ident_code_;
   std::vector<std::unique_ptr<Statement>> statements_;
 
  public:
-  CaseInst(std::vector<std::unique_ptr<Statement>> statements) noexcept
-      : statements_(std::move(statements)) {}
+  CaseExpr(std::vector<std::unique_ptr<Statement>>&& statements,
+           const std::size_t ident_code) noexcept
+      : ident_code_(ident_code), statements_(std::move(statements)) {}
 
   std::size_t get_ident_code() const noexcept { return ident_code_; }
   auto StatementsCbegin() const noexcept { return statements_.cbegin(); }

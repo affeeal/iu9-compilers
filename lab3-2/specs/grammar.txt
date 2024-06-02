@@ -29,29 +29,29 @@ PatternTuple →  ( PatternTupleContent )
 PatternTupleContent →  ε | PatternTupleItems
 PatternTupleItems →  Pattern | PatternTupleItems , Pattern
 
-Result →  Ident
-        | Const
-        | ResultList
-        | ResultTuple
-        | [ Result ]
-        | Result ConsOp Result
-        | Result AddOp Result
-        | Result MulOp Result
-        | FuncCall
-        | CaseInst
-FuncCall →  IDENT Result
-CaseInst →  CASE IDENT OF Statements END
+Result →  CaseExpr | ConsExpr
+CaseExpr →  CASE IDENT OF Statements END
+ConsExpr →  ConsTerm | ConsExpr ConsOp ConsExpr
+ConsTerm →  ArithmExpr | ResultList | ResultTuple
+ArithmExpr →  ArithmTerm
+            | [ ArithmExpr ]
+            | ArithmExpr AddOp ArithmExpr
+            | ArithmExpr MulOp ArithmExpr
+ArithmTerm →  Ident | Const | FuncCall
+FuncCall → IDENT FuncArg
+FuncArg →  ArithmTerm | ResultList | ResultTuple | [ ConsExpr ]
 
 ResultList →  { ResultListContent }
 ResultListContent →  ε | ResultListItems
-ResultListItems →  Result | ResultListItems , Result
+ResultListItems →  ConsExpr | ResultListItems , ConsExpr
 
 ResultTuple →  ( ResultTupleContent )
 ResultTupleContent →  ε | ResultTupleItems
-ResultTupleItems →  Result | ResultTupleItems , Result
+ResultTupleItems →  ConsExpr | ResultTupleItems , ConsExpr
 
 Ident →  IDENT
 Const →  INT_CONST
+
 ConsOp →  :
 AddOp →  + | -
 MulOp →  * | /
