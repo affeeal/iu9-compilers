@@ -19,9 +19,9 @@
 %define parse.trace
 %define parse.lac full
 
-%parse-param {frontend::Scanner& scanner}
+%parse-param {Scanner& scanner}
 
-%param {frontend::Driver& driver}
+%param {Driver& driver}
 
 %code requires {
 
@@ -83,23 +83,38 @@ class Scanner;
   STAR  "*"
   SLASH "/"
 
-%nterm <std::vector<std::unique_ptr<frontend::Func>>> funcs
-%nterm <std::unique_ptr<frontend::Func>> func
-%nterm <std::unique_ptr<frontend::FuncType>> func_type
-%nterm <std::unique_ptr<frontend::FuncBody>> func_body
-%nterm <std::unique_ptr<frontend::IType>> type
-%nterm <std::unique_ptr<frontend::ElementaryType>> elementary_type
-%nterm <std::unique_ptr<frontend::ListType>> list_type
-%nterm <std::unique_ptr<frontend::TupleType>> tuple_type
-%nterm <std::vector<std::unique_ptr<frontend::IType>>> tuple_type_content
-%nterm <std::vector<std::unique_ptr<frontend::IType>>> tuple_type_items
+%nterm
+  <std::vector<std::unique_ptr<Func>>> funcs
+  <std::unique_ptr<Func>> func
+  <std::unique_ptr<FuncType>> func_type
+  <std::unique_ptr<FuncBody>> func_body
+  <std::unique_ptr<IType>> type
+  <std::unique_ptr<ElementaryType>> elementary_type
+  <std::unique_ptr<ListType>> list_type
+  <std::unique_ptr<TupleType>> tuple_type
+  <std::vector<std::unique_ptr<IType>>> tuple_type_content
+  <std::vector<std::unique_ptr<IType>>> tuple_type_items
+  <std::vector<std::unique_ptr<Statement>>> statements
+  <std::unique_ptr<Statement>> statement
+  <std::unique_ptr<IPattern>> pattern
+  <std::unique_ptr<IResult>> result
+  <std::unique_ptr<IConst>> const
+  <std::unique_ptr<PatternList>> pattern_list
+  <std::vector<std::unique_ptr<IPattern>>> pattern_list_content
+  <std::vector<std::unique_ptr<IPattern>>> pattern_list_items
+  <std::unique_ptr<IPattern>> pattern_list_item
+  <std::unique_ptr<PatternTuple>> pattern_tuple
+  <std::vector<std::unique_ptr<IPattern>>> pattern_tuple_content
+  <std::vector<std::unique_ptr<IPattern>>> pattern_tuple_items
+  <std::unique_ptr<IPattern>> pattern_tuple_item
+  <PatternBinary::Op> pattern_binary_op
 
 %%
 
 program:
   funcs
   {
-    driver.set_program(std::make_unique<frontend::Program>($1));
+    driver.set_program(std::make_unique<Program>($1));
   }
 
 funcs:
@@ -115,13 +130,13 @@ funcs:
 func:
   IDENT func_type IS func_body END
   {
-    $$ = std::make_unique<frontend::Func>($2, $4, $1);
+    $$ = std::make_unique<Func>($2, $4, $1);
   }
 
 func_type:
   type "::" type
   {
-    $$ = std::make_unique<frontend::FuncType>($1, $3);
+    $$ = std::make_unique<FuncType>($1, $3);
   }
 
 type:
@@ -141,20 +156,19 @@ type:
 elementary_type:
   INT
   {
-    $$ = std::make_unique<frontend::ElementaryType>(
-        frontend::ElementaryType::Kind::kInt);
+    $$ = std::make_unique<ElementaryType>(ElementaryType::Kind::kInt);
   }
 
 list_type:
   STAR type
   {
-    $$ = std::make_unique<frontend::ListType>($2);
+    $$ = std::make_unique<ListType>($2);
   }
 
 tuple_type:
   "(" tuple_type_content ")"
   {
-    $$ = std::make_unique<frontend::TupleType>($2);
+    $$ = std::make_unique<TupleType>($2);
   }
 
 tuple_type_content:
@@ -175,6 +189,119 @@ tuple_type_items:
   }
 
 func_body:
+  statements
+  {
+    $$ = std::make_unique<FuncBody>($1);
+  }
+
+statements:
+  statement
+  {
+    $$.push_back($1);
+  }
+| statements ";" statement
+  {
+    $$ = $1;
+    $$.push_back($3);
+  }
+
+statement:
+  pattern "=" result
+  {
+    $$ = std::make_unique<Statement>($1, $3);
+  }
+
+pattern:
+  IDENT
+  {
+    $$ = std::make_unique<Ident>($1);
+  }
+| const
+  {
+    $$ = $1;
+  }
+| pattern_list
+  {
+    $$ = $1;
+  }
+| pattern_tuple
+  {
+    $$ = $1;
+  }
+| "[" pattern "]"
+  {
+    $$ = $2;
+  }
+| pattern pattern_binary_op pattern %prec CONS_OP
+  {
+    $$ = std::make_unique<PatternBinary>($1, $3, $2);
+  }
+
+const:
+  NUMBER
+  {
+    $$ = std::make_unique<IntConst>($1);
+  }
+
+pattern_list:
+  "{" pattern_list_content "}"
+  {
+    $$ = std::make_unique<PatternList>($2);
+  }
+
+pattern_list_content:
+  %empty
+  {
+  }
+| pattern_list_items
+
+pattern_list_items:
+  pattern_list_item
+  {
+    $$.push_back($1);
+  }
+| pattern_list_items "," pattern_list_item
+  {
+    $$ = $1;
+    $$.push_back($3);
+  }
+
+pattern_list_item:
+  pattern
+
+pattern_tuple:
+  "(" pattern_tuple_content ")"
+  {
+    $$ = std::make_unique<PatternTuple>($2);
+  }
+
+pattern_tuple_content:
+  %empty
+  {
+  }
+| pattern_tuple_items
+
+pattern_tuple_items:
+  pattern_tuple_item
+  {
+    $$.push_back($1);
+  }
+| pattern_tuple_items "," pattern_tuple_item
+  {
+    $$ = $1;
+    $$.push_back($3);
+  }
+
+pattern_tuple_item:
+  pattern
+
+pattern_binary_op:
+  COLON
+  {
+    $$ = PatternBinary::Op::kCons;
+  }
+  
+result:
   %empty
   {
     $$ = nullptr; // TODO
