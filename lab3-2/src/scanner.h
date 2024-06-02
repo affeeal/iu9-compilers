@@ -8,13 +8,12 @@
 #endif
 
 #undef YY_DECL
-#define YY_DECL \
-  frontend::Parser::symbol_type frontend::Scanner::Get(frontend::Driver& driver)
+#define YY_DECL fmt::Parser::symbol_type fmt::Scanner::Get(fmt::Driver& driver)
 
 #include "location.h"
 #include "parser.h"
 
-namespace frontend {
+namespace fmt {
 
 class Driver;
 
@@ -30,4 +29,4 @@ class Scanner final : public yyFlexLexer {
   location loc_;
 };
 
-}  // namespace frontend
+}  // namespace fmt

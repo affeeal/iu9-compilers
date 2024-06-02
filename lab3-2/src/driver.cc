@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-namespace frontend {
+namespace fmt {
 
 void Driver::Parse(const std::string& filename) {
   auto file = std::ifstream{filename};
@@ -19,4 +19,4 @@ void Driver::Parse(const std::string& filename) {
   parser.parse();
 }
 
-}  // namespace frontend
+}  // namespace fmt

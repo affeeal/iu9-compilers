@@ -4,7 +4,7 @@
 #include "ident_table.h"
 #include "scanner.h"
 
-namespace frontend {
+namespace fmt {
 
 class Driver final {
   bool trace_scanning_, trace_parsing_;
@@ -31,4 +31,4 @@ class Driver final {
   const IdentTable& get_ident_table() const noexcept { return ident_table_; }
 };
 
-}  // namespace frontend
+}  // namespace fmt

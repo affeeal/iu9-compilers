@@ -9,7 +9,7 @@ int main(int argc, char* argv[]) try {
     return 1;
   }
 
-  auto driver = frontend::Driver{};
+  auto driver = fmt::Driver{};
   driver.Parse(argv[1]);
   const auto* const program = driver.get_program();
 } catch (const std::exception& e) {

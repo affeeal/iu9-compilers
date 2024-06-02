@@ -6,7 +6,7 @@
 %locations
 
 %define api.location.file "location.h"
-%define api.namespace {frontend} 
+%define api.namespace {fmt} 
 %define api.parser.class {Parser}
 %define api.token.constructor
 %define api.token.prefix {TOKEN_}
@@ -27,12 +27,12 @@
 
 #include "ast.h"
 
-namespace frontend {
+namespace fmt {
 
 class Driver;
 class Scanner;
 
-}  // namespace frontend
+}  // namespace fmt
 
 }
 
@@ -479,6 +479,6 @@ mul_op:
 
 %%
 
-void frontend::Parser::error(const location_type& loc, const std::string& msg) {
+void fmt::Parser::error(const location_type& loc, const std::string& msg) {
   throw syntax_error(loc, msg);
 }

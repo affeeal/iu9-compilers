@@ -3,7 +3,7 @@
 #include <cassert>
 #include <iostream>
 
-namespace frontend {
+namespace fmt {
 
 std::size_t IdentTable::GetCode(const std::string& name) {
   if (const auto it = codes_.find(name); it != codes_.cend()) {
@@ -21,4 +21,4 @@ const std::string& IdentTable::At(const std::size_t code) const {
   return names_.at(code);
 }
 
-}  // namespace frontend
+}  // namespace fmt

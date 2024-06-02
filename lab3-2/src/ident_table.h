@@ -4,7 +4,7 @@
 #include <unordered_map>
 #include <vector>
 
-namespace frontend {
+namespace fmt {
 
 class IdentTable final {
   std::unordered_map<std::string, std::size_t> codes_;
@@ -15,4 +15,4 @@ class IdentTable final {
   const std::string& At(const std::size_t code) const;
 };
 
-}  // namespace frontend
+}  // namespace fmt

@@ -5,11 +5,11 @@
 
 #define YY_USER_ACTION loc_.columns(yyleng);
 
-using frontend::Parser;
+using fmt::Parser;
 %}
 
 %option c++
-%option yyclass="frontend::Scanner"
+%option yyclass="fmt::Scanner"
 %option noyywrap nounput noinput
 %option batch
 %option debug
