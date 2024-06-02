@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iterator>
 #include <memory>
 #include <ostream>
 #include <sstream>
@@ -43,7 +44,18 @@ class Formatter final : public IVisitor {
   void Visit(const IntConst& int_const) override;
 
  private:
+  using StatementIter = std::vector<std::unique_ptr<Statement>>::const_iterator;
+  void FormatStatements(StatementIter b, const StatementIter e);
+
+  template <typename Iter>
+  requires std::input_iterator<Iter>
+  void FormatContainer(Iter first, const Iter last, const std::string& start,
+                       const std::string& end,
+                       const std::string& delimiter = ", ");
+
   std::ostream& BeginOfLine();
+  void IndentIncrease();
+  void IndentDecrease();
   void IndentIncreaseLn();
   void IndentDecreaseLn();
 };

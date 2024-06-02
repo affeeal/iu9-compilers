@@ -24,6 +24,8 @@ enum class Op {
   kDiv,
 };
 
+std::ostream& operator<<(std::ostream& os, const Op op);
+
 class INode {
  public:
   virtual ~INode() = default;
@@ -225,7 +227,7 @@ class ResultTuple final : public IResult {
       : results_(std::move(results)) {}
 
   auto ResultsCbegin() const noexcept { return results_.cbegin(); }
-  auto ResutlesCend() const noexcept { return results_.cend(); }
+  auto ResultsCend() const noexcept { return results_.cend(); }
 
   void Accept(IVisitor& visitor) const override { visitor.Visit(*this); }
 };
