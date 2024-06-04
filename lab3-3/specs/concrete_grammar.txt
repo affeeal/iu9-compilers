@@ -17,8 +17,7 @@ Sentence →  Pattern = Result
 
 Pattern →  PatternTerm | PatternTerm ConsOp Pattern
 ConsOp →  :
-PatternTerm →  IDENT | Const | PatternList | PatternTuple | [ Pattern ]
-Const →  INT_CONST
+PatternTerm →  IDENT | INT_CONST | PatternList | PatternTuple | [ Pattern ]
 
 PatternList →  { } | { PatternListItems }
 PatternListItems →  PatternListItem | PatternListItem , PatternListItems
@@ -37,12 +36,11 @@ AddOp →  + | -
 Term →  Factor | Term MulOp Factor
 MulOp →  * | /
 Factor →  Atom | [ Expr ]
-Atom →  IDENT | Const | FuncCall 
+Atom →  IDENT | INT_CONST | FuncCall 
 FuncCall →  IDENT FuncArg
 FuncArg →  Atom | ResultList | ResultTuple | [ Result ]
 
-ResultList →  { ResultListContent }
-ResultListContent →  ε | ResultListItems
+ResultList →  { } | { ResultListItems }
 ResultListItems →  ResultListItem | ResultListItem , ResultListItems
 ResultListItem →  Result
 

@@ -20,7 +20,17 @@ class FunctionRedefinition(SemanticError):
         return f'Переопределение функции {self.funcname}'
 
 
-class RepeatedPatternVariable(SemanticError):
+class UnknownFunction(SemanticError):
+    def __init__(self, pos, funcname):
+        self.pos = pos
+        self.funcname = funcname
+
+    @property
+    def message(self):
+        return f'Неизвестная функция {self.funcname}'
+
+
+class RepeatedVariable(SemanticError):
     def __init__(self, pos, varname):
         self.pos = pos
         self.varname = varname
@@ -28,6 +38,16 @@ class RepeatedPatternVariable(SemanticError):
     @property
     def message(self):
         return f'Повторная переменная в образце: {self.varname}'
+
+
+class UnknownVariable(SemanticError):
+    def __init__(self, pos, varname):
+        self.pos = pos
+        self.varname = varname
+
+    @property
+    def message(self):
+        return f'Неизвестная переменная {self.varname} в правой части'
 
 
 class TypeMismatch(SemanticError):
@@ -38,7 +58,7 @@ class TypeMismatch(SemanticError):
 
     @property
     def message(self):
-        return f'Ожидался {self.expected}, но указан {self.actual}'
+        return f'Ожидался {self.expected}, указан {self.actual}'
 
 
 class Op(enum.Enum):
@@ -80,9 +100,15 @@ class ListType(Type):
         return 'список'
 
 
+@dataclass
+class FuncType:
+    input_: Type
+    output: Type
+
+
 class Pattern(abc.ABC):
     @abc.abstractmethod
-    def check(self, formal_type: Type, var_types: dict[str, Type]):
+    def check(self, expected_type: Type, var_types: dict[str, Type]):
         pass
 
 
@@ -95,11 +121,11 @@ class PatternEmptyList(Pattern):
         lcb_coord, rcb_coord = coords
         return PatternEmptyList(lcb_coord)
 
-    def check(self, formal_type, var_types):
+    def check(self, expected_type, var_types):
         actual_type = ListType
-        if actual_type != type(formal_type):
+        if actual_type != type(expected_type):
             raise TypeMismatch(
-                self.coord, formal_type.name(), actual_type.name())
+                self.coord, expected_type.name(), actual_type.name())
 
 
 @dataclass
@@ -118,10 +144,10 @@ class PatternConst(Pattern):
 
         return action
 
-    def check(self, formal_type, var_types):
-        if type(self.type_) != type(formal_type):
+    def check(self, expected_type, var_types):
+        if type(self.type_) != type(expected_type):
             raise TypeMismatch(
-                self.value_coord, formal_type.name(), self.type_.name())
+                self.value_coord, expected_type.name(), self.type_.name())
 
 
 @dataclass
@@ -135,10 +161,10 @@ class PatternVar(Pattern):
         name_coord, = coords
         return PatternVar(name, name_coord)
 
-    def check(self, formal_type, var_types):
+    def check(self, expected_type, var_types):
         if self.name in var_types:
-            raise RepeatedPatternVariable(self.name_coord, self.name)
-        var_types[self.name] = formal_type
+            raise RepeatedVariable(self.name_coord, self.name)
+        var_types[self.name] = expected_type
 
 
 @dataclass
@@ -166,16 +192,16 @@ class PatternBinary(Pattern):
         lhs_coord, op_coord, rhs_coord = coords
         return PatternBinary(lhs, op, op_coord, rhs)
 
-    def check(self, formal_type, var_types):
+    def check(self, expected_type, var_types):
         assert self.op is Op.Cons
 
         actual_type = ListType
-        if actual_type != type(formal_type):
+        if actual_type != type(expected_type):
             raise TypeMismatch(
-                self.op_coord, formal_type.name(), actual_type.name())
+                self.op_coord, expected_type.name(), actual_type.name())
 
-        self.lhs.check(formal_type.type_, var_types)
-        self.rhs.check(formal_type, var_types)
+        self.lhs.check(expected_type.type_, var_types)
+        self.rhs.check(expected_type, var_types)
 
 
 @dataclass
@@ -186,21 +212,23 @@ class PatternTuple(Pattern):
     @pe.ExAction
     def create(attrs, coords, res_coord):
         patterns, = attrs
-        lbr_coord, patterns_coord, rbr_coord = coords
+        lp_coord, patterns_coord, rp_coord = coords
         return PatternTuple(patterns, patterns_coord)
 
-    def check(self, formal_type, var_types):
+    def check(self, expected_type, var_types):
         actual_type = TupleType
-        if actual_type != type(formal_type):
+        if actual_type != type(expected_type):
             raise TypeMismatch(self.patterns_coord,
-                               formal_type.name(), actual_type.name())
+                               expected_type.name(), actual_type.name())
 
-        for pattern, formal_type in zip(self.patterns, formal_type.types):
-            pattern.check(formal_type, var_types)
+        for pattern, expected_type in zip(self.patterns, expected_type.types):
+            pattern.check(expected_type, var_types)
 
 
 class Result(abc.ABC):
-    pass
+    @abc.abstractmethod
+    def check(self, expected_type: Type, func_types: dict[str, FuncType], var_types: dict[str, Type]):
+        pass
 
 
 @dataclass
@@ -209,8 +237,14 @@ class ResultEmtpyList(Result):
 
     @pe.ExAction
     def create(attrs, coords, res_coord):
-        coord, = coords
-        return ResultEmtpyList(None)
+        lcb_coord, rcb_coord = coords
+        return ResultEmtpyList(lcb_coord)
+
+    def check(self, expected_type, func_types, var_types):
+        actual_type = ListType
+        if actual_type != type(expected_type):
+            raise TypeMismatch(
+                self.coord, expected_type.name(), actual_type.name())
 
 
 @dataclass
@@ -229,6 +263,11 @@ class ResultConst(Result):
 
         return action
 
+    def check(self, expected_type, func_types, var_types):
+        if type(self.type_) != type(expected_type):
+            raise TypeMismatch(
+                self.value_coord, expected_type.name(), self.type_.name())
+
 
 @dataclass
 class ResultVar(Result):
@@ -241,10 +280,20 @@ class ResultVar(Result):
         name_coord, = coords
         return ResultVar(name, name_coord)
 
+    def check(self, expected_type, func_types, var_types):
+        if self.name not in var_types:
+            raise UnknownVariable(self.name_coord, self.name)
+
+        actual_type = var_types[self.name]
+        if actual_type != expected_type:
+            raise TypeMismatch(
+                self.name_coord, expected_type.name(), actual_type.name())
+
 
 @dataclass
 class FuncCallExpr(Result):
     funcname: str
+    funcname_coord: pe.Position
     argument: Result
     argument_coord: pe.Position
 
@@ -252,7 +301,18 @@ class FuncCallExpr(Result):
     def create(attrs, coords, res_coord):
         funcname, argument = attrs
         funcname_coord, argument_coord = coords
-        return FuncCallExpr(funcname, argument, argument_coord)
+        return FuncCallExpr(funcname, funcname_coord, argument, argument_coord)
+
+    def check(self, expected_type, func_types, var_types):
+        if self.funcname not in func_types:
+            raise UnknownFunction(self.funcname_coord, self.funcname)
+
+        func_type = func_types[self.funcname]
+        if func_type.output != expected_type:
+            raise TypeMismatch(self.funcname_coord,
+                               expected_type.name(), func_type.output.name())
+
+        self.argument.check(func_type.input_, func_types, var_types)
 
 
 @dataclass
@@ -280,29 +340,54 @@ class ResultBinary(Result):
         lhs_coord, op_coord, rhs_coord = coords
         return ResultBinary(lhs, op, op_coord, rhs)
 
+    def check(self, expected_type, func_types, var_types):
+        if self.op != Op.Cons:
+            self.lhs.check(expected_type, func_types, var_types)
+            self.rhs.check(expected_type, func_types, var_types)
+            return
+
+        actual_type = ListType
+        if actual_type != type(expected_type):
+            raise TypeMismatch(self.op_coord,
+                               expected_type.name(), actual_type.name())
+
+        self.lhs.check(expected_type.type_, func_types, var_types)
+        self.rhs.check(expected_type, func_types, var_types)
+
 
 @dataclass
 class ResultTuple(Result):
-    results: list[Result]  # TODO: handle coord?
+    results: list[Result]
+    results_coord: pe.Position
 
+    @pe.ExAction
+    def create(attrs, coords, res_coord):
+        results, = attrs
+        lp_coord, results_coord, rp_coord = coords
+        return ResultTuple(results, results_coord)
 
-@dataclass
-class FuncType:
-    input_: Type
-    output: Type
+    def check(self, expected_type, func_types, var_types):
+        actual_type = TupleType
+        if actual_type != type(expected_type):
+            raise TypeMismatch(self.results_coord,
+                               expected_type.name(), actual_type.name())
+
+        for result, expected_type in zip(self.results, expected_type.types):
+            result.check(expected_type, func_types, var_types)
 
 
 @dataclass
 class Sentence:
-    pattern: Pattern  # TODO: handle coord?
-    result: Result  # TODO: handle coord?
+    pattern: Pattern
+    result: Result
 
     def check(self, func_types: dict[str, FuncType], funcname: str):
         functype = func_types[funcname]
 
         var_types = {}
         self.pattern.check(functype.input_, var_types)
-        # TODO
+
+        self.result.check(functype.output, func_types, var_types)
 
 
 @dataclass
@@ -338,6 +423,8 @@ class Program:
             func.check(funcs)
 
 
+INT_TYPE = IntType()
+
 IDENT = pe.Terminal('IDENT', '[A-Za-z_][A-Za-z_0-9]*', str)
 INT_CONST = pe.Terminal('INT_CONST', '[0-9]+', int)
 
@@ -354,7 +441,7 @@ NFunc = pe.NonTerminal('Func')
 
 NFuncType = pe.NonTerminal('FuncType')
 NType = pe.NonTerminal('Type')
-NElementaryType = pe.NonTerminal('ElementaryType')
+NIntType = pe.NonTerminal('IntType')
 NListType = pe.NonTerminal('ListType')
 NTupleType = pe.NonTerminal('TupleType')
 NTupleTypeContent = pe.NonTerminal('TupleTypeContent')
@@ -368,7 +455,6 @@ NSentence = pe.NonTerminal('Sentence')
 NPattern = pe.NonTerminal('Pattern')
 NConsOp = pe.NonTerminal('ConsOp')
 NPatternTerm = pe.NonTerminal('PatternTerm')
-NConst = pe.NonTerminal('Const')
 
 NPatternList = pe.NonTerminal('PatternList')
 NPatternListItems = pe.NonTerminal('PatternListItems')
@@ -392,7 +478,6 @@ NFuncCall = pe.NonTerminal('FuncCall')
 NFuncArg = pe.NonTerminal('FuncArg')
 
 NResultList = pe.NonTerminal('ResultList')
-NResultListContent = pe.NonTerminal('ResultListContent')
 NResultListItems = pe.NonTerminal('ResultListItems')
 NResultListItem = pe.NonTerminal('ResultListItem')
 
@@ -410,11 +495,11 @@ NFunc |= IDENT, NFuncType, KW_IS, NFuncBody, KW_END, Func.create
 
 NFuncType |= NType, '::', NType, FuncType
 
-NType |= NElementaryType
+NType |= NIntType
 NType |= NListType
 NType |= NTupleType
 
-NElementaryType |= KW_INT, lambda: IntType()
+NIntType |= KW_INT, lambda: INT_TYPE
 
 NListType |= '*', NType, ListType
 
@@ -441,12 +526,10 @@ NPattern |= NPatternTerm, NConsOp, NPattern, PatternBinary.create
 NConsOp |= ':', lambda: Op.Cons
 
 NPatternTerm |= IDENT, PatternVar.create
-NPatternTerm |= NConst
+NPatternTerm |= INT_CONST, PatternConst.create(INT_TYPE)
 NPatternTerm |= NPatternList,
 NPatternTerm |= NPatternTuple,
 NPatternTerm |= '[', NPattern, ']',
-
-NConst |= INT_CONST, PatternConst.create(IntType())
 
 NPatternList |= '{', '}', PatternEmptyList.create
 NPatternList |= '{', NPatternListItems, '}'
@@ -490,7 +573,7 @@ NFactor |= NAtom
 NFactor |= '[', NExpr, ']'
 
 NAtom |= IDENT, ResultVar.create
-NAtom |= NConst
+NAtom |= INT_CONST, ResultConst.create(INT_TYPE)
 NAtom |= NFuncCall
 
 NFuncCall |= IDENT, NFuncArg, FuncCallExpr.create
@@ -500,17 +583,15 @@ NFuncArg |= NResultList
 NFuncArg |= NResultTuple
 NFuncArg |= '[', NResult, ']'
 
-NResultList |= '{', NResultListContent, '}'
-
-NResultListContent |= lambda: ResultEmtpyList.create
-NResultListContent |= NResultListItems
+NResultList |= '{', '}', ResultEmtpyList.create
+NResultList |= '{', NResultListItems, '}'
 
 NResultListItems |= NResultListItem, ResultBinary.create_empty_list_cons
 NResultListItems |= NResultListItem, ',', NResultListItems, ResultBinary.create_cons
 
 NResultListItem |= NResult
 
-NResultTuple |= '(', NResultTupleContent, ')', ResultTuple
+NResultTuple |= '(', NResultTupleContent, ')', ResultTuple.create
 
 NResultTupleContent |= lambda: []
 NResultTupleContent |= NResultTupleItems
