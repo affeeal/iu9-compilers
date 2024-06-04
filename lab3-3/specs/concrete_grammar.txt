@@ -3,26 +3,24 @@ Funcs →  ε | Funcs Func
 Func →  IDENT FuncType IS FuncBody END
 
 FuncType →  Type :: Type
-Type →  ElementaryType | ListType | TupleType
-ElementaryType →  INT
+Type →  IntType | ListType | TupleType
+IntType →  INT
 ListType →  * Type
 TupleType →  ( TupleTypeContent )
 TupleTypeContent →  ε | TupleTypeItems
 TupleTypeItems →  TupleTypeItem | TupleTypeItems , TupleTypeItem
 TupleTypeItem →  Type
 
-FuncBody →  Statements
-Statements →  Statement | Statements ; Statement
-Statement →  Pattern = Result
+FuncBody →  Sentences
+Sentences →  Sentence | Sentences ; Sentence
+Sentence →  Pattern = Result
 
 Pattern →  PatternTerm | PatternTerm ConsOp Pattern
 ConsOp →  :
-PatternTerm →  Ident | Const | PatternList | PatternTuple | [ Pattern ]
-Ident →  IDENT
+PatternTerm →  IDENT | Const | PatternList | PatternTuple | [ Pattern ]
 Const →  INT_CONST
 
-PatternList →  { PatternListContent }
-PatternListContent →  ε | PatternListItems
+PatternList →  { } | { PatternListItems }
 PatternListItems →  PatternListItem | PatternListItem , PatternListItems
 PatternListItem →  Pattern
 
@@ -39,7 +37,7 @@ AddOp →  + | -
 Term →  Factor | Term MulOp Factor
 MulOp →  * | /
 Factor →  Atom | [ Expr ]
-Atom →  Ident | Const | FuncCall 
+Atom →  IDENT | Const | FuncCall 
 FuncCall →  IDENT FuncArg
 FuncArg →  Atom | ResultList | ResultTuple | [ Result ]
 
