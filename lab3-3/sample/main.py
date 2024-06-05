@@ -37,7 +37,7 @@ class RepeatedVariable(SemanticError):
 
     @property
     def message(self):
-        return f'Повторная переменная в образце: {self.varname}'
+        return f'Повторная переменная {self.varname} в образце'
 
 
 class UnknownVariable(SemanticError):
@@ -51,14 +51,13 @@ class UnknownVariable(SemanticError):
 
 
 class TypeMismatch(SemanticError):
-    def __init__(self, pos: pe.Position, expected: str, actual: str):
+    def __init__(self, pos: pe.Position, expected: str):
         self.pos = pos
         self.expected = expected
-        self.actual = actual
 
     @property
     def message(self):
-        return f'Ожидался {self.expected}, указан {self.actual}'
+        return f'Ожидался объект типа {self.expected}'
 
 
 class Op(enum.Enum):
@@ -70,34 +69,30 @@ class Op(enum.Enum):
 
 
 class Type(abc.ABC):
-    @staticmethod
     @abc.abstractmethod
-    def name() -> str:
+    def pretty(self):
         pass
 
 
 class IntType(Type):
-    @staticmethod
-    def name():
-        return 'целочисленный тип'
+    def pretty(self):
+        return 'int'
 
 
 @dataclass
 class TupleType(Type):
     types: list[Type]
 
-    @staticmethod
-    def name():
-        return 'кортеж'
+    def pretty(self):
+        return f'({", ".join(map(lambda type_: type_.pretty(), self.types))})'
 
 
 @dataclass
 class ListType(Type):
     type_: Type
 
-    @staticmethod
-    def name():
-        return 'список'
+    def pretty(self):
+        return f'*{self.type_.pretty()}'
 
 
 @dataclass
@@ -108,7 +103,7 @@ class FuncType:
 
 class Pattern(abc.ABC):
     @abc.abstractmethod
-    def check(self, expected_type: Type, var_types: dict[str, Type]):
+    def check(self, expected_type, var_types):
         pass
 
 
@@ -124,8 +119,7 @@ class PatternEmptyList(Pattern):
     def check(self, expected_type, var_types):
         actual_type = ListType
         if actual_type != type(expected_type):
-            raise TypeMismatch(
-                self.coord, expected_type.name(), actual_type.name())
+            raise TypeMismatch(self.coord, expected_type.pretty())
 
 
 @dataclass
@@ -145,9 +139,8 @@ class PatternConst(Pattern):
         return action
 
     def check(self, expected_type, var_types):
-        if type(self.type_) != type(expected_type):
-            raise TypeMismatch(
-                self.value_coord, expected_type.name(), self.type_.name())
+        if self.type_ != expected_type:
+            raise TypeMismatch(self.value_coord, expected_type.pretty())
 
 
 @dataclass
@@ -164,6 +157,7 @@ class PatternVar(Pattern):
     def check(self, expected_type, var_types):
         if self.name in var_types:
             raise RepeatedVariable(self.name_coord, self.name)
+
         var_types[self.name] = expected_type
 
 
@@ -177,13 +171,13 @@ class PatternBinary(Pattern):
     @pe.ExAction
     def create_empty_list_cons(attrs, coords, res_coord):
         lhs, = attrs
-        # TODO: handle coords
+        # NOTE: op, empty list coords set to none
         return PatternBinary(lhs, Op.Cons, None, PatternEmptyList(None))
 
     @pe.ExAction
     def create_cons(attrs, coords, res_coord):
         lhs, rhs = attrs
-        # TODO: handle coords
+        # NOTE: op coord set to none
         return PatternBinary(lhs, Op.Cons, None, rhs)
 
     @pe.ExAction
@@ -193,12 +187,9 @@ class PatternBinary(Pattern):
         return PatternBinary(lhs, op, op_coord, rhs)
 
     def check(self, expected_type, var_types):
-        assert self.op is Op.Cons
-
         actual_type = ListType
         if actual_type != type(expected_type):
-            raise TypeMismatch(
-                self.op_coord, expected_type.name(), actual_type.name())
+            raise TypeMismatch(self.op_coord, expected_type.pretty())
 
         self.lhs.check(expected_type.type_, var_types)
         self.rhs.check(expected_type, var_types)
@@ -218,8 +209,7 @@ class PatternTuple(Pattern):
     def check(self, expected_type, var_types):
         actual_type = TupleType
         if actual_type != type(expected_type):
-            raise TypeMismatch(self.patterns_coord,
-                               expected_type.name(), actual_type.name())
+            raise TypeMismatch(self.patterns_coord, expected_type.pretty())
 
         for pattern, expected_type in zip(self.patterns, expected_type.types):
             pattern.check(expected_type, var_types)
@@ -227,7 +217,7 @@ class PatternTuple(Pattern):
 
 class Result(abc.ABC):
     @abc.abstractmethod
-    def check(self, expected_type: Type, func_types: dict[str, FuncType], var_types: dict[str, Type]):
+    def check(self, expected_type, func_types, var_types):
         pass
 
 
@@ -243,8 +233,7 @@ class ResultEmtpyList(Result):
     def check(self, expected_type, func_types, var_types):
         actual_type = ListType
         if actual_type != type(expected_type):
-            raise TypeMismatch(
-                self.coord, expected_type.name(), actual_type.name())
+            raise TypeMismatch(self.coord, expected_type.pretty())
 
 
 @dataclass
@@ -264,9 +253,8 @@ class ResultConst(Result):
         return action
 
     def check(self, expected_type, func_types, var_types):
-        if type(self.type_) != type(expected_type):
-            raise TypeMismatch(
-                self.value_coord, expected_type.name(), self.type_.name())
+        if self.type_ != expected_type:
+            raise TypeMismatch(self.value_coord, expected_type.pretty())
 
 
 @dataclass
@@ -286,8 +274,7 @@ class ResultVar(Result):
 
         actual_type = var_types[self.name]
         if actual_type != expected_type:
-            raise TypeMismatch(
-                self.name_coord, expected_type.name(), actual_type.name())
+            raise TypeMismatch(self.name_coord, expected_type.pretty())
 
 
 @dataclass
@@ -295,13 +282,12 @@ class FuncCallExpr(Result):
     funcname: str
     funcname_coord: pe.Position
     argument: Result
-    argument_coord: pe.Position
 
     @pe.ExAction
     def create(attrs, coords, res_coord):
         funcname, argument = attrs
         funcname_coord, argument_coord = coords
-        return FuncCallExpr(funcname, funcname_coord, argument, argument_coord)
+        return FuncCallExpr(funcname, funcname_coord, argument)
 
     def check(self, expected_type, func_types, var_types):
         if self.funcname not in func_types:
@@ -309,8 +295,7 @@ class FuncCallExpr(Result):
 
         func_type = func_types[self.funcname]
         if func_type.output != expected_type:
-            raise TypeMismatch(self.funcname_coord,
-                               expected_type.name(), func_type.output.name())
+            raise TypeMismatch(self.funcname_coord, expected_type.pretty())
 
         self.argument.check(func_type.input_, func_types, var_types)
 
@@ -325,13 +310,13 @@ class ResultBinary(Result):
     @pe.ExAction
     def create_empty_list_cons(attrs, coords, res_coord):
         lhs, = attrs
-        # TODO: handle coord
+        # NOTE: op, empty list coords set to none
         return ResultBinary(lhs, Op.Cons, None, ResultEmtpyList(None))
 
     @pe.ExAction
     def create_cons(attrs, coords, res_coord):
         lhs, rhs = attrs
-        # TODO: handle coord
+        # NOTE: op coord set to none
         return ResultBinary(lhs, Op.Cons, pe.Position(), rhs)
 
     @pe.ExAction
@@ -348,8 +333,7 @@ class ResultBinary(Result):
 
         actual_type = ListType
         if actual_type != type(expected_type):
-            raise TypeMismatch(self.op_coord,
-                               expected_type.name(), actual_type.name())
+            raise TypeMismatch(self.op_coord, expected_type.pretty())
 
         self.lhs.check(expected_type.type_, func_types, var_types)
         self.rhs.check(expected_type, func_types, var_types)
@@ -369,8 +353,7 @@ class ResultTuple(Result):
     def check(self, expected_type, func_types, var_types):
         actual_type = TupleType
         if actual_type != type(expected_type):
-            raise TypeMismatch(self.results_coord,
-                               expected_type.name(), actual_type.name())
+            raise TypeMismatch(self.results_coord, expected_type.pretty())
 
         for result, expected_type in zip(self.results, expected_type.types):
             result.check(expected_type, func_types, var_types)
