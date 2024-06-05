@@ -169,16 +169,18 @@ class PatternBinary(Pattern):
     rhs: Pattern
 
     @pe.ExAction
-    def create_empty_list_cons(attrs, coords, res_coord):
+    def create_cons_with_empty_list(attrs, coords, res_coord):
         lhs, = attrs
-        # NOTE: op, empty list coords set to none
-        return PatternBinary(lhs, Op.Cons, None, PatternEmptyList(None))
+        lhs_coord, = coords
+        # NOTE: fictive op, empty list coord
+        return PatternBinary(lhs, Op.Cons, lhs_coord, PatternEmptyList(lhs_coord))
 
     @pe.ExAction
     def create_cons(attrs, coords, res_coord):
         lhs, rhs = attrs
-        # NOTE: op coord set to none
-        return PatternBinary(lhs, Op.Cons, None, rhs)
+        lhs_coord, comma_coord, rhs_coord = coords
+        # NOTE: fictive op coord
+        return PatternBinary(lhs, Op.Cons, comma_coord, rhs)
 
     @pe.ExAction
     def create(attrs, coords, res_coord):
@@ -208,7 +210,7 @@ class PatternTuple(Pattern):
 
     def check(self, expected_type, var_types):
         actual_type = TupleType
-        if actual_type != type(expected_type):
+        if actual_type != type(expected_type) or len(self.patterns) != len(expected_type.types):
             raise TypeMismatch(self.patterns_coord, expected_type.pretty())
 
         for pattern, expected_type in zip(self.patterns, expected_type.types):
@@ -308,16 +310,18 @@ class ResultBinary(Result):
     rhs: Result
 
     @pe.ExAction
-    def create_empty_list_cons(attrs, coords, res_coord):
+    def create_cons_with_empty_list(attrs, coords, res_coord):
         lhs, = attrs
-        # NOTE: op, empty list coords set to none
-        return ResultBinary(lhs, Op.Cons, None, ResultEmtpyList(None))
+        lhs_coord, = coords
+        # NOTE: fictive op, empty list coords
+        return ResultBinary(lhs, Op.Cons, lhs_coord, ResultEmtpyList(lhs_coord))
 
     @pe.ExAction
     def create_cons(attrs, coords, res_coord):
         lhs, rhs = attrs
-        # NOTE: op coord set to none
-        return ResultBinary(lhs, Op.Cons, pe.Position(), rhs)
+        lhs_coord, comma_coord, rhs_coord = coords
+        # NOTE: fictive op_coord
+        return ResultBinary(lhs, Op.Cons, comma_coord, rhs)
 
     @pe.ExAction
     def create(attrs, coords, res_coord):
@@ -352,7 +356,7 @@ class ResultTuple(Result):
 
     def check(self, expected_type, func_types, var_types):
         actual_type = TupleType
-        if actual_type != type(expected_type):
+        if actual_type != type(expected_type) or len(self.results) != len(expected_type.types):
             raise TypeMismatch(self.results_coord, expected_type.pretty())
 
         for result, expected_type in zip(self.results, expected_type.types):
@@ -517,7 +521,7 @@ NPatternTerm |= '[', NPattern, ']',
 NPatternList |= '{', '}', PatternEmptyList.create
 NPatternList |= '{', NPatternListItems, '}'
 
-NPatternListItems |= NPatternListItem, PatternBinary.create_empty_list_cons
+NPatternListItems |= NPatternListItem, PatternBinary.create_cons_with_empty_list
 NPatternListItems |= NPatternListItem, ',', NPatternListItems, PatternBinary.create_cons
 
 NPatternListItem |= NPattern
@@ -569,7 +573,7 @@ NFuncArg |= '[', NResult, ']'
 NResultList |= '{', '}', ResultEmtpyList.create
 NResultList |= '{', NResultListItems, '}'
 
-NResultListItems |= NResultListItem, ResultBinary.create_empty_list_cons
+NResultListItems |= NResultListItem, ResultBinary.create_cons_with_empty_list
 NResultListItems |= NResultListItem, ',', NResultListItems, ResultBinary.create_cons
 
 NResultListItem |= NResult
