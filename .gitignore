@@ -1,8 +1,9 @@
 build
+.cache
+.venv
+__pycache__
 prd
 prr
-__pycache__
-.cache
 *.aux
 *.log
 *.toc
