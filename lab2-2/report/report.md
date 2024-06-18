@@ -91,118 +91,100 @@ polynom1111 int :: int is x = polynom (x, {1, 1, 1, 1}) end
 ## Абстрактный синтаксис
 
 ```
-Program → Funcs
-Funcs → ε | Funcs Func
-Func → IDENT FuncType IS FuncBody END
+# NOTE: запятые для TupleType, PatternTuple и пр. указаны не совсем корректно,
+# но для абстрактного синтаксиса это не важно.
 
-FuncType → Type :: Type
-Type → ElementaryType | ListType | TupleType
-ElementaryType → INT
-ListType → * Type
-TupleType → ( TupleTypeContent )
-TupleTypeContent → ε | TupleTypeItems
-TupleTypeItems → Type | TupleTypeItems , Type
+Program →  Func*
+Func →  IDENT FuncType IS FuncBody END
 
-FuncBody → Statements
-Statements → Statement | Statements ; Statement
-Statement → Pattern = Result
+FuncType →  Type '::' Type
+Type →  ElementaryType | ListType | TupleType
+ElementaryType →  INT
+ListType →  '*' Type
+TupleType →  '(' (Type ',')* ')'
 
-Pattern → IDENT
+FuncBody →  (Statement ';')*
+Statement →  Pattern '=' Result
+
+Pattern →  IDENT
+         | Const
+         | PatternList
+         | PatternTuple
+         | '[' Pattern ']'
+         | Pattern PatternBinaryOp Pattern
+PatternBinaryOp →  ':'
+Const →  INT_CONST
+PatternList →  '{' (Pattern ',')* '}'
+PatternTuple →  '(' (Pattern ',')* ')'
+
+Result →  IDENT
         | Const
-        | PatternList
-        | PatternTuple
-        | [ Pattern ]
-        | Pattern PatternBinaryOp Pattern
-PatternBinaryOp → :
-Const → INT_CONST
-
-PatternList → { PatternListContent }
-PatternListContent → ε | PatternListItems
-PatternListItems = PatternListItem | PatternListItems , PatternListItem
-PatternListItem = Pattern
-
-PatternTuple → ( PatternTupleContent )
-PatternTupleContent → ε | PatternTupleItems
-PatternTupleItems → PatternTupleItem | PatternTupleItems , PatternTupleItem
-PatternTupleItem → Pattern
-
-Result → IDENT
-       | Const
-       | ResultList
-       | ResultTuple
-       | [ Result ]
-       | FuncCall
-       | Result ResultBinaryOp Result
-ResultBinaryOp → : | + | - | * | /
-FuncCall → IDENT FuncArg
-FuncArg → Result
-
-ResultList → { ResultListContent }
-ResultListContent → ε | ResultListItems
-ResultListItems → ResultListItem | ResultListItems , ResultListItem
-ResultListItem → Result
-
-ResultTuple → ( ResultTupleContent )
-ResultTupleContent → ε | ResultTupleItems
-ResultTupleItems → ResultTupleItem | ResultTupleItems , ResultTupleItem
-ResultTupeItem → Result
+        | ResultList
+        | ResultTuple
+        | '[' Result ']'
+        | FuncCall
+        | Result ResultBinaryOp Result
+ResultBinaryOp →  ':' | '+' | '-' | '*' | '/'
+FuncCall →  IDENT Result
+ResultList →  '{' (Result ',')* '}'
+ResultTuple →  '(' (Result ',')* ')'
 ```
 
 ## Лексическая структура и конкретный синтаксис
 
 ```
-Program → Funcs
-Funcs → ε | Funcs Func
-Func → IDENT FuncType IS FuncBody END
+Program →  Funcs
+Funcs →  ε | Funcs Func
+Func →  IDENT FuncType IS FuncBody END
 
-FuncType → Type :: Type
-Type → ElementaryType | ListType | TupleType
-ElementaryType → INT
-ListType → * Type
-TupleType → ( TupleTypeContent )
-TupleTypeContent → ε | TupleTypeItems
-TupleTypeItems → Type | TupleTypeItems , Type
+FuncType →  Type :: Type
+Type →  ElementaryType | ListType | TupleType
+ElementaryType →  INT
+ListType →  * Type
+TupleType →  ( TupleTypeContent )
+TupleTypeContent →  ε | TupleTypeItems
+TupleTypeItems →  Type | TupleTypeItems , Type
 
-FuncBody → Statements
-Statements → Statement | Statements ; Statement
-Statement → Pattern = Result
+FuncBody →  Statements
+Statements →  Statement | Statements ; Statement
+Statement →  Pattern = Result
 
-Pattern → PatternUnit | PatternUnit ConsOp Pattern
-ConsOp → :
-PatternUnit → IDENT | Const | PatternList | PatternTuple | [ Pattern ]
-Const → INT_CONST
+Pattern →  PatternUnit | PatternUnit ConsOp Pattern
+ConsOp →  :
+PatternUnit →  IDENT | Const | PatternList | PatternTuple | [ Pattern ]
+Const →  INT_CONST
 
-PatternList → { PatternListContent }
-PatternListContent → ε | PatternListItems
+PatternList →  { PatternListContent }
+PatternListContent →  ε | PatternListItems
 PatternListItems = PatternListItem | PatternListItems , PatternListItem
 PatternListItem = Pattern
 
-PatternTuple → ( PatternTupleContent )
-PatternTupleContent → ε | PatternTupleItems
-PatternTupleItems → PatternTupleItem | PatternTupleItems , PatternTupleItem
-PatternTupleItem → Pattern
+PatternTuple →  ( PatternTupleContent )
+PatternTupleContent →  ε | PatternTupleItems
+PatternTupleItems →  PatternTupleItem | PatternTupleItems , PatternTupleItem
+PatternTupleItem →  Pattern
 
-Result → ResultUnit | ResultUnit ConsOp Result
-ResultUnit → Expr | ResultList | ResultTuple
+Result →  ResultUnit | ResultUnit ConsOp Result
+ResultUnit →  Expr | ResultList | ResultTuple
 
-Expr → Term | Expr AddOp Term
-AddOp → + | -
-Term → Factor | Term MulOp Factor
-MulOp → * | /
-Factor → Atom | [ Expr ]
-Atom → IDENT | Const | FuncCall 
-FuncCall → IDENT FuncArg
-FuncArg → Atom | ResultList | ResultTuple | [ Result ]
+Expr →  Term | Expr AddOp Term
+AddOp →  + | -
+Term →  Factor | Term MulOp Factor
+MulOp →  * | /
+Factor →  Atom | [ Expr ]
+Atom →  IDENT | Const | FuncCall 
+FuncCall →  IDENT FuncArg
+FuncArg →  Atom | ResultList | ResultTuple | [ Result ]
 
-ResultList → { ResultListContent }
-ResultListContent → ε | ResultListItems
-ResultListItems → ResultListItem | ResultListItems , ResultListItem
-ResultListItem → Result
+ResultList →  { ResultListContent }
+ResultListContent →  ε | ResultListItems
+ResultListItems →  ResultListItem | ResultListItems , ResultListItem
+ResultListItem →  Result
 
-ResultTuple → ( ResultTupleContent )
-ResultTupleContent → ε | ResultTupleItems
-ResultTupleItems → ResultTupleItem | ResultTupleItems , ResultTupleItem
-ResultTupeItem → Result
+ResultTuple →  ( ResultTupleContent )
+ResultTupleContent →  ε | ResultTupleItems
+ResultTupleItems →  ResultTupleItem | ResultTupleItems , ResultTupleItem
+ResultTupeItem →  Result
 ```
 
 ## Программная реализация

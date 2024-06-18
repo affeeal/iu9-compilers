@@ -1,0 +1,37 @@
+# NOTE: запятые для TupleType, PatternTuple и пр. указаны не совсем корректно,
+# но для абстрактного синтаксиса это не важно.
+
+Program →  Func*
+Func →  IDENT FuncType IS FuncBody END
+
+FuncType →  Type '::' Type
+Type →  ElementaryType | ListType | TupleType
+ElementaryType →  INT
+ListType →  '*' Type
+TupleType →  '(' (Type ',')* ')'
+
+FuncBody →  (Statement ';')*
+Statement →  Pattern '=' Result
+
+Pattern →  IDENT
+         | Const
+         | PatternList
+         | PatternTuple
+         | '[' Pattern ']'
+         | Pattern PatternBinaryOp Pattern
+PatternBinaryOp →  ':'
+Const →  INT_CONST
+PatternList →  '{' (Pattern ',')* '}'
+PatternTuple →  '(' (Pattern ',')* ')'
+
+Result →  IDENT
+        | Const
+        | ResultList
+        | ResultTuple
+        | '[' Result ']'
+        | FuncCall
+        | Result ResultBinaryOp Result
+ResultBinaryOp →  ':' | '+' | '-' | '*' | '/'
+FuncCall →  IDENT Result
+ResultList →  '{' (Result ',')* '}'
+ResultTuple →  '(' (Result ',')* ')'
