@@ -24,7 +24,24 @@ T1 -> "*" F T1 'or 'epsilon 'end
 E1 -> "+" T E1 'or 'epsilon 'end
 ```
 
-# Реализация (генератор)
+# Грамматика на входном языке
+
+```
+'axiom Program -> Rules 'end
+Rules -> Rule Rules 'or 'epsilon 'end
+Rule -> RuleLHS "ARROW" RuleRHS 'end
+RuleLHS -> "KW_AXIOM" "NONTERMINAL" 'or "NONTERMINAL" 'end
+RuleRHS -> Expr "KW_END" 'end
+Expr -> Term Expr1 'end
+Expr1 -> "KW_OR" Term Expr1 'or 'epsilon 'end
+Term -> Symbol Term1 'or "KW_EPSILON" 'end
+Term1 -> Symbol Term1 'or 'epsilon 'end
+Symbol -> "NONTERMINAL" 'or "TERMINAL" 'end
+```
+
+# Реализация
+
+## Генератор компиляторов
 
 Файл `main.cpp`:
 
@@ -117,7 +134,7 @@ int main(int ac, char* av[]) try {
 }
 ```
 
-## Лексический анализ
+### Лексический анализ
 
 Файл `position.h`:
 
@@ -479,9 +496,9 @@ int yyFlexLexer::yylex() {
 }
 ```
 
-## Синтаксический анализ
+### Синтаксический анализ
 
-Данный модуль используется и генератором, и калькулятором.
+Данный модуль используется и генератором компиляторов, и калькулятором.
 
 Файл `symbol.h`:
 
@@ -574,131 +591,6 @@ class AnalyzerTable final {
   std::optional<std::pair<SymbolVecIter, SymbolVecIter>> Find(
       const Symbol& nonterminal, const Symbol& terminal) const;
 };
-
-}  // namespace parser
-```
-
-Сгенерированный файл `analyzer_table.cc`:
-
-```cpp
-#include "analyzer_table.h"
-
-#include "symbol.h"
-
-namespace parser {
-
-AnalyzerTable::AnalyzerTable()
-    : axiom_({"Program", Symbol::Type::kNonterminal}),
-      table_({{{{"Expr", Symbol::Type::kNonterminal},
-                {"KW_EPSILON", Symbol::Type::kTerminal}},
-               {{"Term", Symbol::Type::kNonterminal},
-                {"Expr1", Symbol::Type::kNonterminal}}},
-              {{{"Rule", Symbol::Type::kNonterminal},
-                {"KW_AXIOM", Symbol::Type::kTerminal}},
-               {{"RuleLHS", Symbol::Type::kNonterminal},
-                {"ARROW", Symbol::Type::kTerminal},
-                {"RuleRHS", Symbol::Type::kNonterminal}}},
-              {{{"Rules", Symbol::Type::kNonterminal},
-                {"KW_AXIOM", Symbol::Type::kTerminal}},
-               {{"Rule", Symbol::Type::kNonterminal},
-                {"Rules", Symbol::Type::kNonterminal}}},
-              {{{"Term", Symbol::Type::kNonterminal},
-                {"TERMINAL", Symbol::Type::kTerminal}},
-               {{"Symbol", Symbol::Type::kNonterminal},
-                {"Term1", Symbol::Type::kNonterminal}}},
-              {{{"Expr", Symbol::Type::kNonterminal},
-                {"NONTERMINAL", Symbol::Type::kTerminal}},
-               {{"Term", Symbol::Type::kNonterminal},
-                {"Expr1", Symbol::Type::kNonterminal}}},
-              {{{"Expr1", Symbol::Type::kNonterminal},
-                {"KW_OR", Symbol::Type::kTerminal}},
-               {{"KW_OR", Symbol::Type::kTerminal},
-                {"Term", Symbol::Type::kNonterminal},
-                {"Expr1", Symbol::Type::kNonterminal}}},
-              {{{"Rules", Symbol::Type::kNonterminal},
-                {"NONTERMINAL", Symbol::Type::kTerminal}},
-               {{"Rule", Symbol::Type::kNonterminal},
-                {"Rules", Symbol::Type::kNonterminal}}},
-              {{{"Rule", Symbol::Type::kNonterminal},
-                {"NONTERMINAL", Symbol::Type::kTerminal}},
-               {{"RuleLHS", Symbol::Type::kNonterminal},
-                {"ARROW", Symbol::Type::kTerminal},
-                {"RuleRHS", Symbol::Type::kNonterminal}}},
-              {{{"Term1", Symbol::Type::kNonterminal},
-                {"KW_OR", Symbol::Type::kTerminal}},
-               {}},
-              {{{"Term1", Symbol::Type::kNonterminal},
-                {"TERMINAL", Symbol::Type::kTerminal}},
-               {{"Symbol", Symbol::Type::kNonterminal},
-                {"Term1", Symbol::Type::kNonterminal}}},
-              {{{"Expr", Symbol::Type::kNonterminal},
-                {"TERMINAL", Symbol::Type::kTerminal}},
-               {{"Term", Symbol::Type::kNonterminal},
-                {"Expr1", Symbol::Type::kNonterminal}}},
-              {{{"Term1", Symbol::Type::kNonterminal},
-                {"KW_END", Symbol::Type::kTerminal}},
-               {}},
-              {{{"RuleLHS", Symbol::Type::kNonterminal},
-                {"KW_AXIOM", Symbol::Type::kTerminal}},
-               {{"KW_AXIOM", Symbol::Type::kTerminal},
-                {"NONTERMINAL", Symbol::Type::kTerminal}}},
-              {{{"Expr1", Symbol::Type::kNonterminal},
-                {"KW_END", Symbol::Type::kTerminal}},
-               {}},
-              {{{"Program", Symbol::Type::kNonterminal},
-                {"KW_AXIOM", Symbol::Type::kTerminal}},
-               {{"Rules", Symbol::Type::kNonterminal}}},
-              {{{"Symbol", Symbol::Type::kNonterminal},
-                {"TERMINAL", Symbol::Type::kTerminal}},
-               {{"TERMINAL", Symbol::Type::kTerminal}}},
-              {{{"Program", Symbol::Type::kNonterminal},
-                {"NONTERMINAL", Symbol::Type::kTerminal}},
-               {{"Rules", Symbol::Type::kNonterminal}}},
-              {{{"RuleRHS", Symbol::Type::kNonterminal},
-                {"KW_EPSILON", Symbol::Type::kTerminal}},
-               {{"Expr", Symbol::Type::kNonterminal},
-                {"KW_END", Symbol::Type::kTerminal}}},
-              {{{"RuleRHS", Symbol::Type::kNonterminal},
-                {"NONTERMINAL", Symbol::Type::kTerminal}},
-               {{"Expr", Symbol::Type::kNonterminal},
-                {"KW_END", Symbol::Type::kTerminal}}},
-              {{{"RuleRHS", Symbol::Type::kNonterminal},
-                {"TERMINAL", Symbol::Type::kTerminal}},
-               {{"Expr", Symbol::Type::kNonterminal},
-                {"KW_END", Symbol::Type::kTerminal}}},
-              {{{"Term1", Symbol::Type::kNonterminal},
-                {"NONTERMINAL", Symbol::Type::kTerminal}},
-               {{"Symbol", Symbol::Type::kNonterminal},
-                {"Term1", Symbol::Type::kNonterminal}}},
-              {{{"Symbol", Symbol::Type::kNonterminal},
-                {"NONTERMINAL", Symbol::Type::kTerminal}},
-               {{"NONTERMINAL", Symbol::Type::kTerminal}}},
-              {{{"Term", Symbol::Type::kNonterminal},
-                {"NONTERMINAL", Symbol::Type::kTerminal}},
-               {{"Symbol", Symbol::Type::kNonterminal},
-                {"Term1", Symbol::Type::kNonterminal}}},
-              {{{"RuleLHS", Symbol::Type::kNonterminal},
-                {"NONTERMINAL", Symbol::Type::kTerminal}},
-               {{"NONTERMINAL", Symbol::Type::kTerminal}}},
-              {{{"Term", Symbol::Type::kNonterminal},
-                {"KW_EPSILON", Symbol::Type::kTerminal}},
-               {{"KW_EPSILON", Symbol::Type::kTerminal}}},
-              {{{"Rules", Symbol::Type::kNonterminal},
-                {"END_OF_PROGRAM", Symbol::Type::kTerminal}},
-               {}},
-              {{{"Program", Symbol::Type::kNonterminal},
-                {"END_OF_PROGRAM", Symbol::Type::kTerminal}},
-               {{"Rules", Symbol::Type::kNonterminal}}}}) {}
-
-std::optional<std::pair<SymbolVecIter, SymbolVecIter>> AnalyzerTable::Find(
-    const Symbol& nonterminal, const Symbol& terminal) const {
-  if (const auto it = table_.find({nonterminal, terminal});
-      it != table_.cend()) {
-    const auto& symbols = it->second;
-    return std::make_pair(symbols.cbegin(), symbols.cend());
-  }
-  return std::nullopt;
-}
 
 }  // namespace parser
 ```
@@ -828,7 +720,7 @@ std::unique_ptr<INode> Parser::TopDownParse(lexer::IScanner& scanner) {
 }  // namespace parser
 ```
 
-## Семантический анализ
+### Семантический анализ
 
 Файл `ast.h`:
 
@@ -1516,7 +1408,7 @@ void AnalyzerTableGenerator::GenerateTable(
 }  // namespace semantics
 ```
 
-Шаблон таблицы `analyzer.cc`:
+Шаблон реализации таблицы `analyzer_table.cc`:
 
 ```cpp
 #include "analyzer_table.h"
@@ -1543,7 +1435,7 @@ std::optional<std::pair<SymbolVecIter, SymbolVecIter>> AnalyzerTable::Find(
 }  // namespace parser
 ```
 
-# Реализация (калькулятор)
+## Калькулятор
 
 Файл `main.cc`:
 
@@ -1582,7 +1474,7 @@ int main(int argc, char* argv[]) try {
 }
 ```
 
-## Лексический анализ
+### Лексический анализ
 
 Файл `token.h`:
 
@@ -1643,7 +1535,50 @@ class SpecToken final : public Token {
 }  // namespace lexer
 ```
 
-Файл `scanner.h`
+Файл `token.cc`:
+
+```cpp
+#include "token.h"
+
+#include <stdexcept>
+
+namespace lexer {
+
+void Token::ThrowError(const std::string& msg) const {
+  throw std::runtime_error(coords_.ToString() + ": " + msg);
+}
+
+std::string ToString(const DomainTag tag) {
+  switch (tag) {
+    case DomainTag::kNumber: {
+      return "n";
+    }
+    case DomainTag::kPlus: {
+      return "+";
+    }
+    case DomainTag::kStar: {
+      return "*";
+    }
+    case DomainTag::kLeftParenthesis: {
+      return "(";
+    }
+    case DomainTag::kRightParenthesis: {
+      return ")";
+    }
+    case DomainTag::kEndOfProgram: {
+      return "END_OF_PROGRAM";
+    }
+  }
+}
+
+std::ostream& operator<<(std::ostream& os, const DomainTag tag) {
+  return os << ToString(tag);
+}
+
+}  // namespace lexer
+```
+
+Файл `scanner.h`:
 
 ```cpp
 #pragma once
@@ -1700,7 +1635,7 @@ class Scanner final : private yyFlexLexer, public IScanner {
 }  // namespace lexer
 ```
 
-Файл `scanner.l`
+Файл `scanner.l`:
 
 ```cpp
 %{
@@ -1777,9 +1712,9 @@ int yyFlexLexer::yylex() {
 }
 ```
 
-## Семантический анализ
+### Семантический анализ
 
-Файл `semantics.h`
+Файл `semantics.h`:
 
 ```cpp
 #pragma once
@@ -1793,7 +1728,7 @@ std::uint64_t Interpret(const parser::InnerNode& e);
 }  // namespace semantics
 ```
 
-Файл `semantics.cc`
+Файл `semantics.cc`:
 
 ```cpp
 #include "semantics.h"
@@ -1872,22 +1807,11 @@ std::uint64_t Interpret(const parser::InnerNode& e) { return ParseE(e); }
 }  // namespace semantics
 ```
 
-# Тестирование генератора таблиц
+# Тестирование
 
-Входные данные
+## Генератор компиляторов
 
-```
-# ключевые слова
-# начинаются с кавычки
-
-F  -> "n" 'or "(" E ")" 'end
-T  -> F T1 'end
-T1 -> "*" F T1 'or 'epsilon 'end
-'axiom E  -> T E1 'end
-E1 -> "+" T E1 'or 'epsilon 'end
-```
-
-Сгенерированный implementation-файл `analyzer_table.cc`:
+Сгенерированный implementation-файл для калькулятора:
 
 ```cpp
 #include "analyzer_table.h"
@@ -1954,6 +1878,145 @@ std::optional<std::pair<SymbolVecIter, SymbolVecIter>> AnalyzerTable::Find(
 }
 
 }  // namespace parser
+```
+
+Сгенерированный implementation-файл для собственной грамматики:
+
+```cpp
+#include "analyzer_table.h"
+
+#include "symbol.h"
+
+namespace parser {
+
+AnalyzerTable::AnalyzerTable()
+    : axiom_({"Program", Symbol::Type::kNonterminal}),
+      table_({{{{"Expr", Symbol::Type::kNonterminal},
+                {"KW_EPSILON", Symbol::Type::kTerminal}},
+               {{"Term", Symbol::Type::kNonterminal},
+                {"Expr1", Symbol::Type::kNonterminal}}},
+              {{{"Rule", Symbol::Type::kNonterminal},
+                {"KW_AXIOM", Symbol::Type::kTerminal}},
+               {{"RuleLHS", Symbol::Type::kNonterminal},
+                {"ARROW", Symbol::Type::kTerminal},
+                {"RuleRHS", Symbol::Type::kNonterminal}}},
+              {{{"Rules", Symbol::Type::kNonterminal},
+                {"KW_AXIOM", Symbol::Type::kTerminal}},
+               {{"Rule", Symbol::Type::kNonterminal},
+                {"Rules", Symbol::Type::kNonterminal}}},
+              {{{"Term", Symbol::Type::kNonterminal},
+                {"TERMINAL", Symbol::Type::kTerminal}},
+               {{"Symbol", Symbol::Type::kNonterminal},
+                {"Term1", Symbol::Type::kNonterminal}}},
+              {{{"Expr", Symbol::Type::kNonterminal},
+                {"NONTERMINAL", Symbol::Type::kTerminal}},
+               {{"Term", Symbol::Type::kNonterminal},
+                {"Expr1", Symbol::Type::kNonterminal}}},
+              {{{"Expr1", Symbol::Type::kNonterminal},
+                {"KW_OR", Symbol::Type::kTerminal}},
+               {{"KW_OR", Symbol::Type::kTerminal},
+                {"Term", Symbol::Type::kNonterminal},
+                {"Expr1", Symbol::Type::kNonterminal}}},
+              {{{"Rules", Symbol::Type::kNonterminal},
+                {"NONTERMINAL", Symbol::Type::kTerminal}},
+               {{"Rule", Symbol::Type::kNonterminal},
+                {"Rules", Symbol::Type::kNonterminal}}},
+              {{{"Rule", Symbol::Type::kNonterminal},
+                {"NONTERMINAL", Symbol::Type::kTerminal}},
+               {{"RuleLHS", Symbol::Type::kNonterminal},
+                {"ARROW", Symbol::Type::kTerminal},
+                {"RuleRHS", Symbol::Type::kNonterminal}}},
+              {{{"Term1", Symbol::Type::kNonterminal},
+                {"KW_OR", Symbol::Type::kTerminal}},
+               {}},
+              {{{"Term1", Symbol::Type::kNonterminal},
+                {"TERMINAL", Symbol::Type::kTerminal}},
+               {{"Symbol", Symbol::Type::kNonterminal},
+                {"Term1", Symbol::Type::kNonterminal}}},
+              {{{"Expr", Symbol::Type::kNonterminal},
+                {"TERMINAL", Symbol::Type::kTerminal}},
+               {{"Term", Symbol::Type::kNonterminal},
+                {"Expr1", Symbol::Type::kNonterminal}}},
+              {{{"Term1", Symbol::Type::kNonterminal},
+                {"KW_END", Symbol::Type::kTerminal}},
+               {}},
+              {{{"RuleLHS", Symbol::Type::kNonterminal},
+                {"KW_AXIOM", Symbol::Type::kTerminal}},
+               {{"KW_AXIOM", Symbol::Type::kTerminal},
+                {"NONTERMINAL", Symbol::Type::kTerminal}}},
+              {{{"Expr1", Symbol::Type::kNonterminal},
+                {"KW_END", Symbol::Type::kTerminal}},
+               {}},
+              {{{"Program", Symbol::Type::kNonterminal},
+                {"KW_AXIOM", Symbol::Type::kTerminal}},
+               {{"Rules", Symbol::Type::kNonterminal}}},
+              {{{"Symbol", Symbol::Type::kNonterminal},
+                {"TERMINAL", Symbol::Type::kTerminal}},
+               {{"TERMINAL", Symbol::Type::kTerminal}}},
+              {{{"Program", Symbol::Type::kNonterminal},
+                {"NONTERMINAL", Symbol::Type::kTerminal}},
+               {{"Rules", Symbol::Type::kNonterminal}}},
+              {{{"RuleRHS", Symbol::Type::kNonterminal},
+                {"KW_EPSILON", Symbol::Type::kTerminal}},
+               {{"Expr", Symbol::Type::kNonterminal},
+                {"KW_END", Symbol::Type::kTerminal}}},
+              {{{"RuleRHS", Symbol::Type::kNonterminal},
+                {"NONTERMINAL", Symbol::Type::kTerminal}},
+               {{"Expr", Symbol::Type::kNonterminal},
+                {"KW_END", Symbol::Type::kTerminal}}},
+              {{{"RuleRHS", Symbol::Type::kNonterminal},
+                {"TERMINAL", Symbol::Type::kTerminal}},
+               {{"Expr", Symbol::Type::kNonterminal},
+                {"KW_END", Symbol::Type::kTerminal}}},
+              {{{"Term1", Symbol::Type::kNonterminal},
+                {"NONTERMINAL", Symbol::Type::kTerminal}},
+               {{"Symbol", Symbol::Type::kNonterminal},
+                {"Term1", Symbol::Type::kNonterminal}}},
+              {{{"Symbol", Symbol::Type::kNonterminal},
+                {"NONTERMINAL", Symbol::Type::kTerminal}},
+               {{"NONTERMINAL", Symbol::Type::kTerminal}}},
+              {{{"Term", Symbol::Type::kNonterminal},
+                {"NONTERMINAL", Symbol::Type::kTerminal}},
+               {{"Symbol", Symbol::Type::kNonterminal},
+                {"Term1", Symbol::Type::kNonterminal}}},
+              {{{"RuleLHS", Symbol::Type::kNonterminal},
+                {"NONTERMINAL", Symbol::Type::kTerminal}},
+               {{"NONTERMINAL", Symbol::Type::kTerminal}}},
+              {{{"Term", Symbol::Type::kNonterminal},
+                {"KW_EPSILON", Symbol::Type::kTerminal}},
+               {{"KW_EPSILON", Symbol::Type::kTerminal}}},
+              {{{"Rules", Symbol::Type::kNonterminal},
+                {"END_OF_PROGRAM", Symbol::Type::kTerminal}},
+               {}},
+              {{{"Program", Symbol::Type::kNonterminal},
+                {"END_OF_PROGRAM", Symbol::Type::kTerminal}},
+               {{"Rules", Symbol::Type::kNonterminal}}}}) {}
+
+std::optional<std::pair<SymbolVecIter, SymbolVecIter>> AnalyzerTable::Find(
+    const Symbol& nonterminal, const Symbol& terminal) const {
+  if (const auto it = table_.find({nonterminal, terminal});
+      it != table_.cend()) {
+    const auto& symbols = it->second;
+    return std::make_pair(symbols.cbegin(), symbols.cend());
+  }
+  return std::nullopt;
+}
+
+}  // namespace parser
+```
+
+## Калькулятор
+
+Входные данные:
+
+```
+1 + 2 * (3 + 4)
+```
+
+Вывод:
+
+```
+15
 ```
 
 # Вывод
