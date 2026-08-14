@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: lab2-1/go.mod
+          cache-dependency-path: lab2-1/go.sum
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --no-install-recommends \
+            bison \
+            flex \
+            libboost-json-dev \
+            libboost-program-options-dev \
+            libboost-regex-dev
+
+      - name: Verify all viable labs
+        run: ./scripts/check.sh

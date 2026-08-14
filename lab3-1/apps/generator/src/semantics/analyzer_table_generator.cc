@@ -1,5 +1,7 @@
 #include "analyzer_table_generator.h"
 
+#include <algorithm>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -37,6 +39,7 @@ std::string GetSymbolTypeDefinition(const parser::Symbol::Type type) {
       return "Symbol::Type::kSpecial";
     }
   }
+  throw std::runtime_error("Unknown symbol type");
 }
 
 std::string GetSymbolDefinition(const parser::Symbol& symbol) {
@@ -64,9 +67,10 @@ AnalyzerTableGenerator::AnalyzerTableGenerator(const FirstFollow& first_follow)
         const auto [_, is_inserted] =
             table_.insert({{rule.get_lhs(), symbol},
                            {term.SymbolsCbegin(), term.SymbolsCend()}});
-        // TODO: remove duplication (?), recheck
         if (!is_inserted) {
-          throw std::runtime_error("Not LL(1) grammar");
+          throw std::runtime_error("LL(1) conflict for nonterminal " +
+                                   rule.get_lhs().get_name() +
+                                   " and lookahead " + symbol.get_name());
         }
       }
 
@@ -79,7 +83,9 @@ AnalyzerTableGenerator::AnalyzerTableGenerator(const FirstFollow& first_follow)
         const auto [_, is_inserted] = table_.insert(
             {{rule.get_lhs(), *b}, {term.SymbolsCbegin(), term.SymbolsCend()}});
         if (!is_inserted) {
-          throw std::runtime_error("Not LL(1) grammar");
+          throw std::runtime_error("LL(1) conflict for nonterminal " +
+                                   rule.get_lhs().get_name() +
+                                   " and lookahead " + b->get_name());
         }
       }
     }
@@ -92,11 +98,6 @@ void AnalyzerTableGenerator::GenerateTable(
   auto template_file = std::ifstream(template_filename);
   if (!template_file.is_open()) {
     throw std::runtime_error("Failed to open file " + template_filename);
-  }
-
-  auto table_file = std::ofstream(table_filename);
-  if (!table_file.is_open()) {
-    throw std::runtime_error("Failed to create file " + table_filename);
   }
 
   auto records = std::vector<std::string>{};
@@ -117,12 +118,40 @@ void AnalyzerTableGenerator::GenerateTable(
                              boost::algorithm::join(symbols, ", "));
     records.push_back(std::move(record));
   }
+  std::ranges::sort(records);
   const auto table_definition = boost::str(
       boost::format("{%1%}") % boost::algorithm::join(records, ", "));
 
   auto fmter = boost::format(Slurp(template_file));
   fmter % GetSymbolDefinition(program_->get_axiom()) % table_definition;
-  table_file << fmter.str();
+  const auto output = fmter.str();
+
+  auto temporary_filename = std::filesystem::path(table_filename);
+  temporary_filename += ".tmp";
+  if (std::filesystem::exists(temporary_filename)) {
+    throw std::runtime_error("Temporary output already exists: " +
+                             temporary_filename.string());
+  }
+
+  try {
+    auto table_file =
+        std::ofstream(temporary_filename, std::ios::out | std::ios::trunc);
+    if (!table_file.is_open()) {
+      throw std::runtime_error("Failed to create file " +
+                               temporary_filename.string());
+    }
+    table_file << output;
+    table_file.close();
+    if (!table_file) {
+      throw std::runtime_error("Failed to write file " +
+                               temporary_filename.string());
+    }
+    std::filesystem::rename(temporary_filename, table_filename);
+  } catch (...) {
+    std::error_code error;
+    std::filesystem::remove(temporary_filename, error);
+    throw;
+  }
 }
 
 }  // namespace semantics

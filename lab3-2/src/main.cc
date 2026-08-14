@@ -16,6 +16,8 @@ int main(int argc, char* argv[]) try {
   auto formatter = fmt::Formatter{driver.get_ident_table()};
   driver.get_program()->Accept(formatter);
   std::cout << formatter.ToString() << std::endl;
+  return 0;
 } catch (const std::exception& e) {
   std::cerr << e.what() << std::endl;
+  return 1;
 }

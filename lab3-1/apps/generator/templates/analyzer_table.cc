@@ -1,10 +1,8 @@
 #include "analyzer_table.h"
 
-#include "ast.h"
+#include "symbol.h"
 
 namespace parser {
-
-namespace ast {
 
 // clang-format off
 AnalyzerTable::AnalyzerTable() : axiom_(%1%), table_(%2%) {}
@@ -18,7 +16,5 @@ std::optional<std::pair<SymbolVecIter, SymbolVecIter>> AnalyzerTable::Find(
   }
   return std::nullopt;
 }
-
-}  // namespace ast
 
 }  // namespace parser

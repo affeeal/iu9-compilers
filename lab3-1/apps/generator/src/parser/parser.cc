@@ -67,6 +67,8 @@ std::unique_ptr<INode> Parser::TopDownParse(lexer::IScanner& scanner) {
         }
         break;
       }
+      case Symbol::Type::kSpecial:
+        throw std::runtime_error("Unexpected special parser symbol");
     }
   } while (!stack.empty());
 

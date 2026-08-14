@@ -41,7 +41,7 @@ int main(int ac, char* av[]) try {
 
   if (vm.contains(kHelpOption)) {
     std::cout << desc << "\n";
-    return 1;
+    return 0;
   }
 
   std::string grammar_filename;
@@ -56,14 +56,16 @@ int main(int ac, char* av[]) try {
   if (const auto it = vm.find(kTemplateOption); it != vm.cend()) {
     template_filename = it->second.as<std::string>();
   } else {
-    template_filename = "templates/analyzer_table.cc";
+    std::cerr << "Template filename must be set\n";
+    return 1;
   }
 
   std::string table_filename;
   if (const auto it = vm.find(kTableOption); it != vm.cend()) {
     table_filename = it->second.as<std::string>();
   } else {
-    table_filename = "src/build/analyzer_table.cc";
+    std::cerr << "Table filename must be set\n";
+    return 1;
   }
 
   std::ifstream file(grammar_filename);
@@ -84,6 +86,7 @@ int main(int ac, char* av[]) try {
   const auto first_follow = semantics::FirstFollow(program);
   const auto generator = semantics::AnalyzerTableGenerator(first_follow);
   generator.GenerateTable(template_filename, table_filename);
+  return 0;
 } catch (const std::exception& e) {
   std::cerr << e.what() << std::endl;
   return 1;

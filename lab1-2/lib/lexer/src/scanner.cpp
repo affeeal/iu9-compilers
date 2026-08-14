@@ -1,6 +1,8 @@
 #include "scanner.hpp"
 
 #include <boost/regex.hpp>
+#include <iterator>
+#include <sstream>
 #include <string>
 
 #include "message.hpp"

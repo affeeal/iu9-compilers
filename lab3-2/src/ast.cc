@@ -1,5 +1,7 @@
 #include "ast.h"
 
+#include <stdexcept>
+
 namespace fmt {
 
 std::ostream& operator<<(std::ostream& os, const Op op) {
@@ -20,6 +22,7 @@ std::ostream& operator<<(std::ostream& os, const Op op) {
       return os << '/';
     }
   }
+  throw std::runtime_error("Unknown operator");
 }
 
 std::ostream& operator<<(std::ostream& os, const ElementaryType::Kind kind) {
@@ -28,6 +31,7 @@ std::ostream& operator<<(std::ostream& os, const ElementaryType::Kind kind) {
       return os << "int";
     }
   }
+  throw std::runtime_error("Unknown elementary type");
 }
 
 }  // namespace fmt

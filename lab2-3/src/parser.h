@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 // clang-format off
 #include <boost/functional/hash.hpp>
 // clang-format on

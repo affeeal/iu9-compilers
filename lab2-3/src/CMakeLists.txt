@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.22.1)
-project(lab2-3)
+project(lab2-3 LANGUAGES CXX)
 
-# TODO: link Boost.
+find_package(Boost REQUIRED)
 find_package(FLEX REQUIRED)
 
 flex_target(scanner
@@ -9,13 +9,19 @@ flex_target(scanner
   ${CMAKE_CURRENT_BINARY_DIR}/scanner.cc
 )
 
-file (GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cc)
-
 add_executable(${PROJECT_NAME}
-  ${SOURCES}
+  compiler.cc
+  fragment.cc
+  main.cc
+  message.cc
+  node.cc
+  parser.cc
+  position.cc
+  token.cc
   ${FLEX_scanner_OUTPUTS}
 )
 
+target_link_libraries(${PROJECT_NAME} PRIVATE Boost::headers)
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
 target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

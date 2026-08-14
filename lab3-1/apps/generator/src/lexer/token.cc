@@ -35,6 +35,7 @@ std::string ToString(const DomainTag tag) {
       return "END_OF_PROGRAM";
     }
   }
+  throw std::runtime_error("Unknown domain tag");
 }
 
 std::ostream& operator<<(std::ostream& os, const DomainTag tag) {

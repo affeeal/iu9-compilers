@@ -3,8 +3,13 @@ set(MODULE_NAME lexer)
 set(SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-file(GLOB SOURCES ${SOURCE_DIR}/*.cpp)
-
-add_library(${MODULE_NAME} ${SOURCES})
+add_library(${MODULE_NAME}
+  ${SOURCE_DIR}/compiler.cpp
+  ${SOURCE_DIR}/fragment.cpp
+  ${SOURCE_DIR}/message.cpp
+  ${SOURCE_DIR}/position.cpp
+  ${SOURCE_DIR}/scanner.cpp
+  ${SOURCE_DIR}/token.cpp
+)
 target_compile_features(${MODULE_NAME} PRIVATE cxx_std_20)
 target_include_directories(${MODULE_NAME} PUBLIC ${INCLUDE_DIR})

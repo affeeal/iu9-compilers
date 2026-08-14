@@ -1,1 +1,5 @@
 lab1-1/*.pas linguist-vendored
+**/report.md linguist-documentation
+**/report.pdf linguist-documentation
+lab2-2/sample/parser_edsl.py linguist-vendored
+lab3-3/sample/parser_edsl.py linguist-vendored

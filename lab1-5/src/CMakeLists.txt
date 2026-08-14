@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22.1)
-project(lab1-5)
+project(lab1-5 LANGUAGES CXX)
 
 find_package(FLEX REQUIRED)
 
@@ -8,13 +8,17 @@ flex_target(scanner
   ${CMAKE_CURRENT_BINARY_DIR}/scanner.cpp
 )
 
-file (GLOB SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp)
-
 add_executable(${PROJECT_NAME}
-  ${SOURCES}
+  compiler.cpp
+  fragment.cpp
+  main.cpp
+  message.cpp
+  position.cpp
+  token.cpp
   ${FLEX_scanner_OUTPUTS}
 )
 
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_20)
+target_compile_options(${PROJECT_NAME} PRIVATE -Wall -Wextra -Wpedantic)
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})

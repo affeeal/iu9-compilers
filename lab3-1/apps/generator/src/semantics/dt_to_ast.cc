@@ -28,7 +28,7 @@ std::vector<std::unique_ptr<Rule>> DtToAst::ParseRules(
     const parser::InnerNode& rules) {
   const auto b = rules.ChildrenCbegin();
   if (b == rules.ChildrenCend()) {
-    return {};  // TODO: fix to contain at least one rule
+    return {};
   }
 
   const auto& rule = static_cast<const parser::InnerNode&>(**b);
