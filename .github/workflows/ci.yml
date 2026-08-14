@@ -26,6 +26,7 @@ jobs:
           sudo apt-get install --no-install-recommends \
             bison \
             flex \
+            libfl-dev \
             libboost-json-dev \
             libboost-program-options-dev \
             libboost-regex-dev
