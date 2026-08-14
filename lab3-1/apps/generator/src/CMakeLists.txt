@@ -19,17 +19,34 @@ add_subdirectory(semantics)
 include(CTest)
 if(BUILD_TESTING)
   find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
+  # Resolve paths to ensure they're absolute and correct
+  file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../tests/check_generator.py"
+       CHECK_GENERATOR_SCRIPT)
+  file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../templates/analyzer_table.cc"
+       TEMPLATE_FILE)
+  file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../examples/arithmetic_grammar.txt"
+       ARITHMETIC_GRAMMAR)
+  file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../examples/self-describing_grammar.txt"
+       SELF_GRAMMAR)
+  file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/parser/analyzer_table.cc"
+       CHECKED_TABLE)
+  file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../calculator/src/parser"
+       CALCULATOR_INCLUDE)
+  file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/parser"
+       GENERATOR_INCLUDE)
+
   add_test(
     NAME generator-regression
     COMMAND ${Python3_EXECUTABLE}
-            ${CMAKE_CURRENT_SOURCE_DIR}/../../../tests/check_generator.py
+            ${CHECK_GENERATOR_SCRIPT}
             $<TARGET_FILE:${PROJECT_NAME}>
-            ${CMAKE_CURRENT_SOURCE_DIR}/../templates/analyzer_table.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/../examples/arithmetic_grammar.txt
-            ${CMAKE_CURRENT_SOURCE_DIR}/../examples/self-describing_grammar.txt
-            ${CMAKE_CURRENT_SOURCE_DIR}/parser/analyzer_table.cc
-            ${CMAKE_CURRENT_SOURCE_DIR}/../../../calculator/src/parser
-            ${CMAKE_CURRENT_SOURCE_DIR}/parser
+            ${TEMPLATE_FILE}
+            ${ARITHMETIC_GRAMMAR}
+            ${SELF_GRAMMAR}
+            ${CHECKED_TABLE}
+            ${CALCULATOR_INCLUDE}
+            ${GENERATOR_INCLUDE}
             ${CMAKE_CXX_COMPILER}
   )
 endif()
