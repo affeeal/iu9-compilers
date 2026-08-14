@@ -31,7 +31,7 @@ if(BUILD_TESTING)
        SELF_GRAMMAR)
   file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/parser/analyzer_table.cc"
        CHECKED_TABLE)
-  file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../calculator/src/parser"
+  file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../apps/calculator/src/parser"
        CALCULATOR_INCLUDE)
   file(REAL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/parser"
        GENERATOR_INCLUDE)
